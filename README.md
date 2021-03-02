@@ -5,7 +5,13 @@ This is a sandbox for getting the NavAbility Julia SDK to common cloud API desig
 
 # Sibling Code Here
 
+## In cloud-system
+
 - https://github.com/NavAbility/cloud-system/tree/master/libraries
+
+## Previous Attempts
+
+- https://juliarobotics.org/Caesar.jl/latest/concepts/multilang/
 
 # Design Meeting 1
 
