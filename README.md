@@ -1,4 +1,4 @@
-# NVASDK.jl
+# NavAbilitySDK.jl
 We can find the best name later (Not For Public Consumption ... yet)
 
 This is a sandbox for getting the NavAbility Julia SDK to common cloud API design figured out in private, and we will all greenlight before making public, with roadmap.
