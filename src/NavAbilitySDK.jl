@@ -56,6 +56,16 @@ function addFactor!(nfg::NVADFG, factor)
 end
 
 
+
+
+
+
+
+## ==========================================================
+## Comments during call, trying to find a starting point
+## ==========================================================
+
+
 # JS version?
 # client.addVariable(args) 
 # dfg.addVariable(args)
