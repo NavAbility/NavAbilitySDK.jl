@@ -21,6 +21,10 @@ nfg = NVADFG()
 ## SEE DFG COMMON API LAYER HERE
 # https://github.com/JuliaRobotics/DistributedFactorGraphs.jl/blob/master/src/services/AbstractDFG.jl#L211-L309
 
+
+# by using the DFG standardized "Packed" types (which are JSONable by design requirement) we get symmetry over multi-language SDKs
+
+
 # adding DFG. to explicitly show we are overloading from `const DFG = DistributedFactorGraphs`
 function DFG.addVariable!(dfg::NVADFG, variable)
   # send this as Dict or JSON as "Packed" version of a `DFGVariable` type
