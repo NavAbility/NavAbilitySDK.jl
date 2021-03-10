@@ -1,20 +1,64 @@
 module NavAbilitySDK
 
+using JSON
+using DistributedFactorGraphs
+
 # bring into context so that we can overload calls
-import DistributedFactorGraphs
+# This shouldn't be necessary if we call using (...AFAIK...)
+import DistributedFactorGraphs: 
+  AbstractDFG, 
+  AbstractParams, 
+  NoSolverParams, 
+  addVariable!
 ## SEE DFG COMMON API LAYER HERE
 # https://github.com/JuliaRobotics/DistributedFactorGraphs.jl/blob/master/src/services/AbstractDFG.jl#L211-L309
 
+# We also should export all the exposed functionality
+export 
+  NVADFG
+
+### ---- Everything below this line should be in other files ---- ###
 
 ## the new "DFG" type
+# The {T <: AbstractParams} is the generic solver parameters. 
+# I don't think we need it for the moment, but the signature needs it.
+mutable struct NVADFG{T <: AbstractParams} <: AbstractDFG{T}
+  host::String
+  # At this point we should either do 3-legged Auth 
+  # to get a token, but leaving that up to you, whichever
+  # you think is best. Just putting a token in here for now.
+  token::Union{Nothing, String}
+  # These are standard across all DFG's. I think you might 
+  # want to change this, which is not a problem at all.
+  userId::String
+  robotId::String
+  sessionId::String
+  description::String
+end
 
-mutable struct NVADFG <: AbstractDFG
-  url::String
-  # ...
+# The show function is already implemented in DistributedFactorGraphs:CustomPrinting.jl, so making it work here.
+import Base: show
+function Base.show(io::IO, ::MIME"text/plain", dfg::NVADFG)
+  summary(io, dfg)
+  println(io, "\n  Host: ", dfg.host)
+  println(io, "\n  UserId: ", dfg.userId)
+  println(io, "  RobotId: ", dfg.robotId)
+  println(io, "  SessionId: ", dfg.sessionId)
+  println(io, "  Description: ", dfg.description)
 end
 
 # default constructor helper
-NVADFG(;url="api.navability.io") = NVADFG(url)
+NVADFG(;host::String="https://api.d1.navability.io", token::Union{Nothing, String}="") = NVADFG{NoSolverParams}(host, token, "", "", "", "")
+function NVADFG(configFile::String; promptForToken::Bool = true) 
+  configString = read(configFile, String)
+  configData = JSON.parse(configString)
+  token = nothing
+  if promptForToken
+    print("Token for $(configData["host"]): ")
+    token = readline()
+  end
+  return NVADFG{NoSolverParams}(configData["host"], token, "", "", "", "")
+end
 
 
 # Users build this object as counter part to `fg = LightDFG()`
@@ -25,7 +69,7 @@ nfg = NVADFG()
 
 
 # adding DFG. to explicitly show we are overloading from `const DFG = DistributedFactorGraphs`
-function DFG.addVariable!(dfg::NVADFG, variable)
+function DistributedFactorGraphs.addVariable!(dfg::NVADFG, variable)
   # send this as Dict or JSON as "Packed" version of a `DFGVariable` type
   # purposefully have one or two fields missing for robustness, or built on receiver side.
   #   {
@@ -44,7 +88,7 @@ end
 
 
 
-function DFG.addFactor!(nfg::NVADFG, factor)
+function DistributedFactorGraphs.addFactor!(nfg::NVADFG, factor)
   # send this as Dict or JSON as "Packed" version of DFGFactor
   # skipped field `data` and `label` to be generated on receiver side process
   #   {

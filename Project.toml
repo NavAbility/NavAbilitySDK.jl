@@ -7,6 +7,7 @@ version = "0.1.0"
 
 [deps]
 DistributedFactorGraphs = "b5cc3c7e-6572-11e9-2517-99fb8daf2f04"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 
 [compat]
 DistributedFactorGraphs = "0.12"
