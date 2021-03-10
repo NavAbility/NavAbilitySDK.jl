@@ -1,8 +1,6 @@
 module NavAbilitySDK
 
-
-# object name NVA
-
+import DistributedFactorGraphs
 
 
 ## create objects
