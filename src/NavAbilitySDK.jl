@@ -1,9 +1,12 @@
 module NavAbilitySDK
 
+# bring into context so that we can overload calls
 import DistributedFactorGraphs
+## SEE DFG COMMON API LAYER HERE
+# https://github.com/JuliaRobotics/DistributedFactorGraphs.jl/blob/master/src/services/AbstractDFG.jl#L211-L309
 
 
-## create objects
+## the new "DFG" type
 
 mutable struct NVADFG <: AbstractDFG
   url::String
@@ -16,10 +19,6 @@ NVADFG(;url="api.navability.io") = NVADFG(url)
 
 # Users build this object as counter part to `fg = LightDFG()`
 nfg = NVADFG()
-
-
-## SEE DFG COMMON API LAYER HERE
-# https://github.com/JuliaRobotics/DistributedFactorGraphs.jl/blob/master/src/services/AbstractDFG.jl#L211-L309
 
 
 # by using the DFG standardized "Packed" types (which are JSONable by design requirement) we get symmetry over multi-language SDKs
