@@ -13,10 +13,12 @@ mutable struct NVADFG <: AbstractDFG
 end
 
 
-# https://github.com/JuliaRobotics/DistributedFactorGraphs.jl/blob/master/src/services/AbstractDFG.jl#L211-L309
-
 # this is high level API
-nfg = NavAbilityDFG("api.navability.io")
+nfg = NVADFG("api.navability.io")
+
+
+## SEE DFG COMMON API LAYER HERE
+# https://github.com/JuliaRobotics/DistributedFactorGraphs.jl/blob/master/src/services/AbstractDFG.jl#L211-L309
 
 
 function addVariable!(dfg::NVADFG, variable)
