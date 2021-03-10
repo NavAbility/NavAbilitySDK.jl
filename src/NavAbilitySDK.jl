@@ -7,7 +7,7 @@ module NavAbility
 
 ## create objects
 
-mutable struct NVADFG <: AbstractDFG
+mutable struct NavAbilityDFG <: AbstractDFG
 
 
 end
@@ -16,17 +16,41 @@ end
 # https://github.com/JuliaRobotics/DistributedFactorGraphs.jl/blob/master/src/services/AbstractDFG.jl#L211-L309
 
 # this is high level API
-nfg = NVADFG("api.navability.io")
+nfg = NavAbilityDFG("api.navability.io")
 
 
 function addVariable!(dfg::NVADFG, variable::AbstractDFGVariable)
-  error("addVariable! not implemented for $(typeof(dfg))")
+  # send this as Dict or JSON as "Packed" version of a `DFGVariable` type
+  # purposefully have one or two fields missing for robustness, or built on receiver side.
+  #   {
+  #     "label": "x0",
+  #     "dataEntry": "{}",
+  #     "nstime": "0",
+  #     "dataEntryType": "{}",
+  #     "smallData": "{}",
+  #     "variableType": "RoME.Pose2",
+  #     "solvable": 1,
+  #     "tags": "[\"VARIABLE\"]",
+  #     "timestamp": "2021-03-09T20:09:46.034-05:00",
+  #     "_version": "0.12.0"
+  #   }
 end
 
 
 
 function addFactor!(nfg::NVADFG, factor::AbstractDFGFactor)
-
+  # send this as Dict or JSON as "Packed" version of DFGFactor
+  # skipped field `data` to be built on receiver side
+  #   {
+  #     "label": "x0l1f1",
+  #     "_version": "0.12.0",
+  #     "_variableOrderSymbols": "[\"x0\",\"l1\"]",
+  #     "tags": "[\"FACTOR\"]",
+  #     "timestamp": "2021-03-09T20:09:58.996-05:00",
+  #     "nstime": "0",
+  #     "fnctype": "Pose2Point2BearingRange",
+  #     "solvable": 1
+  #   }
 end
 
 
