@@ -38,7 +38,7 @@ end
 
 # The show function is already implemented in DistributedFactorGraphs:CustomPrinting.jl, so making it work here.
 import Base: show
-function Base.show(io::IO, ::MIME"text/plain", dfg::NVADFG)
+function Base.show(io::IO, dfg::NVADFG)
   summary(io, dfg)
   println(io, "\n  Host: ", dfg.host)
   println(io, "\n  UserId: ", dfg.userId)
@@ -46,6 +46,7 @@ function Base.show(io::IO, ::MIME"text/plain", dfg::NVADFG)
   println(io, "  SessionId: ", dfg.sessionId)
   println(io, "  Description: ", dfg.description)
 end
+Base.show(io::IO, ::MIME"text/plain", dfg::NVADFG) = show(io, dfg)
 
 # default constructor helper
 NVADFG(;host::String="https://api.d1.navability.io", token::Union{Nothing, String}="") = NVADFG{NoSolverParams}(host, token, "", "", "", "")
