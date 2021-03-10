@@ -21,8 +21,8 @@ nfg = NVADFG()
 ## SEE DFG COMMON API LAYER HERE
 # https://github.com/JuliaRobotics/DistributedFactorGraphs.jl/blob/master/src/services/AbstractDFG.jl#L211-L309
 
-
-function addVariable!(dfg::NVADFG, variable)
+# adding DFG. to explicitly show we are overloading from `const DFG = DistributedFactorGraphs`
+function DFG.addVariable!(dfg::NVADFG, variable)
   # send this as Dict or JSON as "Packed" version of a `DFGVariable` type
   # purposefully have one or two fields missing for robustness, or built on receiver side.
   #   {
@@ -41,7 +41,7 @@ end
 
 
 
-function addFactor!(nfg::NVADFG, factor)
+function DFG.addFactor!(nfg::NVADFG, factor)
   # send this as Dict or JSON as "Packed" version of DFGFactor
   # skipped field `data` and `label` to be generated on receiver side process
   #   {
