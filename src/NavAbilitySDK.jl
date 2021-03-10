@@ -7,7 +7,7 @@ module NavAbility
 
 ## create objects
 
-mutable struct NavAbilityDFG <: AbstractDFG
+mutable struct NVADFG <: AbstractDFG
 
 
 end
@@ -19,7 +19,7 @@ end
 nfg = NavAbilityDFG("api.navability.io")
 
 
-function addVariable!(dfg::NVADFG, variable::AbstractDFGVariable)
+function addVariable!(dfg::NVADFG, variable)
   # send this as Dict or JSON as "Packed" version of a `DFGVariable` type
   # purposefully have one or two fields missing for robustness, or built on receiver side.
   #   {
@@ -38,7 +38,7 @@ end
 
 
 
-function addFactor!(nfg::NVADFG, factor::AbstractDFGFactor)
+function addFactor!(nfg::NVADFG, factor)
   # send this as Dict or JSON as "Packed" version of DFGFactor
   # skipped field `data` to be built on receiver side
   #   {
