@@ -1,5 +1,7 @@
 name = "NavAbilitySDK"
 uuid = "f3e6a059-199c-4ada-8143-fcefb97e6165"
+keywords = ["graphical models", "SLAM", "inference", "factor graphs", "SDK"]
+desc = "SDK provided by NavAbility to use their cloud computer infrastructure for sensor fusion."
 authors = ["info <info@navability.io>"]
 version = "0.1.0"
 
