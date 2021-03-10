@@ -6,13 +6,16 @@ import DistributedFactorGraphs
 ## create objects
 
 mutable struct NVADFG <: AbstractDFG
-
-
+  url::String
+  # ...
 end
 
+# default constructor helper
+NVADFG(;url="api.navability.io") = NVADFG(url)
 
-# this is high level API
-nfg = NVADFG("api.navability.io")
+
+# Users build this object as counter part to `fg = LightDFG()`
+nfg = NVADFG()
 
 
 ## SEE DFG COMMON API LAYER HERE
