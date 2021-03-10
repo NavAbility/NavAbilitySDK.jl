@@ -42,9 +42,8 @@ end
 
 function addFactor!(nfg::NVADFG, factor)
   # send this as Dict or JSON as "Packed" version of DFGFactor
-  # skipped field `data` to be built on receiver side
+  # skipped field `data` and `label` to be generated on receiver side process
   #   {
-  #     "label": "x0l1f1",
   #     "_version": "0.12.0",
   #     "_variableOrderSymbols": "[\"x0\",\"l1\"]",
   #     "tags": "[\"FACTOR\"]",
