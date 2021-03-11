@@ -140,7 +140,9 @@ end
 # # SDK usage should be the same across languages
 # SC , Jim yes, DF probably yes,
 
-
+## JT
+# In the other SDKs (python, java, etc) there is a container (eg. Dictionary) that will look like a Variable/Factor once deserialized in julia
+# The container will probably look like a combination of skeleton, summary, full in https://juliarobotics.org/DistributedFactorGraphs.jl/latest/ref_api/
 
 # module
 end
