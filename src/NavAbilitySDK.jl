@@ -2,6 +2,7 @@ module NavAbilitySDK
 
 using JSON
 using DistributedFactorGraphs
+using Diana
 
 # bring into context so that we can overload calls
 # This shouldn't be necessary if we call using (...AFAIK...)
@@ -14,7 +15,7 @@ import DistributedFactorGraphs:
 # https://github.com/JuliaRobotics/DistributedFactorGraphs.jl/blob/master/src/services/AbstractDFG.jl#L211-L309
 
 # We also should export all the exposed functionality
-export 
+export
   NVADFG
 
 ### ---- Everything below this line should be in other files ---- ###
@@ -50,17 +51,6 @@ Base.show(io::IO, ::MIME"text/plain", dfg::NVADFG) = show(io, dfg)
 
 # default constructor helper
 NVADFG(;host::String="https://api.d1.navability.io", token::Union{Nothing, String}="") = NVADFG{NoSolverParams}(host, token, "", "", "", "")
-function NVADFG(configFile::String; promptForToken::Bool = true) 
-  configString = read(configFile, String)
-  configData = JSON.parse(configString)
-  token = nothing
-  if promptForToken
-    print("Token for $(configData["host"]): ")
-    token = readline()
-  end
-  return NVADFG{NoSolverParams}(configData["host"], token, "", "", "", "")
-end
-
 
 # Users build this object as counter part to `fg = LightDFG()`
 nfg = NVADFG()
@@ -71,6 +61,11 @@ nfg = NVADFG()
 
 # adding DFG. to explicitly show we are overloading from `const DFG = DistributedFactorGraphs`
 function DistributedFactorGraphs.addVariable!(dfg::NVADFG, variable)
+  token = nfg.token
+  gqlClient = GraphQLClient(nfg.host, auth="Bearer $token")
+  gqlClient.Query(NavAbilityMutations.MUTATION_ADDFACTOR,operationName="AddVariable",vars=Dict(
+            "variable" => "TODO: Generate variable"
+        ))
   # send this as Dict or JSON as "Packed" version of a `DFGVariable` type
   # purposefully have one or two fields missing for robustness, or built on receiver side.
   #   {
@@ -90,6 +85,11 @@ end
 
 
 function DistributedFactorGraphs.addFactor!(nfg::NVADFG, factor)
+  token = nfg.token
+  gqlClient = GraphQLClient(nfg.host, auth="Bearer $token")
+  gqlClient.Query(NavAbilityMutations.MUTATION_ADDFACTOR,operationName="AddFactor",vars=Dict(
+            "factor" => "TODO: Generate factor"
+        ))
   # send this as Dict or JSON as "Packed" version of DFGFactor
   # skipped field `data` and `label` to be generated on receiver side process
   #   {
@@ -103,11 +103,17 @@ function DistributedFactorGraphs.addFactor!(nfg::NVADFG, factor)
   #   }
 end
 
+function NavAbilitySDK.addVariable!(nfg::NVADFG, variable)
+  DistributedFactorGraphs.addVariable!(nfg,variable)
+end
 
+function NavAbilitySDK.addFactor!(nfg::NVADFG, factor)
+  DistributedFactorGraphs.addFactor!(nfg,factor)
+end
 
-
-
-
+function NavAbilitySDK.solve!(nfg::NVADFG)
+  IncrementalInference.solveTree!(nfg)
+end
 
 ## ==========================================================
 ## Comments during call, trying to find a starting point
