@@ -9,9 +9,9 @@ hostname = if haskey(ENV, "HOSTNAME") ENV["HOSTNAME"] else "localhost" end
 token = if haskey(ENV, "TOKEN") ENV["TOKEN"] else "" end
 
 # Connect to NavAbility
-dfg = NVADFG(host=hostname, token=token)
-@info "Connection: $(dfg)"
-@test dfg !== nothing
+dfg = CloudDFG(host=hostname, token=token)
+@info "Connection: $(cdfg)"
+@test cdfg !== nothing
 
 # Run operations against NavAbility
 NavAbilitySDK.addVariable!(dfg, :x0, Pose2)
