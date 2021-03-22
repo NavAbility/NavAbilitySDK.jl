@@ -48,7 +48,7 @@ end
 Base.show(io::IO, ::MIME"text/plain", dfg::CloudDFG) = show(io, dfg)
 
 # default constructor helper
-CloudDFG(;host::String="https://api.d1.navability.io", token::Union{Nothing, <:AbstractString}="") = CloudDFG{NoSolverParams}(NavAbilityAPIClient(;host=host, token=token), "", "", "", "")
+CloudDFG(;host::String="https://api.d1.navability.io/graphql", token::Union{Nothing, <:AbstractString}="") = CloudDFG{NoSolverParams}(NavAbilityAPIClient(;host=host, token=token), "", "", "", "")
 
 # Users build this object as counter part to `fg = LightDFG()`
 dfg = CloudDFG()

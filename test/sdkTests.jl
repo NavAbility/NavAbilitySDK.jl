@@ -9,7 +9,7 @@ hostname = if haskey(ENV, "HOSTNAME") ENV["HOSTNAME"] else "localhost" end
 token = if haskey(ENV, "TOKEN") ENV["TOKEN"] else "" end
 
 # Connect to NavAbility
-dfg = NVADFG(host=hostname, token=token)
+dfg = CloudDFG(host=hostname, token=token)
 @info "Connection: $(dfg)"
 @test dfg !== nothing
 
