@@ -11,10 +11,6 @@ In the mean time:
 
 # Sibling Code Here
 
-## In cloud-system
-
-- https://github.com/NavAbility/cloud-system/tree/master/libraries
-
 ## Previous Attempts
 
 - https://juliarobotics.org/Caesar.jl/latest/concepts/multilang/
