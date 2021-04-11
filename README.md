@@ -19,11 +19,6 @@ In the mean time:
 
 - https://juliarobotics.org/Caesar.jl/latest/concepts/multilang/
 
-# Design Meeting 1
-
-See Wiki (and edit as necessary)
-- https://github.com/NavAbility/cloud-system/wiki/Defining-SDK-API-(to-use-GraphQL-in-Edge-Twin-Swarm)
-
 # Installation
 
 This package is not currently registered. To install run the following:
