@@ -13,7 +13,8 @@ import DistributedFactorGraphs:
   AbstractParams, 
   NoSolverParams, 
   addVariable!,
-  addFactor!
+  addFactor!,
+  copyGraph!
 
 include("common.jl")
 include("entities/NavAbilityAPIClient.jl")
