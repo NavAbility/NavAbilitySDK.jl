@@ -15,20 +15,24 @@ function _gqlClient(userId::String, robotId::String, sessionId::String)
   return Dict("userId" => userId, "robotId" => robotId, "sessionId" => sessionId)
 end
 
-function _parseGqlResponse(response, responseVerb::String)
+function _parseGqlResponse(response)
   @debug "GraphQL response: $(response)"
   !isa(response, Diana.Result) && error("NavAbility API returned an unexpected response of type '$(typeof(response))'")
   response.Info.status != 200 && error("NavAbility API returned response code $(response.Info.status)")
   data = JSON.parse(response.Data)
   haskey(data, "errors") && length(data["errors"]) > 0 && error("Got errors from NavAbility API: $(data["errors"])")
   !haskey(data, "data") && error("NavAbility API did not return data in the payload")
-  !haskey(data["data"], responseVerb) && error("NavAbility API response does not contain the verb $(responseVerb)")
-  return data["data"][responseVerb]
+  return data["data"]
+end
+
+function _parseGqlResponseExpectVerb(response, responseVerb::String)
+  data = _parseGqlResponse(response)
+  !haskey(data, responseVerb) && error("NavAbility API response does not contain the verb $(responseVerb)")
+  return data[responseVerb]
 end
 
 # TODO: If we have time make PackedDFGVariable and PackedDFGFactor in DFG.
 # TODO: What does addVariable return here? (the packed JSON/Dict of DFGVariable)
-# TODO: What happens if it fails? Error or exception?
 function addVariable!(client::NavAbilityAPIClient, userId::String, robotId::String, sessionId::String, packedVariable::PackedDFGVariableTemp)
   vars = Dict(
     "variable" => Dict(
@@ -37,7 +41,7 @@ function addVariable!(client::NavAbilityAPIClient, userId::String, robotId::Stri
     )
   @debug "GraphQL payload: $(vars)"
   response = client.gqlClient.Query(MUTATION_ADDVARIABLE, operationName="addVariable", vars=vars)
-  return _parseGqlResponse(response, "addVariable")
+  return _parseGqlResponseExpectVerb(response, "addVariable")
 end
 
 function addFactor!(client::NavAbilityAPIClient, userId::String, robotId::String, sessionId::String, packedFactor::PackedDFGFactorTemp)
@@ -48,7 +52,15 @@ function addFactor!(client::NavAbilityAPIClient, userId::String, robotId::String
     )
   @debug "GraphQL payload: $(vars)"
   response = client.gqlClient.Query(MUTATION_ADDFACTOR, operationName="addFactor", vars=vars)
-  return _parseGqlResponse(response, "addFactor")
+  return _parseGqlResponseExpectVerb(response, "addFactor")
 end
 
-#
+"""
+  @(SIGNATURES)
+Execute a query and return the data if it is available.
+Ref: https://grandstack.io/docs/graphql-filtering
+"""
+function query(client::NavAbilityAPIClient, query::String, queryName::String, vars::Dict=Dict())
+  response = client.gqlClient.Query(query, operationName=queryName, vars=vars)
+  data = _parseGqlResponse(response)
+end

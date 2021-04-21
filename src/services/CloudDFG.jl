@@ -82,3 +82,223 @@ function copyGraph!(destDFG::CloudDFG,
   end
   return nothing
 end
+
+##==============================================================================
+## CRUD Interfaces
+##==============================================================================
+##------------------------------------------------------------------------------
+## Variable And Factor CRUD
+##------------------------------------------------------------------------------
+"""
+    $(SIGNATURES)
+True if the variable or factor exists in the graph.
+"""
+function exists(dfg::CloudDFG, node::DFGNode)
+  error("exists not implemented for $(typeof(dfg))")
+end
+
+function exists(dfg::CloudDFG, label::Symbol)
+  error("exists not implemented for $(typeof(dfg))")
+end
+
+"""
+    $(SIGNATURES)
+Get a DFGVariable from a DFG using its label.
+"""
+function getVariable(dfg::CloudDFG, label::Union{Symbol, String})
+  error("getVariable not implemented for $(typeof(dfg))")
+end
+
+"""
+    $(SIGNATURES)
+Get a DFGFactor from a DFG using its label.
+"""
+function getFactor(dfg::CloudDFG, label::Union{Symbol, String})
+  error("getFactor not implemented for $(typeof(dfg))")
+end
+
+function Base.getindex(dfg::AbstractDFG, lbl::Union{Symbol, String})
+  if isVariable(dfg, lbl)
+      getVariable(dfg, lbl)
+  elseif isFactor(dfg, lbl)
+      getFactor(dfg, lbl)
+  else
+      error("Cannot find $lbl in this $(typeof(dfg))")
+  end
+end
+
+"""
+    $(SIGNATURES)
+Update a complete DFGVariable in the DFG.
+"""
+function updateVariable!(dfg::CloudDFG, variable::V) where {V <: AbstractDFGVariable}
+  error("updateVariable! not implemented for $(typeof(dfg))")
+end
+
+"""
+    $(SIGNATURES)
+Update a complete DFGFactor in the DFG.
+"""
+function updateFactor!(dfg::CloudDFG, factor::F) where {F <: AbstractDFGFactor}
+  error("updateFactor! not implemented for $(typeof(dfg))")
+end
+
+"""
+    $(SIGNATURES)
+Delete a DFGVariable from the DFG using its label.
+"""
+function deleteVariable!(dfg::CloudDFG, label::Symbol)
+  error("deleteVariable! not implemented for $(typeof(dfg))")
+end
+"""
+    $(SIGNATURES)
+Delete a DFGFactor from the DFG using its label.
+"""
+function deleteFactor!(dfg::CloudDFG, label::Symbol)
+  error("deleteFactors not implemented for $(typeof(dfg))")
+end
+
+"""
+    $(SIGNATURES)
+List the DFGVariables in the DFG.
+Optionally specify a label regular expression to retrieves a subset of the variables.
+Tags is a list of any tags that a node must have (at least one match).
+"""
+function getVariables(dfg::CloudDFG, regexFilter::Union{Nothing, Regex}=nothing; tags::Vector{Symbol}=Symbol[], solvable::Int=0)
+  error("getVariables not implemented for $(typeof(dfg))")
+end
+
+"""
+    $(SIGNATURES)
+List the DFGFactors in the DFG.
+Optionally specify a label regular expression to retrieves a subset of the factors.
+"""
+function getFactors(dfg::CloudDFG, regexFilter::Union{Nothing, Regex}=nothing; tags::Vector{Symbol}=Symbol[], solvable::Int=0)
+  error("getFactors not implemented for $(typeof(dfg))")
+end
+
+
+
+##------------------------------------------------------------------------------
+## Checking Types
+##------------------------------------------------------------------------------
+
+"""
+    $SIGNATURES
+
+Return whether `sym::Symbol` represents a variable vertex in the graph DFG.
+Checks whether it both exists in the graph and is a variable.
+(If you rather want a quick for type, just do node isa DFGVariable)
+"""
+function isVariable(dfg::CloudDFG, sym::Symbol)
+  error("isVariable not implemented for $(typeof(dfg))")
+end
+
+"""
+    $SIGNATURES
+
+Return whether `sym::Symbol` represents a factor vertex in the graph DFG.
+Checks whether it both exists in the graph and is a factor.
+(If you rather want a quicker for type, just do node isa DFGFactor)
+"""
+function isFactor(dfg::CloudDFG, sym::Symbol)
+  error("isFactor not implemented for $(typeof(dfg))")
+end
+
+
+##------------------------------------------------------------------------------
+## Neighbors
+##------------------------------------------------------------------------------
+"""
+    $(SIGNATURES)
+Checks if the graph is fully connected, returns true if so.
+"""
+function isConnected(dfg::CloudDFG)
+  error("isConnected not implemented for $(typeof(dfg))")
+end
+
+"""
+    $(SIGNATURES)
+Retrieve a list of labels of the immediate neighbors around a given variable or factor specified by its label.
+"""
+function getNeighbors(dfg::CloudDFG, label::Symbol; solvable::Int=0)
+  error("getNeighbors not implemented for $(typeof(dfg))")
+end
+
+
+##------------------------------------------------------------------------------
+## copy and duplication
+##------------------------------------------------------------------------------
+
+#TODO use copy functions currently in attic
+"""
+    $(SIGNATURES)
+Gets an empty and unique CloudGraphsDFG derived from an existing DFG.
+"""
+function _getDuplicatedEmptyDFG(dfg::CloudDFG)
+  error("_getDuplicatedEmptyDFG not implemented for $(typeof(dfg))")
+end
+
+## Additional overloads
+
+import DistributedFactorGraphs.Queries: gql_ls
+
+function listVariables(dfg::CloudDFG, 
+    regexFilter::Union{Nothing, Regex}=nothing; 
+    tags::Vector{Symbol}=Symbol[], 
+    solvable::Int=0 )
+#
+  vars = _gqlClient(cfg.userId, cfg.robotId, cfg.sessionId)
+  return Symbol.(sort(query(dfg.client, gql_ls(regexFilter, tags, solvable), "ls", vars)))
+end
+
+# function listVariables( dfg::CloudDFG, 
+#     typeFilter::Type{<:InferenceVariable}; 
+#     tags::Vector{Symbol}=Symbol[], 
+#     solvable::Int=0 )
+# #
+#   retlist::Vector{Symbol} = ls(dfg, typeFilter)
+#   0 < length(tags) || solvable != 0 ? intersect(retlist, ls(dfg, tags=tags, solvable=solvable)) : retlist
+# end
+
+# TODO: Optimize
+function listFactors(dfg::G, regexFilter::Union{Nothing, Regex}=nothing; tags::Vector{Symbol}=Symbol[], solvable::Int=0)::Vector{Symbol} where G <: AbstractDFG
+  return map(f -> f.label, getFactors(dfg, regexFilter, tags=tags, solvable=solvable))
+end
+
+# function listSolveKeys( variable::DFGVariable,
+#     filterSolveKeys::Union{Regex,Nothing}=nothing,
+#     skeys = Set{Symbol}() )
+#   #
+#   for ky in keys(getSolverDataDict(variable))
+#     push!(skeys, ky)
+#   end
+
+#   #filter the solveKey set with filterSolveKeys regex
+#   !isnothing(filterSolveKeys) && return filter!(k -> occursin(filterSolveKeys, string(k)), skeys)
+#   return skeys
+# end
+
+# listSolveKeys(  dfg::AbstractDFG, lbl::Symbol,
+#     filterSolveKeys::Union{Regex,Nothing}=nothing,
+#     skeys = Set{Symbol}() ) = listSolveKeys(getVariable(dfg, lbl), filterSolveKeys, skeys)
+# #
+
+# function listSolveKeys( dfg::AbstractDFG, 
+#     filterVariables::Union{Type{<:InferenceVariable},Regex, Nothing}=nothing;
+#     filterSolveKeys::Union{Regex,Nothing}=nothing,
+#     tags::Vector{Symbol}=Symbol[], 
+#     solvable::Int=0  )
+#   #
+#   skeys = Set{Symbol}()
+#   varList = listVariables(dfg, filterVariables, tags=tags, solvable=solvable)
+#   for vs in varList  #, ky in keys(getSolverDataDict(getVariable(dfg, vs)))
+#     listSolveKeys(dfg, vs, filterSolveKeys, skeys)
+#   end
+
+#   # done inside the loop
+#   # #filter the solveKey set with filterSolveKeys regex
+#   # !isnothing(filterSolveKeys) && return filter!(k -> occursin(filterSolveKeys, string(k)), skeys)
+
+#   return skeys
+# end
