@@ -14,7 +14,7 @@ token = ""
 cdfg = CloudDFG(token=token)
 
 # build a graph with 20 poses
-RoME.generateCanonicalFG_Beehive(20,graphinit=false, fg=cdfg)
+RoME.generateCanonicalFG_Beehive!(20,graphinit=false, fg=cdfg)
 
 
 
