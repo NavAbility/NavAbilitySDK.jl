@@ -241,7 +241,7 @@ end
 
 ## Additional overloads
 
-import DistributedFactorGraphs.Queries: gql_ls
+import NavAbilitySDK.Queries: gql_ls
 
 function listVariables(dfg::CloudDFG, 
     regexFilter::Union{Nothing, Regex}=nothing; 

@@ -20,6 +20,7 @@ include("common.jl")
 include("entities/NavAbilityAPIClient.jl")
 include("entities/CloudDFG.jl")
 include("services/NavAbilityAPIClient.jl")
+include("services/NavAbilityQueries.jl")
 include("services/CloudDFG.jl")
 
 # We also should export all the exposed functionality
