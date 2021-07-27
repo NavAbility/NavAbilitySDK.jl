@@ -62,5 +62,5 @@ Ref: https://grandstack.io/docs/graphql-filtering
 """
 function query(client::NavAbilityAPIClient, query::String, queryName::String, vars::Dict=Dict())
   response = client.gqlClient.Query(query, operationName=queryName, vars=vars)
-  data = _parseGqlResponse(response)
+  return _parseGqlResponse(response)
 end

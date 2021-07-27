@@ -241,16 +241,21 @@ end
 
 ## Additional overloads
 
-import NavAbilitySDK.Queries: gql_ls
+import NavAbilitySDK.Queries: gql_ls, gql_lsf
+import DistributedFactorGraphs: listVariables, listFactors
 
 function listVariables(dfg::CloudDFG, 
-    regexFilter::Union{Nothing, Regex}=nothing; 
-    tags::Vector{Symbol}=Symbol[], 
-    solvable::Int=0 )
+  regexFilter::Union{Nothing, Regex}=nothing; 
+  tags::Vector{Symbol}=Symbol[], 
+  solvable::Int=0 )
 #
-  vars = _gqlClient(cfg.userId, cfg.robotId, cfg.sessionId)
-  return Symbol.(sort(query(dfg.client, gql_ls(regexFilter, tags, solvable), "ls", vars)))
+  client = _gqlClient(dfg.userId, dfg.robotId, dfg.sessionId)
+  q = gql_ls(regexFilter=regexFilter, tags=tags, solvable=solvable)
+  @debug "DEBUG: Query = \r\n$q"
+  result = query(dfg.client, q, "ls", client)
+  return Symbol.(sort([v["label"] for v in result["VARIABLE"]]))
 end
+
 
 # function listVariables( dfg::CloudDFG, 
 #     typeFilter::Type{<:InferenceVariable}; 
@@ -261,9 +266,16 @@ end
 #   0 < length(tags) || solvable != 0 ? intersect(retlist, ls(dfg, tags=tags, solvable=solvable)) : retlist
 # end
 
-# TODO: Optimize
-function listFactors(dfg::G, regexFilter::Union{Nothing, Regex}=nothing; tags::Vector{Symbol}=Symbol[], solvable::Int=0)::Vector{Symbol} where G <: AbstractDFG
-  return map(f -> f.label, getFactors(dfg, regexFilter, tags=tags, solvable=solvable))
+function listFactors(dfg::CloudDFG, 
+  regexFilter::Union{Nothing, Regex}=nothing; 
+  tags::Vector{Symbol}=Symbol[], 
+  solvable::Int=0)::Vector{Symbol}
+  #
+  client = _gqlClient(dfg.userId, dfg.robotId, dfg.sessionId)
+  q = gql_lsf(regexFilter=regexFilter, tags=tags, solvable=solvable)
+  @debug "DEBUG: Query = \r\n$q"
+  result = query(dfg.client, q, "lsf", client)
+  return Symbol.(sort([v["label"] for v in result["FACTOR"]]))
 end
 
 # function listSolveKeys( variable::DFGVariable,
