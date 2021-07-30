@@ -105,9 +105,30 @@ end
     $(SIGNATURES)
 Get a DFGVariable from a DFG using its label.
 """
-function getVariable(dfg::CloudDFG, label::Union{Symbol, String})
-  error("getVariable not implemented for $(typeof(dfg))")
+function getVariable(dfg::CloudDFG, 
+  label::Union{Symbol, String})
+  #
+  client = _gqlClient(dfg.userId, dfg.robotId, dfg.sessionId)
+  q = gql_getVariable(String(label))
+  @debug "DEBUG: Query = \r\n$q"
+  results = query(dfg.client, q, "getVariable", client)["VARIABLE"]
+  length(results) == 0 && error("Variable '$label' cannot be found")
+  # Reformat the data so it can be unpacked
+  result = results[1]
+  result["timestamp"] = result["timestamp"]["formatted"]
+  # PPE's
+  for ppe in result["ppes"]
+    ppe["lastUpdatedTimestamp"] = ppe["lastUpdatedTimestamp"]["formatted"]
+  end
+  v = unpackVariable(cfg, result, unpackPPEs=false, unpackSolverData=false, unpackBigData=false)
+  packed = [unmarshal(PackedVariableNodeData, solveData) for solveData in result["solverData"]]
+  solverData = map(p -> unpackVariableNodeData(cfg, p), packed)
+  [(v.solverDataDict[sd.solveKey] = sd) for sd in solverData]
+  ppes = [unmarshal(MeanMaxPPE, p) for p in result["ppes"]]
+  [(v.ppeDict[p.solveKey] = p) for p in ppes]
+  return v
 end
+
 
 """
     $(SIGNATURES)
