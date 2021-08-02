@@ -16,8 +16,10 @@ end
 @testset "Get equivalence tests" begin
   for v in ls(cfg)
     @test getVariable(cfg, v) == getVariable(dfg, v)
+  end
   for f in lsf(cfg)
     @test getFactor(cfg, f) == getFactor(dfg, f)
+  end
 end
 
 
