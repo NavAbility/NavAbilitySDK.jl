@@ -113,18 +113,18 @@ function getVariable(dfg::CloudDFG,
   @debug "DEBUG: Query = \r\n$q"
   results = query(dfg.client, q, "getVariable", client)["VARIABLE"]
   length(results) == 0 && error("Variable '$label' cannot be found")
-  # Reformat the data so it can be unpacked
+  ##### Data Reformatting section - to be consolidated
   result = results[1]
   result["timestamp"] = result["timestamp"]["formatted"]
-  # PPE's
   for ppe in result["ppes"]
     ppe["lastUpdatedTimestamp"] = ppe["lastUpdatedTimestamp"]["formatted"]
   end
-  v = unpackVariable(cfg, result, unpackPPEs=false, unpackSolverData=false, unpackBigData=false)
   packed = [unmarshal(PackedVariableNodeData, solveData) for solveData in result["solverData"]]
-  solverData = map(p -> unpackVariableNodeData(cfg, p), packed)
-  [(v.solverDataDict[sd.solveKey] = sd) for sd in solverData]
+  solverData = map(p -> unpackVariableNodeData(dfg, p), packed)
   ppes = [unmarshal(MeanMaxPPE, p) for p in result["ppes"]]
+  ##### Data Reformatting section - to be consolidated
+  v = unpackVariable(dfg, result, unpackPPEs=false, unpackSolverData=false, unpackBigData=false)
+  [(v.solverDataDict[sd.solveKey] = sd) for sd in solverData]
   [(v.ppeDict[p.solveKey] = p) for p in ppes]
   return v
 end
@@ -134,9 +134,20 @@ end
     $(SIGNATURES)
 Get a DFGFactor from a DFG using its label.
 """
-function getFactor(dfg::CloudDFG, label::Union{Symbol, String})
-  error("getFactor not implemented for $(typeof(dfg))")
+function getFactor(dfg::CloudDFG, 
+  label::Union{Symbol, String})
+  #
+  client = _gqlClient(dfg.userId, dfg.robotId, dfg.sessionId)
+  q = gql_getFactor(String(label))
+  @debug "DEBUG: Query = \r\n$q"
+  results = query(dfg.client, q, "getFactor", client)["FACTOR"]
+  length(results) == 0 && error("Factor '$label' cannot be found")
+  # We have a result, reformat the data so it can be unpacked
+  result = results[1]
+  result["timestamp"] = result["timestamp"]["formatted"]
+  return unpackFactor(dfg, result)
 end
+
 
 function Base.getindex(dfg::AbstractDFG, lbl::Union{Symbol, String})
   if isVariable(dfg, lbl)
@@ -261,10 +272,7 @@ function _getDuplicatedEmptyDFG(dfg::CloudDFG)
 end
 
 ## Additional overloads
-
-import NavAbilitySDK.Queries: gql_ls, gql_lsf
-import DistributedFactorGraphs: listVariables, listFactors
-
+  
 function listVariables(dfg::CloudDFG, 
   regexFilter::Union{Nothing, Regex}=nothing; 
   tags::Vector{Symbol}=Symbol[], 

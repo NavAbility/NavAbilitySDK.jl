@@ -4,6 +4,7 @@ mutable struct CloudDFG{T <: AbstractParams} <: AbstractDFG{T}
   client::NavAbilityAPIClient
   # These are standard across all DFG's. I think you might 
   # want to change this, which is not a problem at all.
+  solverParams::T # Solver parameters
   userId::String
   robotId::String
   sessionId::String
@@ -13,15 +14,16 @@ end
 # default constructor helper
 function CloudDFG(; host::String="https://api.$(nvaEnv()).navability.io/graphql", 
           token::Union{Nothing, <:AbstractString}=nothing,
+          solverParams::T=NoSolverParams(),
           robotId::String="DemoRobot",
-          sessionId::String="Session_$(string(uuid4())[1:6])")
+          sessionId::String="Session_$(string(uuid4())[1:6])") where T
   if token === nothing
     token = login()
   end
   claims = extractJwtClaims(token)
   !haskey(claims, "cognito:username") && error("Token does not have cognito:username claim")  
   userId = claims["cognito:username"]
-  return CloudDFG{NoSolverParams}(NavAbilityAPIClient(;host=host, token=token), userId, robotId, sessionId, "CloudDFG connection to $(host) and data from $(userId):$(robotId):$(sessionId)")
+  return CloudDFG{T}(NavAbilityAPIClient(;host=host, token=token), solverParams, userId, robotId, sessionId, "CloudDFG connection to $(host) and data from $(userId):$(robotId):$(sessionId)")
 end 
 
 function Base.show(io::IO, dfg::CloudDFG)

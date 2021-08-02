@@ -1,6 +1,7 @@
 module NavAbilitySDK
 
 using JSON
+using Unmarshal
 using UUIDs
 using Base64
 using DistributedFactorGraphs
@@ -14,7 +15,11 @@ import DistributedFactorGraphs:
   NoSolverParams, 
   addVariable!,
   addFactor!,
-  copyGraph!
+  copyGraph!,
+  getVariable,
+  getFactor,
+  listVariables,
+  listFactors
 
 include("common.jl")
 include("entities/NavAbilityAPIClient.jl")
@@ -22,6 +27,11 @@ include("entities/CloudDFG.jl")
 include("services/NavAbilityAPIClient.jl")
 include("services/NavAbilityQueries.jl")
 include("services/CloudDFG.jl")
+
+import NavAbilitySDK.Queries: gql_ls, 
+  gql_lsf, 
+  gql_getVariable, 
+  gql_getFactor
 
 # We also should export all the exposed functionality
 export
