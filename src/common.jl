@@ -32,8 +32,8 @@ end
 Gets the NavAbility Cognito client.
 """
 function nvaCognitoClient()
-  nvaEnv() == "d1" && return "t94ojg6s31m6rdl9qlru1n76p"
-  return "t94ojg6s31m6rdl9qlru1n76p"
+  nvaEnv() == "d1" && return "dh4fic6b3ffiek9sg5i117qme"
+  return "dh4fic6b3ffiek9sg5i117qme"
 end
 
 """
