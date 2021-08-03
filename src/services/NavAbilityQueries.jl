@@ -29,17 +29,22 @@ gql_lsf(;regexFilter::Union{Nothing, Regex}=nothing,
     tags::Vector{Symbol}=Symbol[], 
     solvable::Int=0) = gql_list("lsf", "FACTOR", regexFilter=regexFilter, tags=tags, solvable=solvable)
 
-gql_getVariable(label::String) = """
-  query getVariable(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!) {
+gql_getVariables(label::String = ""; regexFilter::Union{Nothing, Regex}=nothing,
+    tags::Vector{Symbol}=Symbol[], 
+    solvable::Int=0) = """
+  query getVariables(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!) {
     VARIABLE(filter: {
-          label: "$label",
+          $(label != "" ? "label: \"$label\"," : "")
           session: {
             id: \$sessionId, 
             robot: {
               id: \$robotId, 
                 user: {
                 id: \$userId
-            }}}
+            }}},
+            $(tags != [] ? "tags_contains: [\"" * join(String.(tags), "\", \"") * "\"]," : "")
+            $(regexFilter !== nothing ? "label_regexp: \""*regexFilter.pattern*"\"," : "")
+            $(solvable > 0 ? "solvable_gte: "*string(solvable) : "")
           }) 
     {
       label
@@ -83,18 +88,23 @@ gql_getVariable(label::String) = """
   }
 """
 
-gql_getFactor(label::String) = """
-  query getFactor(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!) {
+gql_getFactors(label::String=""; regexFilter::Union{Nothing, Regex}=nothing,
+    tags::Vector{Symbol}=Symbol[], 
+    solvable::Int=0) = """
+  query getFactors(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!) {
     FACTOR(filter: {
-          label: "$label",
-          session: {
-            id: \$sessionId, 
-            robot: {
-              id: \$robotId, 
-                user: {
-                id: \$userId
-            }}}
-          }) 
+      $(label != "" ? "label: \"$label\"," : "")
+      session: {
+        id: \$sessionId, 
+        robot: {
+          id: \$robotId, 
+            user: {
+            id: \$userId
+        }}},
+        $(tags != [] ? "tags_contains: [\"" * join(String.(tags), "\", \"") * "\"]," : "")
+        $(regexFilter !== nothing ? "label_regexp: \""*regexFilter.pattern*"\"," : "")
+        $(solvable > 0 ? "solvable_gte: "*string(solvable) : "")
+        }) 
     {
       label
       timestamp {formatted}
