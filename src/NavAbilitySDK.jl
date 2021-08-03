@@ -17,7 +17,9 @@ import DistributedFactorGraphs:
   addFactor!,
   copyGraph!,
   getVariable,
+  getVariables,
   getFactor,
+  getFactors,
   listVariables,
   listFactors
 
@@ -28,10 +30,11 @@ include("services/NavAbilityAPIClient.jl")
 include("services/NavAbilityQueries.jl")
 include("services/CloudDFG.jl")
 
-import NavAbilitySDK.Queries: gql_ls, 
+import NavAbilitySDK.Queries: 
+  gql_ls, 
   gql_lsf, 
-  gql_getVariable, 
-  gql_getFactor
+  gql_getVariables, 
+  gql_getFactors
 
 # We also should export all the exposed functionality
 export

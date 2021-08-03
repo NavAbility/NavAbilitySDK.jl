@@ -109,9 +109,9 @@ function getVariable(dfg::CloudDFG,
   label::Union{Symbol, String})
   #
   client = _gqlClient(dfg.userId, dfg.robotId, dfg.sessionId)
-  q = gql_getVariable(String(label))
+  q = gql_getVariables(String(label))
   @debug "DEBUG: Query = \r\n$q"
-  results = query(dfg.client, q, "getVariable", client)["VARIABLE"]
+  results = query(dfg.client, q, "getVariables", client)["VARIABLE"]
   length(results) == 0 && error("Variable '$label' cannot be found")
   ##### Data Reformatting section - to be consolidated
   result = results[1]
@@ -138,9 +138,9 @@ function getFactor(dfg::CloudDFG,
   label::Union{Symbol, String})
   #
   client = _gqlClient(dfg.userId, dfg.robotId, dfg.sessionId)
-  q = gql_getFactor(String(label))
+  q = gql_getFactors(String(label))
   @debug "DEBUG: Query = \r\n$q"
-  results = query(dfg.client, q, "getFactor", client)["FACTOR"]
+  results = query(dfg.client, q, "getFactors", client)["FACTOR"]
   length(results) == 0 && error("Factor '$label' cannot be found")
   # We have a result, reformat the data so it can be unpacked
   result = results[1]
@@ -197,7 +197,29 @@ Optionally specify a label regular expression to retrieves a subset of the varia
 Tags is a list of any tags that a node must have (at least one match).
 """
 function getVariables(dfg::CloudDFG, regexFilter::Union{Nothing, Regex}=nothing; tags::Vector{Symbol}=Symbol[], solvable::Int=0)
-  error("getVariables not implemented for $(typeof(dfg))")
+  #
+  client = _gqlClient(dfg.userId, dfg.robotId, dfg.sessionId)
+  q = gql_getVariables(; regexFilter=regexFilter, tags=tags, solvable=solvable)
+  @debug "DEBUG: Query = \r\n$q"
+  results = query(dfg.client, q, "getVariables", client)["VARIABLE"]
+  length(results) == 0 && error("Variable '$label' cannot be found")
+  variables = DFGVariable[]
+  for v in results
+    ##### Data Reformatting section - to be consolidated
+    v["timestamp"] = v["timestamp"]["formatted"]
+    for ppe in v["ppes"]
+      ppe["lastUpdatedTimestamp"] = ppe["lastUpdatedTimestamp"]["formatted"]
+    end
+    packed = [unmarshal(PackedVariableNodeData, solveData) for solveData in v["solverData"]]
+    solverData = map(p -> unpackVariableNodeData(dfg, p), packed)
+    ppes = [unmarshal(MeanMaxPPE, p) for p in v["ppes"]]
+    ##### Data Reformatting section - to be consolidated
+    var = unpackVariable(dfg, v, unpackPPEs=false, unpackSolverData=false, unpackBigData=false)
+    [(var.solverDataDict[sd.solveKey] = sd) for sd in solverData]
+    [(var.ppeDict[p.solveKey] = p) for p in ppes]
+    push!(variables, var)
+  end
+  return sort!(variables, by=v->v.label)
 end
 
 """
@@ -205,8 +227,22 @@ end
 List the DFGFactors in the DFG.
 Optionally specify a label regular expression to retrieves a subset of the factors.
 """
-function getFactors(dfg::CloudDFG, regexFilter::Union{Nothing, Regex}=nothing; tags::Vector{Symbol}=Symbol[], solvable::Int=0)
-  error("getFactors not implemented for $(typeof(dfg))")
+function getFactors(dfg::CloudDFG, 
+    regexFilter::Union{Nothing, Regex}=nothing; 
+    tags::Vector{Symbol}=Symbol[], 
+    solvable::Int=0)
+  #
+  client = _gqlClient(dfg.userId, dfg.robotId, dfg.sessionId)
+  q = gql_getFactors(; regexFilter=regexFilter, tags=tags, solvable=solvable)
+  @debug "DEBUG: Query = \r\n$q"
+  results = query(dfg.client, q, "getFactors", client)["FACTOR"]
+  # We have a result, reformat the data so it can be unpacked
+  factors = DFGFactor[]
+  for f in results
+    f["timestamp"] = f["timestamp"]["formatted"]
+    push!(factors, unpackFactor(dfg, f))
+  end
+  return sort!(factors, by=f->f.label)
 end
 
 

@@ -13,7 +13,7 @@ function setup()
   v1 = addVariable!(lfg, :x1, Pose2)
   v2 = addVariable!(lfg, :x2, Pose2)
   v3 = addVariable!(lfg, :l1, Pose2, tags=[:LANDMARK])
-  v4 = addVariable!(lfg, :x4, Pose2)
+  v4 = addVariable!(lfg, :x3, Pose2)
   # TODO: https://github.com/NavAbility/NavAbilitySDK.jl/issues/9
   # addData!(FileDataEntry, lfg, :x4, :data, "/tmp", UInt8[0,0,0,0])
 
