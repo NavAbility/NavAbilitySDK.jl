@@ -196,7 +196,10 @@ List the DFGVariables in the DFG.
 Optionally specify a label regular expression to retrieves a subset of the variables.
 Tags is a list of any tags that a node must have (at least one match).
 """
-function getVariables(dfg::CloudDFG, regexFilter::Union{Nothing, Regex}=nothing; tags::Vector{Symbol}=Symbol[], solvable::Int=0)
+function getVariables(dfg::CloudDFG, 
+    regexFilter::Union{Nothing, Regex}=nothing; 
+    tags::Vector{Symbol}=Symbol[], 
+    solvable::Int=0)
   #
   client = _gqlClient(dfg.userId, dfg.robotId, dfg.sessionId)
   q = gql_getVariables(; regexFilter=regexFilter, tags=tags, solvable=solvable)

@@ -1,5 +1,96 @@
 module Queries
 
+## Fields: Variables 
+fieldsVariable() = """
+    label
+    timestamp {formatted}
+    variableType
+    smallData
+    solvable
+    tags
+    _version
+    _id
+    ppes {
+      solveKey
+      suggested
+      max
+      mean
+      lastUpdatedTimestamp {formatted}
+    }
+    solverData 
+    {
+      solveKey
+      BayesNetOutVertIDs
+      BayesNetVertID
+      dimIDs
+      dimbw
+      dims
+      dimval
+      dontmargin
+      eliminated
+      inferdim
+      initialized
+      ismargin
+      separator
+      solveInProgress
+      solvedCount
+      variableType
+      vecbw
+      vecval
+      _version
+    }
+"""
+
+fieldsVariableSummary() = """
+    label
+    timestamp {formatted}
+    tags
+    ppes {
+      solveKey
+      suggested
+      max
+      mean
+      lastUpdatedTimestamp {formatted}
+    }
+    variableType
+    _version
+    _id
+"""
+
+fieldsVariableSkeleton() = """
+    label
+    tags
+"""
+
+## Fields: Factors
+
+fieldsFactor() = """
+    label
+    timestamp {formatted}
+    fnctype
+    tags
+    solvable
+    data
+    _variableOrderSymbols
+    _version
+"""
+
+fieldsFactorSummary() = """
+    label
+    timestamp {formatted}
+    tags
+    _variableOrderSymbols
+    _version
+"""
+
+fieldsFactorSkeleton() = """
+    label
+    tags
+    _variableOrderSymbols
+"""
+
+## Queries
+
 gql_list(query_name::String, type::String;regexFilter::Union{Nothing, Regex}=nothing,
     tags::Vector{Symbol}=Symbol[], 
     solvable::Int=0) = """
@@ -29,9 +120,11 @@ gql_lsf(;regexFilter::Union{Nothing, Regex}=nothing,
     tags::Vector{Symbol}=Symbol[], 
     solvable::Int=0) = gql_list("lsf", "FACTOR", regexFilter=regexFilter, tags=tags, solvable=solvable)
 
+
 gql_getVariables(label::String = ""; regexFilter::Union{Nothing, Regex}=nothing,
     tags::Vector{Symbol}=Symbol[], 
-    solvable::Int=0) = """
+    solvable::Int=0,
+    fields=fieldsVariable()) = """
   query getVariables(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!) {
     VARIABLE(filter: {
           $(label != "" ? "label: \"$label\"," : "")
@@ -47,50 +140,15 @@ gql_getVariables(label::String = ""; regexFilter::Union{Nothing, Regex}=nothing,
             $(solvable > 0 ? "solvable_gte: "*string(solvable) : "")
           }) 
     {
-      label
-      timestamp {formatted}
-      variableType
-      smallData
-      solvable
-      tags
-      _version
-      _id
-      ppes {
-        solveKey
-        suggested
-        max
-        mean
-        lastUpdatedTimestamp {formatted}
-      }
-      solverData 
-      {
-        solveKey
-        BayesNetOutVertIDs
-        BayesNetVertID
-        dimIDs
-        dimbw
-        dims
-        dimval
-        dontmargin
-        eliminated
-        inferdim
-        initialized
-        ismargin
-        separator
-        solveInProgress
-        solvedCount
-        variableType
-        vecbw
-        vecval
-        _version
-      }
+$fields
     }
   }
 """
 
 gql_getFactors(label::String=""; regexFilter::Union{Nothing, Regex}=nothing,
     tags::Vector{Symbol}=Symbol[], 
-    solvable::Int=0) = """
+    solvable::Int=0,
+    fields=fieldsFactor()) = """
   query getFactors(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!) {
     FACTOR(filter: {
       $(label != "" ? "label: \"$label\"," : "")
@@ -106,14 +164,7 @@ gql_getFactors(label::String=""; regexFilter::Union{Nothing, Regex}=nothing,
         $(solvable > 0 ? "solvable_gte: "*string(solvable) : "")
         }) 
     {
-      label
-      timestamp {formatted}
-      fnctype
-      tags
-      solvable
-      data
-      _variableOrderSymbols
-      _version
+$fields
     }
   }
 """
