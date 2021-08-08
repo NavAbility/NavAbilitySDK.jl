@@ -2,18 +2,21 @@ using DistributedFactorGraphs, IncrementalInference, RoME
 using NavAbilitySDK
 using Test
 
-include("setup.jl")
+include("test/setup.jl")
 cfg, dfg = setup()
 
 # Need to wait a bit here for this to finish
 # TODO: Monitor queue to check that it finished.
 
-# Listing tests
+# Listing and existence tests
 @testset "Listing tests" begin
   @test setdiff(ls(cfg), ls(dfg)) == []
   @test setdiff(lsf(cfg), lsf(dfg)) == []
   @test setdiff(listFactors(cfg, r"x0.*"), listFactors(dfg, r"x0.*")) == []
   @test setdiff(listVariables(cfg, r"x.*"; solvable=1), listVariables(dfg, r"x.*"; solvable=1)) == []
+  @test all([exists(cfg, v) for v in ls(cfg)])
+  @test all([exists(cfg, f) for f in lsf(cfg)])
+  @test !any([exists(cfg, f) for f in [:whut, :cheese, :whine]])
 end
 
 import Base: ~

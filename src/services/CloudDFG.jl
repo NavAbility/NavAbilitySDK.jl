@@ -34,42 +34,43 @@ function copyGraph!(destDFG::CloudDFG,
                     overwriteDest::Bool=false,
                     deepcopyNodes::Bool=false,
                     verbose::Bool = true)
-  # Split into variables and factors
+
+  # Get a list of the variables+factors in the destination graph
+  client = _gqlClient(destDFG.userId, destDFG.robotId, destDFG.sessionId)
+  results = query(destDFG.client, gql_getNodes(), "getNodes", client)
+  @show existingVariables = Symbol.(results["VARIABLE"])
+  @show existingFactors = Symbol.(results["FACTOR"])
+
+  if !overwriteDest
+    # Only get the stuff that doesn't exist
+    variableLabels = setdiff(variableLabels, existingVariables)
+    factorLabels = setdiff(factorLabels, existingFactors)
+  end
+
   sourceVariables = map(vId->getVariable(sourceDFG, vId), variableLabels)
   sourceFactors = map(fId->getFactor(sourceDFG, fId), factorLabels)
-
   # Now we have to add all variables first,
   for variable in sourceVariables
     variableCopy = deepcopyNodes ? deepcopy(variable) : variable
-    if !exists(destDFG, variable)
-        addVariable!(destDFG, variableCopy)
-    elseif overwriteDest
-        updateVariable!(destDFG, variableCopy)
-    else
-        error("Variable $(variable.label) already exists in destination graph!")
-    end
+    addVariable!(destDFG, variableCopy)
   end
+
+  existingVariables = union(variableLabels, existingVariables)
   # And then all factors to the destDFG.
   for factor in sourceFactors
     # Get the original factor variables (we need them to create it)
-    sourceFactorVariableIds = getNeighbors(sourceDFG, factor)
+    sourceFactorVariableIds = getNeighbors(sourceDFG, factor.label)
     # Find the labels and associated variables in our new subgraph
     factVariableIds = Symbol[]
     for variable in sourceFactorVariableIds
-      if exists(destDFG, variable)
+      if variable in existingVariables
           push!(factVariableIds, variable)
       end
     end
     # Only if we have all of them should we add it (otherwise strange things may happen on evaluation)
     if length(factVariableIds) == length(sourceFactorVariableIds)
       factorCopy = deepcopyNodes ? deepcopy(factor) : factor
-      if !exists(destDFG, factor)
-          addFactor!(destDFG, factorCopy)
-      elseif overwriteDest
-          updateFactor!(destDFG, factorCopy)
-      else
-          error("Factor $(factor.label) already exists in destination graph!")
-      end
+      addFactor!(destDFG, factorCopy)
     elseif verbose
       @warn "Factor $(factor.label) will be an orphan in the destination graph, and therefore not added."
     end
@@ -94,11 +95,15 @@ end
 True if the variable or factor exists in the graph.
 """
 function exists(dfg::CloudDFG, node::DFGNode)
-  error("exists not implemented for $(typeof(dfg))")
+  return exists(dfg, node.label)
 end
 
 function exists(dfg::CloudDFG, label::Symbol)
-  error("exists not implemented for $(typeof(dfg))")
+  client = _gqlClient(dfg.userId, dfg.robotId, dfg.sessionId)
+  q = gql_getNodes(String(label))
+  @debug "DEBUG: Query = \r\n$q"
+  results = query(dfg.client, q, "getNodes", client)
+  return length(results["VARIABLE"]) != 0 || length(results["FACTOR"]) != 0
 end
 
 """
@@ -262,7 +267,11 @@ Checks whether it both exists in the graph and is a variable.
 (If you rather want a quick for type, just do node isa DFGVariable)
 """
 function isVariable(dfg::CloudDFG, sym::Symbol)
-  error("isVariable not implemented for $(typeof(dfg))")
+  client = _gqlClient(dfg.userId, dfg.robotId, dfg.sessionId)
+  q = gql_getNodes(String(sym))
+  @debug "DEBUG: Query = \r\n$q"
+  results = query(dfg.client, q, "getNodes", client)
+  return length(results["VARIABLE"]) != 0
 end
 
 """
@@ -273,7 +282,11 @@ Checks whether it both exists in the graph and is a factor.
 (If you rather want a quicker for type, just do node isa DFGFactor)
 """
 function isFactor(dfg::CloudDFG, sym::Symbol)
-  error("isFactor not implemented for $(typeof(dfg))")
+  client = _gqlClient(dfg.userId, dfg.robotId, dfg.sessionId)
+  q = gql_getNodes(String(sym))
+  @debug "DEBUG: Query = \r\n$q"
+  results = query(dfg.client, q, "getNodes", client)
+  return length(results["FACTOR"]) != 0
 end
 
 

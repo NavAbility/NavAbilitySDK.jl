@@ -21,7 +21,9 @@ import DistributedFactorGraphs:
   getFactor,
   getFactors,
   listVariables,
-  listFactors
+  listFactors,
+  exists,
+  getNeighbors
 
 include("common.jl")
 include("entities/NavAbilityAPIClient.jl")
@@ -34,7 +36,8 @@ import NavAbilitySDK.Queries:
   gql_ls, 
   gql_lsf, 
   gql_getVariables, 
-  gql_getFactors
+  gql_getFactors,
+  gql_getNodes
 
 # We also should export all the exposed functionality
 export
