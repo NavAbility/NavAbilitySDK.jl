@@ -153,17 +153,6 @@ function getFactor(dfg::CloudDFG,
   return unpackFactor(dfg, result)
 end
 
-
-function Base.getindex(dfg::AbstractDFG, lbl::Union{Symbol, String})
-  if isVariable(dfg, lbl)
-      getVariable(dfg, lbl)
-  elseif isFactor(dfg, lbl)
-      getFactor(dfg, lbl)
-  else
-      error("Cannot find $lbl in this $(typeof(dfg))")
-  end
-end
-
 """
     $(SIGNATURES)
 Update a complete DFGVariable in the DFG.
