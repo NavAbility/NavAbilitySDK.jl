@@ -38,8 +38,8 @@ function copyGraph!(destDFG::CloudDFG,
   # Get a list of the variables+factors in the destination graph
   client = _gqlClient(destDFG.userId, destDFG.robotId, destDFG.sessionId)
   results = query(destDFG.client, gql_getNodes(), "getNodes", client)
-  @show existingVariables = Symbol.(results["VARIABLE"])
-  @show existingFactors = Symbol.(results["FACTOR"])
+  existingVariables = Symbol.(results["VARIABLE"])
+  existingFactors = Symbol.(results["FACTOR"])
 
   if !overwriteDest
     # Only get the stuff that doesn't exist
