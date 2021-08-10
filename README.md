@@ -88,6 +88,36 @@ result = addFactor!(cfg, x0x1f1)
 
 > Note: At the moment the RoME.jl graph generators cannot be used directly (e.g. ```hex = generateCanonicalFG_Hexagonal(;fg=CloudDFG(solverParams=SolverParams()))```) because they expect synchronous behavior. We'll look at supporting these in the future, however locally building graphs and pushing them in bulk into the cloud is more efficient so supporting this is deprioritized for the moment.
 
+## Checking for Task Completion
+
+Until we implement the event and subscription API, you will need to poll data to confirm that it's been imported. Here are a few simple patterns to do this.
+
+To check the data copy from `dfg` to `cfg` has completed:
+
+```julia
+begin
+  while !(setdiff(ls(dfg), ls(cfg)) == []) 
+    @info "Waiting for variables: $(setdiff(ls(dfg), ls(cfg)))"
+    sleep(1)
+  end
+  while !(setdiff(lsf(dfg), lsf(cfg)) == []) 
+    @info "Waiting for factors: $(setdiff(lsf(dfg), lsf(cfg)))"
+    sleep(1)
+  end
+end
+```
+
+To check whether a graph has solved at least once on the `:default` key:
+
+```julia
+begin
+  while !all([haskey(getVariable(cfg, v).ppeDict, :default) for v in ls(cfg)]) 
+    sleep(1); 
+    @info "Waiting for it to solve"; 
+  end
+end
+```
+
 ## Querying Data
 
 Data can be queried as though the data is local using `getVariable`/`getVariables` and `getFactor`/`getFactors`:

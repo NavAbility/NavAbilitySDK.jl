@@ -18,9 +18,12 @@ cfg, dfg = setup()
   end
 end
 
-# @info "Time to it to solve:"
+# @info "Check (and time) the solving:"
 # @time begin
-#   while !all([haskey(getVariable(cfg, v).ppeDict, :default) for v in ls(cfg)]) sleep(1); @info "Waiting for it to solve"; end
+#   while !all([haskey(getVariable(cfg, v).ppeDict, :default) for v in ls(cfg)]) 
+#     sleep(1); 
+#     @info "Waiting for it to solve"; 
+#   end
 # end
 
 
