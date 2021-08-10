@@ -5,7 +5,7 @@ The NavAbility SDK for Julia.
 
 This package is not currently registered. To install run the following:
 
-```Pkg.develop(url="https://github.com/NavAbility/NavAbilitySDK.jl.git")```
+```Pkg.add(url="https://github.com/NavAbility/NavAbilitySDK.jl.git")```
 
 Or:
 
