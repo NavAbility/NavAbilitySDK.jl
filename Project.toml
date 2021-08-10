@@ -16,9 +16,12 @@ UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 Unmarshal = "cbff2730-442d-58d7-89d1-8e530c41eb02"
 
 [compat]
+Caesar ="0.9.0"
 Diana = "0.2"
 DistributedFactorGraphs = "0.12"
 julia = "1.4"
+IncrementalInference = "0.21.4"
+RoME = "0.13.0"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
