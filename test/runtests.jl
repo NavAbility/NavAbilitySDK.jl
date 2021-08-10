@@ -2,16 +2,33 @@ using DistributedFactorGraphs, IncrementalInference, RoME
 using NavAbilitySDK
 using Test
 
-include("test/setup.jl")
+# Build a standard graph using a generator
+include("setup.jl")
 cfg, dfg = setup()
 
-# Need to wait a bit here for this to finish
-# TODO: Monitor queue to check that it finished.
+# Wait for the graph to be built out.
+@time begin
+  while !(setdiff(ls(dfg), ls(cfg)) == []) 
+    @info "Waiting for variables: $(setdiff(ls(dfg), ls(cfg)))"
+    sleep(1)
+  end
+  while !(setdiff(lsf(dfg), lsf(cfg)) == []) 
+    @info "Waiting for factors: $(setdiff(lsf(dfg), lsf(cfg)))"
+    sleep(1)
+  end
+end
+
+# @info "Time to it to solve:"
+# @time begin
+#   while !all([haskey(getVariable(cfg, v).ppeDict, :default) for v in ls(cfg)]) sleep(1); @info "Waiting for it to solve"; end
+# end
+
 
 # Listing and existence tests
 @testset "Listing tests" begin
   @test setdiff(ls(cfg), ls(dfg)) == []
   @test setdiff(lsf(cfg), lsf(dfg)) == []
+  @test setdiff(listVariables(cfg, r"x\d"), listVariables(dfg, r"x\d")) == []
   @test setdiff(listFactors(cfg, r"x0.*"), listFactors(dfg, r"x0.*")) == []
   @test setdiff(listVariables(cfg, r"x.*"; solvable=1), listVariables(dfg, r"x.*"; solvable=1)) == []
   @test all([exists(cfg, v) for v in ls(cfg)])

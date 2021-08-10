@@ -86,7 +86,7 @@ result = addFactor!(cfg, x0f1)
 result = addFactor!(cfg, x0x1f1)
 ```
 
-> Note: At the moment the RoME.jl graph generators cannot be used directly (e.g. ```hex = generateCanonicalFG_Hexagonal(;fg=CloudDFG(solverParams=SolverParams()))```) because they expect synchrnous behavior. We'll look at supporting these in the future, however locally buildin graphs and pushing them in bulk into the cloud is more efficient so supporting this is deprioritized for the moment.
+> Note: At the moment the RoME.jl graph generators cannot be used directly (e.g. ```hex = generateCanonicalFG_Hexagonal(;fg=CloudDFG(solverParams=SolverParams()))```) because they expect synchronous behavior. We'll look at supporting these in the future, however locally building graphs and pushing them in bulk into the cloud is more efficient so supporting this is deprioritized for the moment.
 
 ## Querying Data
 

@@ -23,7 +23,17 @@ function setup()
   copyGraph!(cfg, hex, ls(hex), lsf(hex))
   
   @info "Waiting a few seconds so it's all imported"
-  sleep(20)
+
+  @time begin
+    while !(setdiff(ls(hex), ls(cfg)) == []) 
+      @info "Waiting for variables: $(setdiff(ls(hex), ls(cfg)))"
+      sleep(1)
+    end
+    while !(setdiff(lsf(hex), lsf(cfg)) == []) 
+      @info "Waiting for factors: $(setdiff(lsf(hex), lsf(cfg)))"
+      sleep(1)
+    end
+  end
   @info "Setup complete!"
 
   return cfg, hex
