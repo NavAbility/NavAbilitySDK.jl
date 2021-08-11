@@ -23,7 +23,9 @@ import DistributedFactorGraphs:
   listVariables,
   listFactors,
   exists,
-  getNeighbors
+  getNeighbors,
+  solveSession!,
+  solveFederated!
 
 include("common.jl")
 include("entities/NavAbilityAPIClient.jl")
@@ -43,6 +45,7 @@ import NavAbilitySDK.Queries:
 export
   CloudDFG,
   NavAbilityAPIClient,
+  ScopeInput,
   login
 
 ### ---- Everything below this line should be in other files ---- ###
