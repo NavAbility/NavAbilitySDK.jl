@@ -43,7 +43,10 @@ import NavAbilitySDK.Queries:
 export
   CloudDFG,
   NavAbilityAPIClient,
-  login
+  ScopeInput,
+  login,
+  solveSession!,
+  solveFederated!
 
 ### ---- Everything below this line should be in other files ---- ###
 

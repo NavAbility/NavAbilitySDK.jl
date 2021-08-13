@@ -3,20 +3,24 @@ using NavAbilitySDK
 using Test
 
 # Build a standard graph using a generator
-include("setup.jl")
+include("test/setup.jl")
 cfg, dfg = setup()
 
 # Wait for the graph to be built out.
-@time begin
-  while !(setdiff(ls(dfg), ls(cfg)) == []) 
-    @info "Waiting for variables: $(setdiff(ls(dfg), ls(cfg)))"
-    sleep(1)
-  end
-  while !(setdiff(lsf(dfg), lsf(cfg)) == []) 
-    @info "Waiting for factors: $(setdiff(lsf(dfg), lsf(cfg)))"
-    sleep(1)
+function waitForCopyToComplete(sourceFg, destinationFg)
+  @time begin
+    while !(setdiff(ls(sourceFg), ls(destinationFg)) == []) 
+      @info "Waiting for variables: $(setdiff(ls(sourceFg), ls(destinationFg)))"
+      sleep(1)
+    end
+    while !(setdiff(lsf(sourceFg), lsf(destinationFg)) == []) 
+      @info "Waiting for factors: $(setdiff(lsf(sourceFg), lsf(destinationFg)))"
+      sleep(1)
+    end
   end
 end
+
+waitForCopyToComplete(dfg, cfg)
 
 # @info "Check (and time) the solving:"
 # @time begin
@@ -74,4 +78,19 @@ end
 
   @test getVariables(cfg) == [getVariable(cfg, l) for l in ls(cfg)]
   @test getFactors(cfg) == [getFactor(cfg, l) for l in lsf(cfg)]
+end
+
+@testset "Solving tests" begin
+  # Request a resolve
+  @test solveSession!(cfg) !== nothing
+
+  # Create a copy of the graph 
+  cfg2 = deepcopy(cfg);
+  cfg2.sessionId *= "_session2"
+  copyGraph!(cfg2, dfg, ls(dfg), lsf(dfg))
+  waitForCopyToComplete(dfg, cfg2)
+
+  # Request a federated solve
+  scopeInput = ScopeInput([], [cfg.userId], [cfg.robotId], [cfg.sessionId, cfg2.sessionId])
+  @test solveFederated!(cfg, scopeInput) !== nothing
 end
