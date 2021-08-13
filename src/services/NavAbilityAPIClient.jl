@@ -32,7 +32,7 @@ function _parseGqlResponseExpectVerb(response, responseVerb::String)
 end
 
 # TODO: If we have time make PackedDFGVariable and PackedDFGFactor in DFG.
-# TODO: What does addVariable return here? (the packed JSON/Dict of DFGVariable)
+# Returns the task ID.
 function addVariable!(client::NavAbilityAPIClient, userId::String, robotId::String, sessionId::String, packedVariable::PackedDFGVariableTemp)
   vars = Dict(
     "variable" => Dict(
@@ -53,6 +53,28 @@ function addFactor!(client::NavAbilityAPIClient, userId::String, robotId::String
   @debug "GraphQL payload: $(vars)"
   response = client.gqlClient.Query(MUTATION_ADDFACTOR, operationName="addFactor", vars=vars)
   return _parseGqlResponseExpectVerb(response, "addFactor")
+end
+
+"""
+  @(SIGNATURES)
+Request that the solver re-solve a session.
+"""
+function solveSession!(client::NavAbilityAPIClient, userId::String, robotId::String, sessionId::String)
+  vars = Dict("client" => _gqlClient(userId, robotId, sessionId))
+  @debug "GraphQL payload: $(vars)"
+  response = client.gqlClient.Query(MUTATION_SOLVESESSION, operationName="solveSession", vars=vars)
+  return _parseGqlResponseExpectVerb(response, "solveSession")
+end
+
+"""
+  @(SIGNATURES)
+Request that the solver perform a federated solve.
+"""
+function solveFederated!(client::NavAbilityAPIClient, solveScope::ScopeInput)
+  vars = Dict("scope" => solveScope)
+  @debug "GraphQL payload: $(vars)"
+  response = client.gqlClient.Query(MUTATION_SOLVEFEDERATED, operationName="solveFederated", vars=vars)
+  return _parseGqlResponseExpectVerb(response, "solveFederated")
 end
 
 """

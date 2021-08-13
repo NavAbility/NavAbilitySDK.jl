@@ -384,3 +384,13 @@ end
 
 #   return skeys
 # end
+
+function solveSession!(dfg::CloudDFG)
+  #
+  return solveSession!(dfg.client, dfg.userId, dfg.robotId, dfg.sessionId)
+end
+
+function solveFederated!(dfg::CloudDFG, solveScope::ScopeInput)
+  #
+  return solveFederated!(dfg.client, solveScope)
+end

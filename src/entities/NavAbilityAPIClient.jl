@@ -6,9 +6,9 @@ struct NavAbilityAPIClient
 end
 
 # Input for the solveFederated
-struct ScopeInput {
+struct ScopeInput 
   environmentIds::Vector{String}
   userIds::Vector{String}
   robotIds::Vector{String}
   sessionIds::Vector{String}
-}
+end

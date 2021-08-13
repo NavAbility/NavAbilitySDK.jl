@@ -136,11 +136,34 @@ poseIds = listVariables(cfg, r"x\d")
 poseFactorIds = listFactors(cfg, r"x0.*")
 ```
 
+## Requesting Solves
+
+Solving is done automatically, however you can always request additional solves that will be run asynchronously.
+
+```julia
+# Request a resolve
+taskId = solveSession!(cfg)
+```
+
+Federates solves are not run automatically and should be run by creating a `ScopeInput` and passing it to `solveFederated!`. `ScopeInput` is a combination of all environment IDs, user IDs, robot IDs, and session ID of all the data that is part of the federated graph.
+
+> Note: This structure will change soon and will be announced in a release.
+
+
+```julia
+# Create and request a federated solve
+cfg2 = deepcopy(cfg);
+cfg2.sessionId *= "_session2"
+copyGraph!(cfg2, dfg, ls(dfg), lsf(dfg))
+scopeInput = ScopeInput([], [cfg.userId], [cfg.robotId], [cfg.sessionId, cfg2.sessionId])
+taskId = solveFederated!(cfg, scopeInput)
+```
+
 # Feedback or Requests
 
 Please feel free to create an issue if you would like specific functionality or have any questions. Alternatively you can reach out directly via email at `info@navability.io`.
 
-## Contracts Schema
+# Contracts Schema
 
 - Variable Contract: https://github.com/JuliaRobotics/DistributedFactorGraphs.jl/blob/28eec11a15ffc069a2b3f0c9481938b9de3b2eb8/src/services/Serialization.jl#L112-L127
 - Factor Contract: https://github.com/JuliaRobotics/DistributedFactorGraphs.jl/blob/28eec11a15ffc069a2b3f0c9481938b9de3b2eb8/src/services/Serialization.jl#L248-L274
