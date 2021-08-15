@@ -13,7 +13,7 @@ function setup()
   @info "Logging in to get a token...."
   # token = ""
   # cfg = CloudDFG(token=token, solverParams=SolverParams())
-  cfg = CloudDFG(solverParams=SolverParams())
+  cfg = CloudDFG(guestMode=true, solverParams=SolverParams())
   @info cfg
   # TODO: Test with NoSolverParams, we do not need SolverParams with CFG.
   @info "Creating graph for: "
