@@ -7,8 +7,8 @@ include("setup.jl")
 cfg, dfg = setup()
 
 # Wait for the graph to be built out.
-function waitForCopyToComplete(sourceFg, destinationFg)
-  @time begin
+function copyCompletedCheck(sourceFg, destinationFg)::Task
+  return @async @time begin
     while !(setdiff(ls(sourceFg), ls(destinationFg)) == []) 
       @info "Waiting for variables: $(setdiff(ls(sourceFg), ls(destinationFg)))"
       sleep(1)
@@ -20,7 +20,7 @@ function waitForCopyToComplete(sourceFg, destinationFg)
   end
 end
 
-waitForCopyToComplete(dfg, cfg)
+@sync copyCompletedCheck(dfg, cfg);
 
 # @info "Check (and time) the solving:"
 # @time begin

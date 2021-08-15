@@ -13,7 +13,7 @@ function setup()
   @info "Logging in to get a token...."
   # token = ""
   # cfg = CloudDFG(token=token, solverParams=SolverParams())
-  cfg = CloudDFG(guestMode=true, solverParams=SolverParams())
+  cfg = CloudDFG(host="http://localhost:4343/", guestMode=true, solverParams=SolverParams())
   @info cfg
   # TODO: Test with NoSolverParams, we do not need SolverParams with CFG.
   @info "Creating graph for: "
@@ -23,18 +23,6 @@ function setup()
   copyGraph!(cfg, hex, ls(hex), lsf(hex))
   
   @info "Waiting a few seconds so it's all imported"
-
-  @time begin
-    while !(setdiff(ls(hex), ls(cfg)) == []) 
-      @info "Waiting for variables: $(setdiff(ls(hex), ls(cfg)))"
-      sleep(1)
-    end
-    while !(setdiff(lsf(hex), lsf(cfg)) == []) 
-      @info "Waiting for factors: $(setdiff(lsf(hex), lsf(cfg)))"
-      sleep(1)
-    end
-  end
-  @info "Setup complete!"
 
   return cfg, hex
 end
