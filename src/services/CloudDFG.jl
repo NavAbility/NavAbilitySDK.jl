@@ -199,7 +199,7 @@ function getVariables(dfg::CloudDFG,
   q = gql_getVariables(; regexFilter=regexFilter, tags=tags, solvable=solvable)
   @debug "DEBUG: Query = \r\n$q"
   results = query(dfg.client, q, "getVariables", client)["VARIABLE"]
-  length(results) == 0 && error("Variable '$label' cannot be found")
+  length(results) == 0 && error("Variables with regex '$regexFilter' and tags '$tags' cannot be found")
   variables = DFGVariable[]
   for v in results
     ##### Data Reformatting section - to be consolidated

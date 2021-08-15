@@ -8,7 +8,7 @@ cfg, dfg = setup()
 
 # Wait for the graph to be built out.
 function copyCompletedCheck(sourceFg, destinationFg)::Task
-  return @async @time begin
+  begin
     while !(setdiff(ls(sourceFg), ls(destinationFg)) == []) 
       @info "Waiting for variables: $(setdiff(ls(sourceFg), ls(destinationFg)))"
       sleep(1)
@@ -20,7 +20,7 @@ function copyCompletedCheck(sourceFg, destinationFg)::Task
   end
 end
 
-@sync copyCompletedCheck(dfg, cfg);
+copyCompletedCheck(dfg, cfg);
 
 # @info "Check (and time) the solving:"
 # @time begin
