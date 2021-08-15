@@ -7,7 +7,7 @@ include("setup.jl")
 cfg, dfg = setup()
 
 # Wait for the graph to be built out.
-function copyCompletedCheck(sourceFg, destinationFg)::Task
+function copyCompletedCheck(sourceFg, destinationFg)
   begin
     while !(setdiff(ls(sourceFg), ls(destinationFg)) == []) 
       @info "Waiting for variables: $(setdiff(ls(sourceFg), ls(destinationFg)))"
@@ -88,7 +88,7 @@ end
   cfg2 = deepcopy(cfg);
   cfg2.sessionId *= "_session2"
   copyGraph!(cfg2, dfg, ls(dfg), lsf(dfg))
-  waitForCopyToComplete(dfg, cfg2)
+  copyCompletedCheck(dfg, cfg2)
 
   # Request a federated solve
   scopeInput = ScopeInput([], [cfg.userId], [cfg.robotId], [cfg.sessionId, cfg2.sessionId])
