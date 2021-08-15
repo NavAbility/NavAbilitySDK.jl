@@ -12,17 +12,34 @@ mutable struct CloudDFG{T <: AbstractParams} <: AbstractDFG{T}
 end
 
 # default constructor helper
+"""
+    $(SIGNATURES)
+Initialize a CloudDFG.
+Optional parameters:
+- guestMode: If true then the user is 'Guest' and no token is used
+- token: A token, or if none is provided and !guestMode, a browser will be opened to login
+- solverParams: Must be a SolverParams if you want to interact with IncrementalInference
+- robotId/sessionId: Specify the robot ID and the sessionId for the driver. This can be changed as needed
+- host: Can direct the CloudDFG to different various environments
+Notes
+- Return `Vector{Symbol}`
+"""
 function CloudDFG(; host::String="https://api.$(nvaEnv()).navability.io/graphql", 
+          guestMode::Bool=false,
           token::Union{Nothing, <:AbstractString}=nothing,
           solverParams::T=NoSolverParams(),
           robotId::String="DemoRobot",
           sessionId::String="Session_$(string(uuid4())[1:6])") where T
-  if token === nothing
-    token = login()
+  token = ""
+  userId = "Guest"
+  if !guestMode
+    if token === nothing
+      token = login()
+    end
+    claims = extractJwtClaims(token)
+    !haskey(claims, "cognito:username") && error("Token does not have cognito:username claim")  
+    userId = claims["cognito:username"]
   end
-  claims = extractJwtClaims(token)
-  !haskey(claims, "cognito:username") && error("Token does not have cognito:username claim")  
-  userId = claims["cognito:username"]
   return CloudDFG{T}(NavAbilityAPIClient(;host=host, token=token), solverParams, userId, robotId, sessionId, "CloudDFG connection to $(host) and data from $(userId):$(robotId):$(sessionId)")
 end 
 
