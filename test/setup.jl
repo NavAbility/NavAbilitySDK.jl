@@ -11,9 +11,7 @@ function setup()
   # addData!(FileDataEntry, lfg, :x4, :data, "/tmp", UInt8[0,0,0,0])
 
   @info "Logging in to get a token...."
-  # token = ""
-  # cfg = CloudDFG(token=token, solverParams=SolverParams())
-  cfg = CloudDFG(host="http://localhost:4343/", guestMode=true, solverParams=SolverParams())
+  cfg = CloudDFG(guestMode=true, solverParams=SolverParams())
   @info cfg
   # TODO: Test with NoSolverParams, we do not need SolverParams with CFG.
   @info "Creating graph for: "
