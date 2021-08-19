@@ -30,8 +30,6 @@ function CloudDFG(; host::String="https://api.$(nvaEnv()).navability.io/graphql"
           solverParams::T=NoSolverParams(),
           robotId::String="DemoRobot",
           sessionId::String="Session_$(string(uuid4())[1:6])") where T
-  token = ""
-  userId = "Guest"
   if !guestMode
     if token === nothing
       token = login()
@@ -39,6 +37,9 @@ function CloudDFG(; host::String="https://api.$(nvaEnv()).navability.io/graphql"
     claims = extractJwtClaims(token)
     !haskey(claims, "cognito:username") && error("Token does not have cognito:username claim")  
     userId = claims["cognito:username"]
+  else
+    token = ""
+    userId = "Guest"
   end
   return CloudDFG{T}(NavAbilityAPIClient(;host=host, token=token), solverParams, userId, robotId, sessionId, "CloudDFG connection to $(host) and data from $(userId):$(robotId):$(sessionId)")
 end 
