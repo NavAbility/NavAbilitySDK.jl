@@ -46,7 +46,8 @@ export
   ScopeInput,
   login,
   solveSession!,
-  solveFederated!
+  solveFederated!,
+  addSessionData!
 
 ### ---- Everything below this line should be in other files ---- ###
 

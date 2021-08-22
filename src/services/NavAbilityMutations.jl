@@ -10,6 +10,12 @@ mutation addFactor (\$factor: FactorGraphInput!) {
 }
 """
 
+MUTATION_ADDSESSIONDATA = """
+mutation addSessionData (\$sessionData: SessionData!) {
+  addSessionData(sessionData: \$sessionData)
+}
+"""
+
 MUTATION_SOLVESESSION = """
 mutation solveSession (\$client: ClientInput!) {
   solveSession(client: \$client)
