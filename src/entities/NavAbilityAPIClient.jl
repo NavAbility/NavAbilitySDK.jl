@@ -12,3 +12,11 @@ struct ScopeInput
   robotIds::Vector{String}
   sessionIds::Vector{String}
 end
+
+struct StatusMessage
+  requestId::String
+  action::String
+  state::String
+  timestamp::String
+  client::Dict{String, Any}
+end

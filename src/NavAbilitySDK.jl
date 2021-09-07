@@ -44,6 +44,7 @@ export
   CloudDFG,
   NavAbilityAPIClient,
   ScopeInput,
+  StatusMessage,
   login,
   solveSession!,
   solveFederated!
