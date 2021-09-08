@@ -37,17 +37,22 @@ import NavAbilitySDK.Queries:
   gql_lsf, 
   gql_getVariables, 
   gql_getFactors,
-  gql_getNodes
+  gql_getNodes,
+  gql_getStatusMessages,
+  gql_getStatusLatest
 
 # We also should export all the exposed functionality
 export
   CloudDFG,
   NavAbilityAPIClient,
   ScopeInput,
+  NavAbilityGQLClient,
+  StatusMessage,
   login,
   solveSession!,
   solveFederated!,
-  addSessionData!
+  getStatusMessages,
+  getStatusLatest
 
 ### ---- Everything below this line should be in other files ---- ###
 

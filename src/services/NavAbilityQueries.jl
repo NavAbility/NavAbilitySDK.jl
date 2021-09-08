@@ -212,4 +212,37 @@ $fields
   }
 """
 
+gql_getStatusMessages(id::String) = """
+query getStatusMessages {
+  statusMessages(id: "$id") {
+    requestId,
+    action,
+    state,
+    timestamp,
+    client {
+      userId,
+      robotId,
+      sessionId
+    }
+  }
+}
+"""
+
+gql_getStatusLatest(id::String) = """
+query getStatusLatest {
+  statusLatest(id: "$id") {
+    requestId,
+    action,
+    state,
+    timestamp,
+    client {
+      userId,
+      robotId,
+      sessionId
+    }
+  }
+}
+"""
+
+
 end

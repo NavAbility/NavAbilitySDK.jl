@@ -450,3 +450,24 @@ function solveFederated!(dfg::CloudDFG, solveScope::ScopeInput)
   #
   return solveFederated!(dfg.client, solveScope)
 end
+
+function getStatusMessages(dfg::CloudDFG, requestId::String)
+  #
+  client = _gqlClient(dfg.userId, dfg.robotId, dfg.sessionId)
+  q = gql_getStatusMessages(requestId)
+  @debug "DEBUG: Query = \r\n$q"
+  results = query(dfg.client, q, "getStatusMessages", client)
+  return [unmarshal(StatusMessage, m) for m in results["statusMessages"]]
+end
+
+function getStatusLatest(dfg::CloudDFG, requestId::String)
+  #
+  client = _gqlClient(dfg.userId, dfg.robotId, dfg.sessionId)
+  q = gql_getStatusLatest(requestId)
+  @debug "DEBUG: Query = \r\n$q"
+  results = query(dfg.client, q, "getStatusLatest", client)
+  if haskey(results, "statusLatest") && results["statusLatest"]["requestId"] == requestId
+    return unmarshal(StatusMessage, results["statusLatest"])
+  end
+  return nothing
+end
