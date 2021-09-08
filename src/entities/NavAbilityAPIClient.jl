@@ -12,3 +12,17 @@ struct ScopeInput
   robotIds::Vector{String}
   sessionIds::Vector{String}
 end
+
+struct NavAbilityGQLClient
+  userId::String
+  robotId::String
+  sessionId::String
+end
+
+struct StatusMessage
+  requestId::String
+  action::String
+  state::String
+  timestamp::String
+  client::NavAbilityGQLClient
+end
