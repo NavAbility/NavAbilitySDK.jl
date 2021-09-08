@@ -1,8 +1,8 @@
 include("NavAbilityMutations.jl")
 
 # until we define the ultimate maximum contract
-const PackedDFGVariableTemp = Dict
-const PackedDFGFactorTemp = Dict
+const PackedDFGVariableTemp = Dict{String,Any}
+const PackedDFGFactorTemp = Dict{String,Any}
 
 function NavAbilityAPIClient(; 
                 host::AbstractString="https://api.$(nvaEnv).navability.io", 
@@ -53,6 +53,18 @@ function addFactor!(client::NavAbilityAPIClient, userId::String, robotId::String
   @debug "GraphQL payload: $(vars)"
   response = client.gqlClient.Query(MUTATION_ADDFACTOR, operationName="addFactor", vars=vars)
   return _parseGqlResponseExpectVerb(response, "addFactor")
+end
+
+function addSessionData!(client::NavAbilityAPIClient, gqlClient::Dict, packedVariables::Vector{PackedDFGFactorTemp}, packedFactors::Vector{PackedDFGVariableTemp})
+  vars = Dict(
+    "sessionData" => Dict(
+      "client" => gqlClient,
+      "packedVariables" => [JSON.json(v) for v in packedVariables],
+      "packedFactors" => [JSON.json(f) for f in packedFactors])
+    )
+  @debug "GraphQL payload: $(vars)"
+  response = client.gqlClient.Query(MUTATION_ADDSESSIONDATA, operationName="addSessionData", vars=vars)
+  return _parseGqlResponseExpectVerb(response, "addSessionData")
 end
 
 """

@@ -26,6 +26,64 @@ function addFactor!(dfg::CloudDFG, factor::AbstractDFGFactor)
   addFactor!(dfg.client, dfg.userId, dfg.robotId, dfg.sessionId, packFactor(dfg, factor))
 end
 
+# function copyGraph!(destDFG::CloudDFG,
+#                     sourceDFG::AbstractDFG,
+#                     variableLabels::Vector{Symbol},
+#                     factorLabels::Vector{Symbol};
+#                     copyGraphMetadata::Bool=false,
+#                     overwriteDest::Bool=false,
+#                     deepcopyNodes::Bool=false,
+#                     verbose::Bool = true)
+
+#   # Get a list of the variables+factors in the destination graph
+#   client = _gqlClient(destDFG.userId, destDFG.robotId, destDFG.sessionId)
+#   results = query(destDFG.client, gql_getNodes(), "getNodes", client)
+#   existingVariables = Symbol.(results["VARIABLE"])
+#   existingFactors = Symbol.(results["FACTOR"])
+
+#   if !overwriteDest
+#     # Only get the stuff that doesn't exist
+#     variableLabels = setdiff(variableLabels, existingVariables)
+#     factorLabels = setdiff(factorLabels, existingFactors)
+#   end
+
+#   sourceVariables = map(vId->getVariable(sourceDFG, vId), variableLabels)
+#   sourceFactors = map(fId->getFactor(sourceDFG, fId), factorLabels)
+#   # Now we have to add all variables first,
+#   for variable in sourceVariables
+#     variableCopy = deepcopyNodes ? deepcopy(variable) : variable
+#     addVariable!(destDFG, variableCopy)
+#   end
+
+#   existingVariables = union(variableLabels, existingVariables)
+#   # And then all factors to the destDFG.
+#   for factor in sourceFactors
+#     # Get the original factor variables (we need them to create it)
+#     sourceFactorVariableIds = getNeighbors(sourceDFG, factor.label)
+#     # Find the labels and associated variables in our new subgraph
+#     factVariableIds = Symbol[]
+#     for variable in sourceFactorVariableIds
+#       if variable in existingVariables
+#           push!(factVariableIds, variable)
+#       end
+#     end
+#     # Only if we have all of them should we add it (otherwise strange things may happen on evaluation)
+#     if length(factVariableIds) == length(sourceFactorVariableIds)
+#       factorCopy = deepcopyNodes ? deepcopy(factor) : factor
+#       addFactor!(destDFG, factorCopy)
+#     elseif verbose
+#       @warn "Factor $(factor.label) will be an orphan in the destination graph, and therefore not added."
+#     end
+#   end
+
+#   if copyGraphMetadata
+#     setUserData(destDFG, getUserData(sourceDFG))
+#     setRobotData(destDFG, getRobotData(sourceDFG))
+#     setSessionData(destDFG, getSessionData(sourceDFG))
+#   end
+#   return nothing
+# end
+
 function copyGraph!(destDFG::CloudDFG,
                     sourceDFG::AbstractDFG,
                     variableLabels::Vector{Symbol},
@@ -36,8 +94,8 @@ function copyGraph!(destDFG::CloudDFG,
                     verbose::Bool = true)
 
   # Get a list of the variables+factors in the destination graph
-  client = _gqlClient(destDFG.userId, destDFG.robotId, destDFG.sessionId)
-  results = query(destDFG.client, gql_getNodes(), "getNodes", client)
+  gqlClient = _gqlClient(destDFG.userId, destDFG.robotId, destDFG.sessionId)
+  results = query(destDFG.client, gql_getNodes(), "getNodes", gqlClient)
   existingVariables = Symbol.(results["VARIABLE"])
   existingFactors = Symbol.(results["FACTOR"])
 
@@ -47,43 +105,41 @@ function copyGraph!(destDFG::CloudDFG,
     factorLabels = setdiff(factorLabels, existingFactors)
   end
 
-  sourceVariables = map(vId->getVariable(sourceDFG, vId), variableLabels)
+  variablesToAdd = map(vId->getVariable(sourceDFG, vId), variableLabels)
   sourceFactors = map(fId->getFactor(sourceDFG, fId), factorLabels)
-  # Now we have to add all variables first,
-  for variable in sourceVariables
-    variableCopy = deepcopyNodes ? deepcopy(variable) : variable
-    addVariable!(destDFG, variableCopy)
-  end
 
+  factorsToAdd = []
   existingVariables = union(variableLabels, existingVariables)
   # And then all factors to the destDFG.
   for factor in sourceFactors
     # Get the original factor variables (we need them to create it)
     sourceFactorVariableIds = getNeighbors(sourceDFG, factor.label)
     # Find the labels and associated variables in our new subgraph
-    factVariableIds = Symbol[]
-    for variable in sourceFactorVariableIds
-      if variable in existingVariables
-          push!(factVariableIds, variable)
-      end
-    end
+    factVariableIds = intersect(sourceFactorVariableIds, existingVariables)
+
     # Only if we have all of them should we add it (otherwise strange things may happen on evaluation)
-    if length(factVariableIds) == length(sourceFactorVariableIds)
+    if symdiff(factVariableIds, sourceFactorVariableIds) == []
       factorCopy = deepcopyNodes ? deepcopy(factor) : factor
-      addFactor!(destDFG, factorCopy)
+      push!(factorsToAdd, factorCopy)
     elseif verbose
       @warn "Factor $(factor.label) will be an orphan in the destination graph, and therefore not added."
     end
   end
 
-  if copyGraphMetadata
-    setUserData(destDFG, getUserData(sourceDFG))
-    setRobotData(destDFG, getRobotData(sourceDFG))
-    setSessionData(destDFG, getSessionData(sourceDFG))
-  end
-  return nothing
-end
+  taskId = addSessionData!(
+    destDFG.client, 
+    gqlClient, 
+    [packVariable(destDFG, v) for v in variablesToAdd],
+    [packFactor(destDFG, f) for f in factorsToAdd])
 
+  # if copyGraphMetadata
+  #   setUserData(destDFG, getUserData(sourceDFG))
+  #   setRobotData(destDFG, getRobotData(sourceDFG))
+  #   setSessionData(destDFG, getSessionData(sourceDFG))
+  # end
+  return taskId
+end
+  
 ##==============================================================================
 ## CRUD Interfaces
 ##==============================================================================

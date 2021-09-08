@@ -82,13 +82,20 @@ end
 
 @testset "Solving tests" begin
   # Request a resolve
-  @test solveSession!(cfg) !== nothing
+  solveId = solveSession!(cfg)
+  @test solveId !== nothing
 
   # Create a copy of the graph 
   cfg2 = deepcopy(cfg);
   cfg2.sessionId *= "_session2"
-  copyGraph!(cfg2, dfg, ls(dfg), lsf(dfg))
+  copyId = copyGraph!(cfg2, dfg, ls(dfg), lsf(dfg))
   copyCompletedCheck(dfg, cfg2)
+
+  # Confirm the status messages are retrievable
+  statusMessages = getStatusMessages(cfg2, copyId)
+  @test statusMessages !== nothing
+  @test getStatusLatest(cfg2, copyId) !== nothing
+
 
   # Request a federated solve
   scopeInput = ScopeInput([], [cfg.userId], [cfg.robotId], [cfg.sessionId, cfg2.sessionId])
