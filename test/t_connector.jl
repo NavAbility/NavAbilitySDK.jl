@@ -2,8 +2,9 @@ using DistributedFactorGraphs, IncrementalInference, RoME
 using NavAbilitySDK 
 using Test
 
-import DistributedFactorGraphs: addVariable!, addFactor!, getSolverParams, getVariables, getVariable, isVariable, ls
-import DistributedFactorGraphs: exists
+import DistributedFactorGraphs: addVariable!, addFactor!
+import DistributedFactorGraphs: getVariables, getVariable, getFactors
+import DistributedFactorGraphs: getSolverParams, exists, isVariable, ls
 
 ##
 
@@ -63,20 +64,30 @@ ls(dfg::DfgDuplicator,
 getVariable(dfg::DfgDuplicator, 
     label::Union{Symbol, String}) = getVariable(dfg.localFg, label)
 
-DFG.isVariable(dfg::DfgDuplicator, label::Union{Symbol, String}) = isVariable(dfg.localFg, label)
+isVariable(dfg::DfgDuplicator, label::Symbol) = isVariable(dfg.localFg, label)
 
-exists(dfg::DfgDuplicator, label::Union{Symbol, String}) = DFG.exists(dfg.localFg, Symbol(label))
+exists(dfg::DfgDuplicator, label::Symbol) = DFG.exists(dfg.localFg, label)
+
+getFactors(dfg::DfgDuplicator,   
+  regexFilter::Union{Nothing, Regex}=nothing; 
+  tags::Vector{Symbol}=Symbol[], 
+  solvable::Int=0) = getFactors(dfg.localFg, regexFilter, tags=tags, solvable = solvable)
+
+
 
 ##
 
 duplicator = DfgDuplicator()
 
+generateCanonicalFG_Beehive!(10, dfg = duplicator, graphinit=false)
+
+# generateCanonicalFG_Beehive!(10, dfg = duplicator.localFg, graphinit=false)
+# result = copyGraph!(duplicator.cloudFg, duplicator.localFg, ls(duplicator.localFg), lsf(duplicator.localFg), overwriteDest=true)
+# solveSession!(duplicator.cloudFg)
+
+##
+
 getStatusLatest(duplicator.cloudFg, "2633bfdb-da3a-474b-a503-6aa5eeeb3a99")
-
-generateCanonicalFG_Beehive!(10, dfg = duplicator.localFg, graphinit=false)
-result = copyGraph!(duplicator.cloudFg, duplicator.localFg, ls(duplicator.localFg), lsf(duplicator.localFg), overwriteDest=true)
-solveSession!(duplicator.cloudFg)
-
 
 ##
 
