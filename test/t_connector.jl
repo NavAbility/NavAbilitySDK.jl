@@ -2,11 +2,17 @@ using DistributedFactorGraphs, IncrementalInference, RoME
 using NavAbilitySDK 
 using Test
 
+import DistributedFactorGraphs: addVariable!, addFactor!, getSolverParams, getVariables, getVariable, isVariable, ls
+import DistributedFactorGraphs: exists
+
+##
+
 # Not a fully-fledged DFG, but good enough to pass into IncrementalInference
 struct DfgDuplicator{T <: AbstractParams, U <: AbstractParams} <: AbstractDFG{T}
   localFg::AbstractDFG{T}
   cloudFg::CloudDFG{U}
   pollingActive::Base.RefValue{Bool}
+  variableQueue::Vector{Symbol}
 end
 
 import Base: show
@@ -17,7 +23,7 @@ end
 Base.show(io::IO, ::MIME"text/plain", duplicator::DfgDuplicator) = show(io, duplicator)
 
 function DfgDuplicator(localFg::AbstractDFG{T}, cloudFg::CloudDFG{U}) where {T <: AbstractParams, U <: AbstractParams}
-  return DfgDuplicator{T, U}(localFg, cloudFg, Ref(true))
+  return DfgDuplicator{T, U}(localFg, cloudFg, Ref(true), Symbol[])
 end
 
 function DfgDuplicator()
@@ -26,7 +32,53 @@ function DfgDuplicator()
   return DfgDuplicator(dfg, cfg)
 end
 
+function addVariable!(dfg::DfgDuplicator, variable::AbstractDFGVariable)
+  v = addVariable!(dfg.localFg, variable)
+  @async begin
+    reqId = addVariable!(dfg.cloudFg, variable)
+    @info "Cloud add request ID: $reqId"
+  end
+  return v
+end
+
+function addFactor!(dfg::DfgDuplicator, factor::AbstractDFGFactor)
+  f = addFactor!(dfg.localFg, factor)
+  @async addFactor!(dfg.cloudFg, factor)
+  return f
+end
+
+getSolverParams(dfg::DfgDuplicator) = getSolverParams(dfg.localFg)
+
+getVariables(dfg::DfgDuplicator, 
+  regexFilter::Union{Nothing, Regex}=nothing; 
+  tags::Vector{Symbol}=Symbol[], 
+  solvable::Int=0) = getVariables(dfg.localFg, regexFilter, tags=tags, solvable = solvable)
+
+ls(dfg::DfgDuplicator, 
+  regexFilter::Union{Nothing, Regex}=nothing; 
+  tags::Vector{Symbol}=Symbol[], 
+  solvable::Int=0) = ls(dfg.localFg, regexFilter, tags=tags, solvable = solvable)
+
+
+getVariable(dfg::DfgDuplicator, 
+    label::Union{Symbol, String}) = getVariable(dfg.localFg, label)
+
+DFG.isVariable(dfg::DfgDuplicator, label::Union{Symbol, String}) = isVariable(dfg.localFg, label)
+
+exists(dfg::DfgDuplicator, label::Union{Symbol, String}) = DFG.exists(dfg.localFg, Symbol(label))
+
+##
+
 duplicator = DfgDuplicator()
+
+getStatusLatest(duplicator.cloudFg, "2633bfdb-da3a-474b-a503-6aa5eeeb3a99")
+
+generateCanonicalFG_Beehive!(10, dfg = duplicator.localFg, graphinit=false)
+result = copyGraph!(duplicator.cloudFg, duplicator.localFg, ls(duplicator.localFg), lsf(duplicator.localFg), overwriteDest=true)
+solveSession!(duplicator.cloudFg)
+
+
+##
 
 function pollLatestCloudSolution(duplicator::DfgDuplicator)
   while duplicator.pollingActive.x
@@ -38,6 +90,7 @@ end
 
 updatingTask = @task pollLatestCloudSolution(duplicator)
 schedule(updatingTask)
+
 
 # Override IncrementalInference.addVariable and addFactor
 # function addVariable!(dfg::DfgDuplicator,
