@@ -441,6 +441,25 @@ end
 #   return skeys
 # end
 
+## Cloud-specific functions
+
+""" 
+  $(SIGNATURES)
+
+Perform a GraphQL query against the CloudDFG data.
+Provide the GQL query as named function(s) (cannot be unnamed for the moment),
+and supply the name of the function that should be returned,
+as well as any extra arguments needed to execute it.
+Note> If you enable debug logging the query and raw response are logged.
+"""
+function graphQuery(dfg::CloudDFG, q::String, function_name::String, arguments::Dict{String, Any}=Dict{String, Any}())
+  args = _gqlClient(dfg.userId, dfg.robotId, dfg.sessionId, arguments)
+  @debug "DEBUG: Query = \r\n$q\r\nArguments = \r\nargs"
+  result = query(dfg.client, q, function_name, args)
+  @debug "DEBUG: Result = \r\n$result"
+  return result
+end
+
 function solveSession!(dfg::CloudDFG)
   #
   return solveSession!(dfg.client, dfg.userId, dfg.robotId, dfg.sessionId)

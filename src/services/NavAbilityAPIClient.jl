@@ -11,8 +11,8 @@ function NavAbilityAPIClient(;
   return NavAbilityAPIClient(host, token, client)
 end
 
-function _gqlClient(userId::String, robotId::String, sessionId::String)
-  return Dict("userId" => userId, "robotId" => robotId, "sessionId" => sessionId)
+function _gqlClient(userId::String, robotId::String, sessionId::String, extra::Dict{String, Any}=Dict{String, Any}())
+  return merge(extra, Dict("userId" => userId, "robotId" => robotId, "sessionId" => sessionId))
 end
 
 function _parseGqlResponse(response)
