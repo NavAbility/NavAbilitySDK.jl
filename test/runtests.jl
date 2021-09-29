@@ -30,6 +30,11 @@ copyCompletedCheck(dfg, cfg);
 #   end
 # end
 
+# Querying tests
+@testset "Querying tests" begin
+  resp = graphQuery(cfg, "query hello {VARIABLE {label}}", "hello")
+  @test "VARIABLE" in keys(resp)
+end
 
 # Listing and existence tests
 @testset "Listing tests" begin
