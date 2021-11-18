@@ -19,10 +19,10 @@ Unmarshal = "cbff2730-442d-58d7-89d1-8e530c41eb02"
 
 [compat]
 Diana = "0.2"
-DistributedFactorGraphs = "0.14"
-IncrementalInference = "0.24"
+DistributedFactorGraphs = "0.14, 0.15, 0.16, 0.17"
+IncrementalInference = "0.24, 0.25, 0.26"
 julia = "1.5"
-RoME = "0.15"
+RoME = "0.15, 0.16"
 
 [extras]
 IncrementalInference = "904591bb-b899-562f-9e6f-b8df64c7d480"
