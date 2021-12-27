@@ -28,7 +28,7 @@ fieldsVariable() = """
       dimval
       dontmargin
       eliminated
-      inferdim
+      infoPerCoord
       initialized
       ismargin
       separator
