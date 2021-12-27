@@ -60,7 +60,7 @@ gql_getVariable(label::String) = """
           dimval
           dontmargin
           eliminated
-          inferdim
+          infoPerCoord
           initialized
           ismargin
           separator
