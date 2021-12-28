@@ -26,14 +26,14 @@ import DistributedFactorGraphs:
   getNeighbors,
   ls
 
-include("common.jl")
-include("entities/NavAbilityAPIClient.jl")
-include("entities/CloudDFG.jl")
-include("services/NavAbilityAPIClient.jl")
-include("services/NavAbilityQueries.jl")
-include("services/CloudDFG.jl")
+include("./common.jl")
+include("./entities/NavAbilityAPIClient.jl")
+include("./entities/CloudDFG.jl")
+include("./services/NavAbilityAPIClient.jl")
+include("./services/NavAbilityQueries.jl")
+include("./services/CloudDFG.jl")
 
-import NavAbilitySDK.Queries: 
+import .Queries: 
   gql_ls, 
   gql_lsf, 
   gql_getVariables, 
