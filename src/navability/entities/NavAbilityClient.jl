@@ -1,3 +1,5 @@
+using Diana
+
 struct QueryOptions
 
 end
@@ -11,10 +13,7 @@ struct NavAbilityClient
     mutate::Function
 end
 
-function NavAbilityWebsocketClient()::NavAbilityClient
-
-end
-
-function NavAbilityHttpsClient()::NavAbilityClient
-    
+function NavAbilityHttpsClient(apiUrl::String)::NavAbilityClient
+    dianaClient = GraphQLClient(apiUrl)
+    return NavAbilityClient(dianaClient.Query,dianaClient.Query)
 end

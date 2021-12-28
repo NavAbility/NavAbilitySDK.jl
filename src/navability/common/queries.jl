@@ -17,17 +17,17 @@ mutation solveSession ($client: ClientInput!) {
 """
 
 gql_getStatusMessages = """
-        query getStatusMessages($id: ID!) {
-            statusMessages(id: $id) {
-                requestId,
-                action,
-                state,
-                timestamp,
-                client {
-                    userId,
-                    robotId,
-                    sessionId
-                }
-            }
-        }
+  query getStatusMessages($id: ID!) {
+      statusMessages(id: $id) {
+          requestId,
+          action,
+          state,
+          timestamp,
+          client {
+              userId,
+              robotId,
+              sessionId
+          }
+      }
+  }
 """
