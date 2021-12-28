@@ -61,6 +61,9 @@ import Base: show
 # Used to extract the cognito user from the token during login.
 import JSONWebTokens: base64url_decode
 
-end
 
-#
+# Refactoring begins here
+include("./navability/entities/NavAbilityClient.jl")
+export NavAbilityClient, NavAbilityWebsocketClient, NavAbilityHttpsClient
+
+end
