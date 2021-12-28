@@ -13,6 +13,10 @@ struct NavAbilityClient
     mutate::Function
 end
 
+function NavAbilityWebsocketClient(apiUrl::String)::NavAbilityClient
+    throw("Not implemented")
+end
+
 function NavAbilityHttpsClient(apiUrl::String)::NavAbilityClient
     dianaClient = GraphQLClient(apiUrl)
     return NavAbilityClient(dianaClient.Query,dianaClient.Query)
