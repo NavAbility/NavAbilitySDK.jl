@@ -1,3 +1,11 @@
+QUERY_VARIABLE = """
+  query Variable (\$label: ID, \$userId: ID, \$robotId: ID, \$sessionId: ID) {
+    VARIABLE(label:\$label,filter:{session:{id:\$sessionId,robot:{id:\$robotId,user:{id:\$userId}}}}) {
+        label
+        variableType
+    }
+  }"""
+
 QUERY_VARIABLE_LABELS = """
   query VariableLabels (\$userId: ID, \$robotId: ID, \$sessionId: ID) {
     SESSION(id:\$sessionId,filter:{robot:{id:\$robotId,user:{id:\$userId}}}) {

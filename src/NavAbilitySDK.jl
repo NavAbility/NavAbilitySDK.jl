@@ -26,7 +26,7 @@ export VariableType, Variable
 
 # Services
 include("./navability/services/Variable.jl")
-export getVariableLabels
+export getVariable, getVariableLabels
 export addVariable
 
 end

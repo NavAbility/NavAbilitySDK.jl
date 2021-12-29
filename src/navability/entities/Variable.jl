@@ -1,7 +1,7 @@
 using Dates
 using JSON
 
-DFG_VERSION = "0.16.2";
+DFG_VERSION = "0.17.1";
 
 @enum VariableType begin
     POINT2
