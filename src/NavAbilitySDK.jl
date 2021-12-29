@@ -5,6 +5,9 @@ using Reexport
 include("./archive/NavAbilitySDK.jl")
 @reexport using .ArchivedNavAbilitySDK
 
+import .ArchivedNavAbilitySDK.getVariable # Don't want to override with new implementations
+import .ArchivedNavAbilitySDK.ls # Don't want to override with new implementations
+
 # Low-level
 include("./navability/entities/Queries.jl")
 export QUERY_VARIABLE_LABELS
@@ -26,7 +29,7 @@ export VariableType, Variable
 
 # Services
 include("./navability/services/Variable.jl")
-export getVariable, getVariableLabels
+export getVariable, getVariableLabels, ls
 export addVariable
 
 end
