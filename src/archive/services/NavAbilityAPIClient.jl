@@ -1,4 +1,4 @@
-include("NavAbilityMutations.jl")
+using ...NavAbilitySDK
 
 # until we define the ultimate maximum contract
 const PackedDFGVariableTemp = Dict{String,Any}

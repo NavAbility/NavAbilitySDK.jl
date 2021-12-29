@@ -1,11 +1,15 @@
 using Diana
 
 struct QueryOptions
-
+    name::String
+    query::String
+    variables::Dict{String,Any}
 end
 
 struct MutationOptions
-
+    name::String
+    mutation::String
+    variables::Dict{String,Any}
 end
 
 struct NavAbilityClient
@@ -19,5 +23,11 @@ end
 
 function NavAbilityHttpsClient(apiUrl::String)::NavAbilityClient
     dianaClient = GraphQLClient(apiUrl)
-    return NavAbilityClient(dianaClient.Query,dianaClient.Query)
+    function query(options::QueryOptions)
+        dianaClient.Query(options.query, operationName=options.name, vars=options.variables)
+    end
+    function mutate(options::MutationOptions)
+        dianaClient.Query(options.mutation, operationName=options.name, vars=options.variables)
+    end
+    return NavAbilityClient(query, mutate)
 end
