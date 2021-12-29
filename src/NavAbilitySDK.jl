@@ -9,7 +9,7 @@ include("./archive/NavAbilitySDK.jl")
 include("./navability/entities/Queries.jl")
 export QUERY_VARIABLE_LABELS
 export QUERY_FILES, QUERY_CALIBRATION
-export MUTATION_ADDVARIABLE, MUTATION_ADDFACTOR
+export MUTATION_ADDVARIABLE, MUTATION_ADDFACTOR, MUTATION_ADDSESSIONDATA
 export MUTATION_SOLVESESSION, MUTATION_SOLVEFEDERATED
 export MUTATION_DEMOCANONICALHEXAGONAL
 export MUTATION_CREATE_UPLOAD, MUTATION_ABORT_UPLOAD, MUTATION_COMPLETE_UPLOAD
@@ -26,7 +26,7 @@ export VariableType, Variable
 
 # Services
 include("./navability/services/Variable.jl")
-export getVariableLabels, ls
+export getVariableLabels
 export addVariable
 
 end
