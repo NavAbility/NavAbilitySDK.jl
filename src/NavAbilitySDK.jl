@@ -7,6 +7,8 @@ include("./archive/NavAbilitySDK.jl")
 
 import .ArchivedNavAbilitySDK.getVariable # Don't want to override with new implementations
 import .ArchivedNavAbilitySDK.ls # Don't want to override with new implementations
+import .ArchivedNavAbilitySDK.getFactor # Don't want to override with new implementations
+import .ArchivedNavAbilitySDK.lsf # Don't want to override with new implementations
 
 # Low-level
 include("./navability/entities/Queries.jl")
@@ -23,13 +25,19 @@ export SUBSCRIPTION_UPDATES
 include("./navability/entities/NavAbilityClient.jl")
 include("./navability/entities/Client.jl")
 include("./navability/entities/Variable.jl")
+include("./navability/entities/Factor.jl")
 export NavAbilityClient, NavAbilityWebsocketClient, NavAbilityHttpsClient, QueryOptions, MutationOptions
 export Client, Scope
 export VariableType, Variable
+export FactorData, PriorPose2Data, Pose2Pose2Data, Pose2AprilTag4CornersData
+export FactorType, Factor
 
 # Services
 include("./navability/services/Variable.jl")
+include("./navability/services/Factor.jl")
 export getVariable, getVariableLabels, ls
 export addVariable
+export getFactor, getFactorLabels, ls
+export addFactor
 
 end
