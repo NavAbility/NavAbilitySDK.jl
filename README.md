@@ -1,3 +1,5 @@
+[![Unit tests](https://github.com/NavAbility/NavAbilitySDK.jl/actions/workflows/tests.yml/badge.svg)](https://github.com/NavAbility/NavAbilitySDK.jl/actions/workflows/tests.yml)
+
 # NavAbilitySDK.jl
 The NavAbility SDK for Julia.
 
