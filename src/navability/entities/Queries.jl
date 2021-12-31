@@ -12,7 +12,26 @@ QUERY_VARIABLE_LABELS = """
         id
         name
         variables {
+          label
+        }
+    }
+  }"""
+
+QUERY_FACTOR = """
+  query Factor (\$label: ID, \$userId: ID, \$robotId: ID, \$sessionId: ID) {
+    FACTOR(label:\$label,filter:{session:{id:\$sessionId,robot:{id:\$robotId,user:{id:\$userId}}}}) {
         label
+        fnctype
+    }
+  }"""
+
+QUERY_FACTOR_LABELS = """
+  query FactorLabels (\$userId: ID, \$robotId: ID, \$sessionId: ID) {
+    SESSION(id:\$sessionId,filter:{robot:{id:\$robotId,user:{id:\$userId}}}) {
+        id
+        name
+        factors {
+          label
         }
     }
   }"""
