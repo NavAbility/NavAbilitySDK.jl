@@ -35,9 +35,11 @@ export FactorType, Factor
 # Services
 include("./navability/services/Variable.jl")
 include("./navability/services/Factor.jl")
-export getVariable, getVariableLabels, ls
+include("./navability/services/Solve.jl")
+export getVariable, getVariables, ls
 export addVariable
-export getFactor, getFactorLabels, ls
+export getFactor, getFactors, lsf
 export addFactor
+export solveSession, solveFederated
 
 end

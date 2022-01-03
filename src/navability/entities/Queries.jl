@@ -1,38 +1,62 @@
 QUERY_VARIABLE = """
   query Variable (\$label: ID, \$userId: ID, \$robotId: ID, \$sessionId: ID) {
-    VARIABLE(label:\$label,filter:{session:{id:\$sessionId,robot:{id:\$robotId,user:{id:\$userId}}}}) {
-        label
-        variableType
+    USER(id:\$userId) {
+      robots(filter:{id:\$robotId}) {
+        sessions(filter:{id:\$sessionId}) {
+          variables(filter:{label:\$label}) {
+            label
+            variableType
+            ppes {
+              suggested
+            }
+          }
+        }
+      }
     }
   }"""
 
-QUERY_VARIABLE_LABELS = """
-  query VariableLabels (\$userId: ID, \$robotId: ID, \$sessionId: ID) {
-    SESSION(id:\$sessionId,filter:{robot:{id:\$robotId,user:{id:\$userId}}}) {
-        id
-        name
-        variables {
-          label
+QUERY_VARIABLES = """
+  query Variables (\$userId: ID, \$robotId: ID, \$sessionId: ID) {
+    USER(id:\$userId) {
+      robots(filter:{id:\$robotId}) {
+        sessions(filter:{id:\$sessionId}) {
+          variables {
+            label
+            variableType
+            ppes {
+              suggested
+            }
+          }
         }
+      }
     }
   }"""
 
 QUERY_FACTOR = """
   query Factor (\$label: ID, \$userId: ID, \$robotId: ID, \$sessionId: ID) {
-    FACTOR(label:\$label,filter:{session:{id:\$sessionId,robot:{id:\$robotId,user:{id:\$userId}}}}) {
-        label
-        fnctype
+    USER(id:\$userId) {
+      robots(filter:{id:\$robotId}) {
+        sessions(filter:{id:\$sessionId}) {
+          factors(filter:{label:\$label}) {
+            label
+            fnctype
+          }
+        }
+      }
     }
   }"""
 
-QUERY_FACTOR_LABELS = """
-  query FactorLabels (\$userId: ID, \$robotId: ID, \$sessionId: ID) {
-    SESSION(id:\$sessionId,filter:{robot:{id:\$robotId,user:{id:\$userId}}}) {
-        id
-        name
-        factors {
-          label
+QUERY_FACTORS = """
+  query Factors (\$userId: ID, \$robotId: ID, \$sessionId: ID) {
+    USER(id:\$userId) {
+      robots(filter:{id:\$robotId}) {
+        sessions(filter:{id:\$sessionId}) {
+          factors {
+            label
+            fnctype
+          }
         }
+      }
     }
   }"""
 
