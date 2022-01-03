@@ -9,6 +9,7 @@ import .ArchivedNavAbilitySDK.getVariable # Don't want to override with new impl
 import .ArchivedNavAbilitySDK.ls # Don't want to override with new implementations
 import .ArchivedNavAbilitySDK.getFactor # Don't want to override with new implementations
 import .ArchivedNavAbilitySDK.lsf # Don't want to override with new implementations
+import .ArchivedNavAbilitySDK.getFactors # Don't want to override with new implementations
 
 # Low-level
 include("./navability/entities/Queries.jl")
