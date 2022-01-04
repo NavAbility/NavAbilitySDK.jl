@@ -5,8 +5,8 @@ function dump(variable::Variable)
     return json(variable)
 end
 
-function addVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Variable)
-    navAbilityClient.mutate(MutationOptions(
+function addVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Variable)::String
+    response = navAbilityClient.mutate(MutationOptions(
         "addVariable",
         MUTATION_ADDVARIABLE,
         Dict(
@@ -16,9 +16,17 @@ function addVariable(navAbilityClient::NavAbilityClient, client::Client, variabl
             )
         )
     ))
+    rootData = JSON.parse(response.Data)
+    if haskey(rootData, "errors")
+        throw("Error: $(data["errors"])")
+    end
+    data = get(rootData,"data",nothing)
+    if data === nothing return "Error" end
+    addVariable = get(data,"addVariable","Error")
+    return addVariable
 end
 
-function getVariable(navAbilityClient::NavAbilityClient, client::Client, label::String)
+function getVariable(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
     response = navAbilityClient.query(QueryOptions(
         "Variable",
         QUERY_VARIABLE,
@@ -29,36 +37,49 @@ function getVariable(navAbilityClient::NavAbilityClient, client::Client, label::
             "sessionId" => client.sessionId
         )
     ))
-    data = JSON.parse(response.Data)
-    if haskey(data, "errors")
+    rootData = JSON.parse(response.Data)
+    if haskey(rootData, "errors")
         throw("Error: $(data["errors"])")
     end
-
-    return data["data"]["VARIABLE"][1]
+    data = get(rootData,"data",nothing)
+    if data === nothing return Dict() end
+    user = get(data,"USER",[])
+    if size(user)[1] < 1 return Dict() end
+    robots = get(user[1],"robots",[])
+    if size(robots)[1] < 1 return Dict() end
+    sessions = get(robots[1],"sessions",[])
+    if size(sessions)[1] < 1 return Dict() end
+    variables = get(sessions[1],"variables",[])
+    if size(variables)[1] < 1 return Dict() end
+    return variables[1]
 end
 
-function getVariableLabels(navAbilityClient::NavAbilityClient, client::Client)::Vector{String}
+function getVariables(navAbilityClient::NavAbilityClient, client::Client)::Vector{Dict{String,Any}}
     response = navAbilityClient.query(QueryOptions(
-        "VariableLabels",
-        QUERY_VARIABLE_LABELS,
+        "Variables",
+        QUERY_VARIABLES,
         Dict(
             "userId" => client.userId,
             "robotId" => client.robotId,
             "sessionId" => client.sessionId
         )
     ))
-    data = JSON.parse(response.Data)
-    if haskey(data, "errors")
+    rootData = JSON.parse(response.Data)
+    if haskey(rootData, "errors")
         throw("Error: $(data["errors"])")
     end
-    sessionData = data["data"]["SESSION"]
-    if size(sessionData)[1] < 1
-        return []
-    end
-
-    return map(v -> v["label"], sessionData[1]["variables"])
+    data = get(rootData,"data",nothing)
+    if data === nothing return [] end
+    user = get(data,"USER",[])
+    if size(user)[1] < 1 return [] end
+    robots = get(user[1],"robots",[])
+    if size(robots)[1] < 1 return [] end
+    sessions = get(robots[1],"sessions",[])
+    if size(sessions)[1] < 1 return [] end
+    return get(sessions[1],"variables",[])
 end
 
 function ls(navAbilityClient::NavAbilityClient, client::Client)::Vector{String}
-    getVariableLabels(navAbilityClient,client)
+    variables = getVariables(navAbilityClient,client)
+    return map(v -> v["label"], variables)
 end

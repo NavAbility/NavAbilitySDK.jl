@@ -5,8 +5,8 @@ function dump(factor::Factor)
     return json(factor)
 end
 
-function addFactor(navAbilityClient::NavAbilityClient, client::Client, factor::Factor)
-    navAbilityClient.mutate(MutationOptions(
+function addFactor(navAbilityClient::NavAbilityClient, client::Client, factor::Factor)::String
+    response = navAbilityClient.mutate(MutationOptions(
         "addFactor",
         MUTATION_ADDFACTOR,
         Dict(
@@ -16,9 +16,17 @@ function addFactor(navAbilityClient::NavAbilityClient, client::Client, factor::F
             )
         )
     ))
+    rootData = JSON.parse(response.Data)
+    if haskey(rootData, "errors")
+        throw("Error: $(data["errors"])")
+    end
+    data = get(rootData,"data",nothing)
+    if data === nothing return "Error" end
+    addFactor = get(data,"addFactor","Error")
+    return addFactor
 end
 
-function getFactor(navAbilityClient::NavAbilityClient, client::Client, label::String)
+function getFactor(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
     response = navAbilityClient.query(QueryOptions(
         "Factor",
         QUERY_FACTOR,
@@ -29,36 +37,49 @@ function getFactor(navAbilityClient::NavAbilityClient, client::Client, label::St
             "sessionId" => client.sessionId
         )
     ))
-    data = JSON.parse(response.Data)
-    if haskey(data, "errors")
+    rootData = JSON.parse(response.Data)
+    if haskey(rootData, "errors")
         throw("Error: $(data["errors"])")
     end
-
-    return data["data"]["FACTOR"][1]
+    data = get(rootData,"data",nothing)
+    if data === nothing return Dict() end
+    user = get(data,"USER",[])
+    if size(user)[1] < 1 return Dict() end
+    robots = get(user[1],"robots",[])
+    if size(robots)[1] < 1 return Dict() end
+    sessions = get(robots[1],"sessions",[])
+    if size(sessions)[1] < 1 return Dict() end
+    factors = get(sessions[1],"factors",[])
+    if size(factors)[1] < 1 return Dict() end
+    return factors[1]
 end
 
-function getFactorLabels(navAbilityClient::NavAbilityClient, client::Client)::Vector{String}
+function getFactors(navAbilityClient::NavAbilityClient, client::Client)::Vector{Dict{String,Any}}
     response = navAbilityClient.query(QueryOptions(
-        "FactorLabels",
-        QUERY_FACTOR_LABELS,
+        "Factors",
+        QUERY_FACTORS,
         Dict(
             "userId" => client.userId,
             "robotId" => client.robotId,
             "sessionId" => client.sessionId
         )
     ))
-    data = JSON.parse(response.Data)
-    if haskey(data, "errors")
+    rootData = JSON.parse(response.Data)
+    if haskey(rootData, "errors")
         throw("Error: $(data["errors"])")
     end
-    sessionData = data["data"]["SESSION"]
-    if size(sessionData)[1] < 1
-        return []
-    end
-
-    return map(v -> v["label"], sessionData[1]["factors"])
+    data = get(rootData,"data",nothing)
+    if data === nothing return [] end
+    user = get(data,"USER",[])
+    if size(user)[1] < 1 return [] end
+    robots = get(user[1],"robots",[])
+    if size(robots)[1] < 1 return [] end
+    sessions = get(robots[1],"sessions",[])
+    if size(sessions)[1] < 1 return [] end
+    return get(sessions[1],"factors",[])
 end
 
 function lsf(navAbilityClient::NavAbilityClient, client::Client)::Vector{String}
-    getVariableLabels(navAbilityClient,client)
+    factors = getFactors(navAbilityClient,client)
+    return map(v -> v["label"], factors)
 end

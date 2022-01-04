@@ -1,10 +1,12 @@
 include("./testVariable.jl")
 include("./testFactor.jl")
+include("./testSolve.jl")
 
 using Test
 using Random
 using .TestVariable
 using .TestFactor
+using .TestSolve
 
 apiUrl = get(ENV,"API_URL","https://api.d1.navability.io")
 userId = get(ENV,"USER_ID","Guest")
@@ -15,4 +17,5 @@ sessionId = get(ENV,"SESSION_ID",randstring(7))
     @info "Running nva-sdk-integration-testset..."
     TestVariable.RunTests(apiUrl, userId, robotId, sessionId)
     TestFactor.RunTests(apiUrl, userId, robotId, sessionId)
+    TestSolve.RunTests(apiUrl, userId, robotId, sessionId)
 end
