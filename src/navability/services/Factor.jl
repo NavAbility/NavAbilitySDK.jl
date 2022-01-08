@@ -6,13 +6,17 @@ function dump(factor::Factor)
 end
 
 function addFactor(navAbilityClient::NavAbilityClient, client::Client, factor::Factor)::String
+    addPackedVariable(navAbilityClient, client, dump(factor))
+end
+
+function addPackedFactor(navAbilityClient::NavAbilityClient, client::Client, factor::String)::String
     response = navAbilityClient.mutate(MutationOptions(
         "addFactor",
         MUTATION_ADDFACTOR,
         Dict(
             "factor" => Dict(
                 "client" => client,
-                "packedData" => dump(factor)
+                "packedData" => factor
             )
         )
     ))

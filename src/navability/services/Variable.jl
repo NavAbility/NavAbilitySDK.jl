@@ -6,13 +6,17 @@ function dump(variable::Variable)
 end
 
 function addVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Variable)::String
+    addPackedVariable(navAbilityClient, client, dump(variable))
+end
+
+function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, variable::String)::String
     response = navAbilityClient.mutate(MutationOptions(
         "addVariable",
         MUTATION_ADDVARIABLE,
         Dict(
             "variable" => Dict(
                 "client" => client,
-                "packedData" => dump(variable)
+                "packedData" => variable
             )
         )
     ))
