@@ -1,7 +1,7 @@
 using ..NavAbilitySDK
 using JSON
 
-function dump(variable::Variable)
+function dump(variable::Variable)::String
     return json(variable)
 end
 

@@ -1,12 +1,12 @@
 using ..NavAbilitySDK
 using JSON
 
-function dump(factor::Factor)
+function dump(factor::Factor)::String
     return json(factor)
 end
 
 function addFactor(navAbilityClient::NavAbilityClient, client::Client, factor::Factor)::String
-    return addPackedVariable(navAbilityClient, client, dump(factor))
+    return addPackedFactor(navAbilityClient, client, dump(factor))
 end
 
 function addPackedFactor(navAbilityClient::NavAbilityClient, client::Client, factor::String)::String
