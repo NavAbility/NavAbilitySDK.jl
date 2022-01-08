@@ -6,7 +6,7 @@ function dump(factor::Factor)
 end
 
 function addFactor(navAbilityClient::NavAbilityClient, client::Client, factor::Factor)::String
-    addPackedVariable(navAbilityClient, client, dump(factor))
+    return addPackedVariable(navAbilityClient, client, dump(factor))
 end
 
 function addPackedFactor(navAbilityClient::NavAbilityClient, client::Client, factor::String)::String

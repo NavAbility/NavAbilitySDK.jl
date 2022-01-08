@@ -38,9 +38,9 @@ include("./navability/services/Variable.jl")
 include("./navability/services/Factor.jl")
 include("./navability/services/Solve.jl")
 export getVariable, getVariables, ls
-export addVariable
+export addVariable, addPackedVariable
 export getFactor, getFactors, lsf
-export addFactor
+export addFactor, addPackedFactor
 export solveSession, solveFederated
 
 end

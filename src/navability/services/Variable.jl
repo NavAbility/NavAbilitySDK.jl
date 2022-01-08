@@ -6,7 +6,7 @@ function dump(variable::Variable)
 end
 
 function addVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Variable)::String
-    addPackedVariable(navAbilityClient, client, dump(variable))
+    return addPackedVariable(navAbilityClient, client, dump(variable))
 end
 
 function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, variable::String)::String
