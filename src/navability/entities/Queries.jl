@@ -9,6 +9,19 @@ QUERY_VARIABLE = """
             ppes {
               suggested
             }
+            timestamp {
+              formatted
+            }
+            tags
+            ppes {
+              solveKey
+              suggested
+              max
+              mean
+              lastUpdatedTimestamp {formatted}
+            }
+            smallData
+            solvable
           }
         }
       }
@@ -26,6 +39,19 @@ QUERY_VARIABLES = """
             ppes {
               suggested
             }
+            timestamp {
+              formatted
+            }
+            tags
+            ppes {
+              solveKey
+              suggested
+              max
+              mean
+              lastUpdatedTimestamp {formatted}
+            }
+            smallData
+            solvable
           }
         }
       }

@@ -80,7 +80,8 @@ function getVariables(navAbilityClient::NavAbilityClient, client::Client)::Vecto
     if size(robots)[1] < 1 return [] end
     sessions = get(robots[1],"sessions",[])
     if size(sessions)[1] < 1 return [] end
-    return get(sessions[1],"variables",[])
+    variables = get(sessions[1],"variables",[])
+    return variables
 end
 
 function ls(navAbilityClient::NavAbilityClient, client::Client)::Vector{String}
