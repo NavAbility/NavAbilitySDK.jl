@@ -103,7 +103,13 @@ QUERY_FACTOR = """
         sessions(filter:{id:\$sessionId}) {
           factors(filter:{label:\$label}) {
             label
+            timestamp {formatted}
             fnctype
+            tags
+            solvable
+            data
+            _variableOrderSymbols
+            _version
           }
         }
       }
@@ -117,7 +123,13 @@ QUERY_FACTORS = """
         sessions(filter:{id:\$sessionId}) {
           factors {
             label
+            timestamp {formatted}
             fnctype
+            tags
+            solvable
+            data
+            _variableOrderSymbols
+            _version
           }
         }
       }

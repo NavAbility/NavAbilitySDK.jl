@@ -38,7 +38,6 @@ function getVariable(navAbilityClient::NavAbilityClient, client::Client, label::
         )
     ))
     rootData = JSON.parse(response.Data)
-    @info rootData
     if haskey(rootData, "errors")
         throw("Error: $(data["errors"])")
     end
