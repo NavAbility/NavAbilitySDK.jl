@@ -30,6 +30,10 @@ function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, v
     return addVariable
 end
 
+function addVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Variable)::String
+    return addPackedVariable(navAbilityClient, client, variable)
+end
+
 function getVariable(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
     response = navAbilityClient.query(QueryOptions(
         "Variable",
@@ -42,6 +46,7 @@ function getVariable(navAbilityClient::NavAbilityClient, client::Client, label::
         )
     ))
     rootData = JSON.parse(response.Data)
+    @info rootData
     if haskey(rootData, "errors")
         throw("Error: $(data["errors"])")
     end

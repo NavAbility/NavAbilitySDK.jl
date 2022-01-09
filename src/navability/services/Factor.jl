@@ -30,6 +30,10 @@ function addPackedFactor(navAbilityClient::NavAbilityClient, client::Client, fac
     return addFactor
 end
 
+function addFactor(navAbilityClient::NavAbilityClient, client::Client, factor::Factor)::String
+    return addPackedFactor(navAbilityClient, client, factor)
+end
+
 function getFactor(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
     response = navAbilityClient.query(QueryOptions(
         "Factor",
