@@ -5,9 +5,41 @@ QUERY_VARIABLE = """
         sessions(filter:{id:\$sessionId}) {
           variables(filter:{label:\$label}) {
             label
+            timestamp {formatted}
             variableType
+            smallData
+            solvable
+            tags
+            _version
+            _id
             ppes {
+              solveKey
               suggested
+              max
+              mean
+              lastUpdatedTimestamp {formatted}
+            }
+            solverData 
+            {
+              solveKey
+              BayesNetOutVertIDs
+              BayesNetVertID
+              dimIDs
+              dimbw
+              dims
+              dimval
+              dontmargin
+              eliminated
+              infoPerCoord
+              initialized
+              ismargin
+              separator
+              solveInProgress
+              solvedCount
+              variableType
+              vecbw
+              vecval
+              _version
             }
           }
         }
@@ -22,9 +54,41 @@ QUERY_VARIABLES = """
         sessions(filter:{id:\$sessionId}) {
           variables {
             label
+            timestamp {formatted}
             variableType
+            smallData
+            solvable
+            tags
+            _version
+            _id
             ppes {
+              solveKey
               suggested
+              max
+              mean
+              lastUpdatedTimestamp {formatted}
+            }
+            solverData 
+            {
+              solveKey
+              BayesNetOutVertIDs
+              BayesNetVertID
+              dimIDs
+              dimbw
+              dims
+              dimval
+              dontmargin
+              eliminated
+              infoPerCoord
+              initialized
+              ismargin
+              separator
+              solveInProgress
+              solvedCount
+              variableType
+              vecbw
+              vecval
+              _version
             }
           }
         }
