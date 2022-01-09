@@ -1,18 +1,14 @@
 using ..NavAbilitySDK
 using JSON
 
-function dump(factor::Factor)
-    return json(factor)
-end
-
-function addFactor(navAbilityClient::NavAbilityClient, client::Client, factor::Factor)::String
+function addPackedFactor(navAbilityClient::NavAbilityClient, client::Client, factor)::String
     response = navAbilityClient.mutate(MutationOptions(
         "addFactor",
         MUTATION_ADDFACTOR,
         Dict(
             "factor" => Dict(
                 "client" => client,
-                "packedData" => dump(factor)
+                "packedData" => json(factor)
             )
         )
     ))
@@ -24,6 +20,10 @@ function addFactor(navAbilityClient::NavAbilityClient, client::Client, factor::F
     if data === nothing return "Error" end
     addFactor = get(data,"addFactor","Error")
     return addFactor
+end
+
+function addFactor(navAbilityClient::NavAbilityClient, client::Client, factor::Factor)::String
+    return addPackedFactor(navAbilityClient, client, factor)
 end
 
 function getFactor(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}

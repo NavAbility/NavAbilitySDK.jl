@@ -1,18 +1,14 @@
 using ..NavAbilitySDK
 using JSON
 
-function dump(variable::Variable)
-    return json(variable)
-end
-
-function addVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Variable)::String
+function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, variable)::String
     response = navAbilityClient.mutate(MutationOptions(
         "addVariable",
         MUTATION_ADDVARIABLE,
         Dict(
             "variable" => Dict(
                 "client" => client,
-                "packedData" => dump(variable)
+                "packedData" => json(variable)
             )
         )
     ))
@@ -24,6 +20,10 @@ function addVariable(navAbilityClient::NavAbilityClient, client::Client, variabl
     if data === nothing return "Error" end
     addVariable = get(data,"addVariable","Error")
     return addVariable
+end
+
+function addVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Variable)::String
+    return addPackedVariable(navAbilityClient, client, variable)
 end
 
 function getVariable(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
@@ -38,6 +38,7 @@ function getVariable(navAbilityClient::NavAbilityClient, client::Client, label::
         )
     ))
     rootData = JSON.parse(response.Data)
+    @info rootData
     if haskey(rootData, "errors")
         throw("Error: $(data["errors"])")
     end
