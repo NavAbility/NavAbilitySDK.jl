@@ -22,6 +22,7 @@ Unmarshal = "cbff2730-442d-58d7-89d1-8e530c41eb02"
 [compat]
 Diana = "0.2"
 DistributedFactorGraphs = "0.17"
+DocStringExtensions = "0.8"
 IncrementalInference = "0.26"
 JSON = "0.21"
 JSONWebTokens = "1.1"
