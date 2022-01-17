@@ -23,8 +23,12 @@ Unmarshal = "cbff2730-442d-58d7-89d1-8e530c41eb02"
 Diana = "0.2"
 DistributedFactorGraphs = "0.17"
 IncrementalInference = "0.26"
-RoME = "0.17"
+JSON = "0.21"
+JSONWebTokens = "1.1"
 julia = "1.6"
+Reexport = "0.2"
+RoME = "0.17"
+Unmarshal = "0.4"
 
 [extras]
 IncrementalInference = "904591bb-b899-562f-9e6f-b8df64c7d480"
