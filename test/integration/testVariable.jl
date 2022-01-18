@@ -89,7 +89,7 @@ function testGetVariables(apiUrl, userId, robotId, sessionId)
         end
     end
     if !addSucceeded return false end
-    variables = getVariables(client,context)
+    variables = getVariables(client,context;detail=SUMMARY)
     for v in variables
         if !haskey(v,"label") || !haskey(v,"variableType")
             return false

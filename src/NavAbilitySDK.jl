@@ -45,7 +45,7 @@ export FactorType, Factor
 include("./navability/services/Variable.jl")
 include("./navability/services/Factor.jl")
 include("./navability/services/Solve.jl")
-export QueryDetail
+export QueryDetail, LABEL, SKELETON, SUMMARY, FULL
 export getVariable, getVariables, listVariables, ls
 export addVariable, addPackedVariable
 export getFactor, getFactors, listFactors, lsf

@@ -28,7 +28,7 @@ end
 
 function getVariable(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
     response = navAbilityClient.query(QueryOptions(
-        "Variable",
+        "sdk_get_variable",
         """
             $GQL_FRAGMENT_VARIABLES
             $GQL_GETVARIABLE
@@ -57,9 +57,9 @@ function getVariable(navAbilityClient::NavAbilityClient, client::Client, label::
     return variables[1]
 end
 
-function getVariables(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = QueryDetail.SKELETON)::Vector{Dict{String,Any}}
+function getVariables(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON)::Vector{Dict{String,Any}}
     response = navAbilityClient.query(QueryOptions(
-        "Variables",
+        "sdk_get_variables",
         """
             $GQL_FRAGMENT_VARIABLES
             $GQL_GETVARIABLES
@@ -68,8 +68,8 @@ function getVariables(navAbilityClient::NavAbilityClient, client::Client; detail
             "userId" => client.userId,
             "robotId" => client.robotId,
             "sessionId" => client.sessionId,
-            "fields_summary" => detail === QueryDetail.SUMMARY,
-            "fields_full" => detail === QueryDetail.FULL,
+            "fields_summary" => detail === SUMMARY,
+            "fields_full" => detail === FULL,
         )
     ))
     rootData = JSON.parse(response.Data)
