@@ -79,7 +79,11 @@ function getFactors(navAbilityClient::NavAbilityClient, client::Client)::Vector{
     return get(sessions[1],"factors",[])
 end
 
-function lsf(navAbilityClient::NavAbilityClient, client::Client)::Vector{String}
+function listFactors(navAbilityClient::NavAbilityClient, client::Client)::Vector{String}
     factors = getFactors(navAbilityClient,client)
     return map(v -> v["label"], factors)
+end
+
+function lsf(navAbilityClient::NavAbilityClient, client::Client)::Vector{String}
+    return listFactors(navAbilityClient,client)
 end

@@ -26,10 +26,10 @@ DocStringExtensions = "0.8"
 IncrementalInference = "0.26"
 JSON = "0.21"
 JSONWebTokens = "1.1"
-julia = "1.6"
 Reexport = "0.2"
 RoME = "0.17"
 Unmarshal = "0.4"
+julia = "1.6"
 
 [extras]
 IncrementalInference = "904591bb-b899-562f-9e6f-b8df64c7d480"
