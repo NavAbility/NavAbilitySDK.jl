@@ -28,8 +28,11 @@ end
 
 function getVariable(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
     response = navAbilityClient.query(QueryOptions(
-        "Variable",
-        QUERY_VARIABLE,
+        "sdk_get_variable",
+        """
+            $GQL_FRAGMENT_VARIABLES
+            $GQL_GETVARIABLE
+        """,
         Dict(
             "label" => label,
             "userId" => client.userId,
@@ -54,14 +57,19 @@ function getVariable(navAbilityClient::NavAbilityClient, client::Client, label::
     return variables[1]
 end
 
-function getVariables(navAbilityClient::NavAbilityClient, client::Client)::Vector{Dict{String,Any}}
+function getVariables(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON)::Vector{Dict{String,Any}}
     response = navAbilityClient.query(QueryOptions(
-        "Variables",
-        QUERY_VARIABLES,
+        "sdk_get_variables",
+        """
+            $GQL_FRAGMENT_VARIABLES
+            $GQL_GETVARIABLES
+        """,
         Dict(
             "userId" => client.userId,
             "robotId" => client.robotId,
-            "sessionId" => client.sessionId
+            "sessionId" => client.sessionId,
+            "fields_summary" => detail === SUMMARY,
+            "fields_full" => detail === FULL,
         )
     ))
     rootData = JSON.parse(response.Data)
@@ -79,7 +87,11 @@ function getVariables(navAbilityClient::NavAbilityClient, client::Client)::Vecto
     return get(sessions[1],"variables",[])
 end
 
-function ls(navAbilityClient::NavAbilityClient, client::Client)::Vector{String}
+function listVariables(navAbilityClient::NavAbilityClient, client::Client)::Vector{String}
     variables = getVariables(navAbilityClient,client)
     return map(v -> v["label"], variables)
+end
+
+function ls(navAbilityClient::NavAbilityClient, client::Client)::Vector{String}
+    return listVariables(navAbilityClient,client)
 end

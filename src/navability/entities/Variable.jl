@@ -8,6 +8,13 @@ DFG_VERSION = "0.17.1";
     POSE2
 end
 
+@enum QueryDetail begin
+  LABEL
+  SKELETON
+  SUMMARY
+  FULL
+end
+
 struct Variable
     label::String
     dataEntry::String

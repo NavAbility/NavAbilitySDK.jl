@@ -53,7 +53,7 @@ function testSolveSession(apiUrl, userId, robotId, sessionId)
     solveSession(client,context)
     successfullySolved = false
     for i in 1:MAX_POLLING_TRIES
-        variables = getVariables(client,context)
+        variables = getVariables(client,context;detail=SUMMARY)
         if all([validatePPEs(v) for v in variables])
             successfullySolved = true
             break
