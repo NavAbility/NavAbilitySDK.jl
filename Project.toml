@@ -1,9 +1,9 @@
 name = "NavAbilitySDK"
 uuid = "f3e6a059-199c-4ada-8143-fcefb97e6165"
-keywords = ["graphical models", "SLAM", "inference", "factor graphs", "SDK"]
-desc = "SDK provided by NavAbility to use their cloud computer infrastructure for sensor fusion."
+keywords = ["navability", "navigation", "slam", "sdk", "robotics", "robots"]
+desc = "NavAbility SDK: Access NavAbility Cloud factor graph features. Note that this SDK and the related API are still in development. Please let us know if you have any issues at info@navability.io."
 authors = ["NavAbility <info@navability.io>"]
-version = "0.1.1"
+version = "0.2.0"
 
 [deps]
 Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
@@ -14,7 +14,6 @@ DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 IncrementalInference = "904591bb-b899-562f-9e6f-b8df64c7d480"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 JSONWebTokens = "9b8beb19-0777-58c6-920b-28f749fee4d3"
-Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 RoME = "91fb55c2-4c03-5a59-ba21-f4ea956187b8"
 UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 Unmarshal = "cbff2730-442d-58d7-89d1-8e530c41eb02"
@@ -26,7 +25,6 @@ DocStringExtensions = "0.8"
 IncrementalInference = "0.26"
 JSON = "0.21"
 JSONWebTokens = "1.1"
-Reexport = "0.2"
 RoME = "0.17"
 Unmarshal = "0.4"
 julia = "1.6"

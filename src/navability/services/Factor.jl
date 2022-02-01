@@ -14,7 +14,7 @@ function addPackedFactor(navAbilityClient::NavAbilityClient, client::Client, fac
     ))
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
-        throw("Error: $(data["errors"])")
+        throw("Error: $(rootData["errors"])")
     end
     data = get(rootData,"data",nothing)
     if data === nothing return "Error" end
@@ -28,8 +28,11 @@ end
 
 function getFactor(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
     response = navAbilityClient.query(QueryOptions(
-        "Factor",
-        QUERY_FACTOR,
+        "sdk_get_factor",
+        """
+            $GQL_FRAGMENT_FACTORS
+            $GQL_GETFACTOR
+        """,
         Dict(
             "label" => label,
             "userId" => client.userId,
@@ -39,11 +42,11 @@ function getFactor(navAbilityClient::NavAbilityClient, client::Client, label::St
     ))
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
-        throw("Error: $(data["errors"])")
+        throw("Error: $(rootData["errors"])")
     end
     data = get(rootData,"data",nothing)
     if data === nothing return Dict() end
-    user = get(data,"USER",[])
+    user = get(data,"users",[])
     if size(user)[1] < 1 return Dict() end
     robots = get(user[1],"robots",[])
     if size(robots)[1] < 1 return Dict() end
@@ -54,23 +57,28 @@ function getFactor(navAbilityClient::NavAbilityClient, client::Client, label::St
     return factors[1]
 end
 
-function getFactors(navAbilityClient::NavAbilityClient, client::Client)::Vector{Dict{String,Any}}
+function getFactors(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON)::Vector{Dict{String,Any}}
     response = navAbilityClient.query(QueryOptions(
-        "Factors",
-        QUERY_FACTORS,
+        "sdk_get_factors",
+        """
+            $GQL_FRAGMENT_FACTORS
+            $GQL_GETFACTORS
+        """,
         Dict(
             "userId" => client.userId,
             "robotId" => client.robotId,
-            "sessionId" => client.sessionId
+            "sessionId" => client.sessionId,
+            "fields_summary" => detail === SUMMARY,
+            "fields_full" => detail === FULL,
         )
     ))
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
-        throw("Error: $(data["errors"])")
+        throw("Error: $(rootData["errors"])")
     end
     data = get(rootData,"data",nothing)
     if data === nothing return [] end
-    user = get(data,"USER",[])
+    user = get(data,"users",[])
     if size(user)[1] < 1 return [] end
     robots = get(user[1],"robots",[])
     if size(robots)[1] < 1 return [] end
