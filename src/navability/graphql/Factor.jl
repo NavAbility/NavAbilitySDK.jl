@@ -1,14 +1,14 @@
 GQL_FRAGMENT_FACTORS = """
-  fragment factor_skeleton_fields on FACTOR {
+  fragment factor_skeleton_fields on Factor {
     label
     tags
     _variableOrderSymbols
   }
-  fragment factor_summary_fields on FACTOR {
-    timestamp {formatted}
+  fragment factor_summary_fields on Factor {
+    timestamp
     _version
   }
-  fragment factor_full_fields on FACTOR {
+  fragment factor_full_fields on Factor {
     fnctype
     solvable
     data
@@ -16,15 +16,15 @@ GQL_FRAGMENT_FACTORS = """
   """
 
 GQL_GETFACTOR = """
-  query sdk_get_variable(
+  query sdk_get_factor(
       \$userId: ID!, 
       \$robotId: ID!, 
       \$sessionId: ID!,
       \$label: ID!) {
-    USER(id: \$userId) {
-      robots(filter:{id: \$robotId}) {
-        sessions(filter:{id: \$sessionId}) {
-          factors(filter:{label: \$label}) {
+      users(where:{id:\$userId}) {
+        robots(where:{id: \$robotId}) {
+          sessions(where:{id: \$sessionId}) {
+            factors(where:{label: \$label}) {
             ...factor_skeleton_fields
             ...factor_summary_fields
             ...factor_full_fields
@@ -41,11 +41,11 @@ GQL_GETFACTORS = """
       \$sessionId: ID!,
       \$fields_summary: Boolean! = false, 
       \$fields_full: Boolean! = false){
-    USER(id: \$userId) {
+    users(where:{id:\$userId}) {
       name
-      robots(filter:{id: \$robotId}) {
+      robots(where:{id: \$robotId}) {
         name
-        sessions(filter:{id: \$sessionId}){
+        sessions(where:{id: \$sessionId}){
           name
           factors {
             ...factor_skeleton_fields
@@ -62,21 +62,21 @@ GQL_GETFACTORSFILTERED = """
       \$userId: ID!, 
       \$robotIds: [ID!]!, 
       \$sessionIds: [ID!]!, 
-      \$factor_label_regexp: ID = ".*",
-      \$factor_tags: [String!] = ["FACTOR"],
+      \$factor_label_regexp: String = ".*",
+      \$factor_tags: [String] = ["FACTOR"],
       \$solvable: Int! = 0,
       \$fields_summary: Boolean! = false, 
       \$fields_full: Boolean! = false){
-    USER(id: \$userId) {
+    users(where:{id:\$userId}) {
       name
-      robots(filter:{id_in: \$robotIds}) {
+      robots(where:{id_IN: \$robotIds}) {
         name
-        sessions(filter:{id_in: \$sessionIds}){
+        sessions(where:{id_IN: \$sessionIds}){
           name
-          factors(filter:{
-              label_regexp: \$factor_label_regexp, 
-              tags_contains: \$factor_tags, 
-              solvable_gte: \$solvable}) {
+          factors(where:{
+            label_MATCHES: \$factor_label_regexp, 
+          	tags: \$factor_tags, 
+          	solvable_GTE: \$solvable}) {
             ...factor_skeleton_fields
             ...factor_summary_fields @include(if: \$fields_summary)
             ...factor_full_fields @include(if: \$fields_full)

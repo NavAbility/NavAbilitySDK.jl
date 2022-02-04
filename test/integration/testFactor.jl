@@ -150,7 +150,7 @@ function testGetFactors(apiUrl, userId, robotId, sessionId)
     end
     if !factorAddSucceeded return false end
 
-    factors = getFactors(client,context)
+    factors = getFactors(client,context;detail=FULL)
     for f in factors
         if !haskey(f,"label") || !haskey(f,"fnctype")
             return false

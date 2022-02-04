@@ -14,7 +14,7 @@ function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, v
     ))
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
-        throw("Error: $(data["errors"])")
+        throw("Error: $(rootData["errors"])")
     end
     data = get(rootData,"data",nothing)
     if data === nothing return "Error" end
@@ -42,11 +42,11 @@ function getVariable(navAbilityClient::NavAbilityClient, client::Client, label::
     ))
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
-        throw("Error: $(data["errors"])")
+        throw("Error: $(rootData["errors"])")
     end
     data = get(rootData,"data",nothing)
     if data === nothing return Dict() end
-    user = get(data,"USER",[])
+    user = get(data,"users",[])
     if size(user)[1] < 1 return Dict() end
     robots = get(user[1],"robots",[])
     if size(robots)[1] < 1 return Dict() end
@@ -74,11 +74,11 @@ function getVariables(navAbilityClient::NavAbilityClient, client::Client; detail
     ))
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
-        throw("Error: $(data["errors"])")
+        throw("Error: $(rootData["errors"])")
     end
     data = get(rootData,"data",nothing)
     if data === nothing return [] end
-    user = get(data,"USER",[])
+    user = get(data,"users",[])
     if size(user)[1] < 1 return [] end
     robots = get(user[1],"robots",[])
     if size(robots)[1] < 1 return [] end
