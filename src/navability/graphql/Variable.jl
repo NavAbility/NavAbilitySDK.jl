@@ -96,8 +96,8 @@ GQL_GETVARIABLESFILTERED = """
       \$userId: ID!, 
       \$robotIds: [ID!]!, 
       \$sessionIds: [ID!]!, 
-      \$variable_label_regexp: ID = ".*",
-      \$variable_tags: [String!] = ["VARIABLE"],
+      \$variable_label_regexp: String = ".*",
+      \$variable_tags: [String] = ["VARIABLE"],
       \$solvable: Int! = 0,
       \$fields_summary: Boolean! = false, 
       \$fields_full: Boolean! = false){
@@ -109,7 +109,7 @@ GQL_GETVARIABLESFILTERED = """
           name
           variables(where:{
               label_MATCHES: \$variable_label_regexp, 
-              tags_INCLUDES: \$variable_tags, 
+              tags: \$variable_tags, 
               solvable_GTE: \$solvable}) {
             ...variable_skeleton_fields
             ...variable_summary_fields @include(if: \$fields_summary)

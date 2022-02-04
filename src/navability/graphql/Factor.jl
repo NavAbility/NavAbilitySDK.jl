@@ -62,8 +62,8 @@ GQL_GETFACTORSFILTERED = """
       \$userId: ID!, 
       \$robotIds: [ID!]!, 
       \$sessionIds: [ID!]!, 
-      \$factor_label_regexp: ID = ".*",
-      \$factor_tags: [String!] = ["FACTOR"],
+      \$factor_label_regexp: String = ".*",
+      \$factor_tags: [String] = ["FACTOR"],
       \$solvable: Int! = 0,
       \$fields_summary: Boolean! = false, 
       \$fields_full: Boolean! = false){
@@ -75,7 +75,7 @@ GQL_GETFACTORSFILTERED = """
           name
           factors(where:{
             label_MATCHES: \$factor_label_regexp, 
-          	tags_INCLUDES: \$factor_tags, 
+          	tags: \$factor_tags, 
           	solvable_GTE: \$solvable}) {
             ...factor_skeleton_fields
             ...factor_summary_fields @include(if: \$fields_summary)

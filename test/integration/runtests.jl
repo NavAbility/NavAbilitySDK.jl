@@ -8,7 +8,7 @@ using .TestVariable
 using .TestFactor
 using .TestSolve
 
-apiUrl = get(ENV,"API_URL","http://localhost:4343")
+apiUrl = get(ENV,"API_URL","https://api.d1.navability.io")
 userId = get(ENV,"USER_ID","Guest")
 robotId = get(ENV,"ROBOT_ID","IntegrationRobot")
 sessionId = get(ENV,"SESSION_ID","TestSession"*randstring(7))
