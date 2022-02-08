@@ -1,11 +1,3 @@
-QUERY_FILES = """
-  query Files {
-    files {
-      id
-      filename
-    }
-  }"""
-
 QUERY_CALIBRATION = """
   query Calibration(\$fileId: ID!) {
     calibration(fileId: \$fileId) {
@@ -41,32 +33,6 @@ MUTATION_SOLVEFEDERATED = """
 MUTATION_DEMOCANONICALHEXAGONAL = """
   mutation demoCanonicalHexagonal (\$client: ClientInput!) {
     demoCanonicalHexagonal(client: \$client)
-  }"""
-
-MUTATION_CREATE_UPLOAD = """
-  mutation CreateUpload (\$file: FileInput!, \$parts: Int) {
-    createUpload(file: \$file, parts: \$parts) {
-      uploadId
-      file {
-        id
-        filename
-        filesize
-      }
-      parts {
-        partNumber
-        url
-      }
-    }
-  }"""
-
-MUTATION_ABORT_UPLOAD = """
-  mutation AbortUpload (\$fileId: ID!, \$uploadId: ID!) {
-    abortUpload(fileId: \$fileId, uploadId: \$uploadId)
-  }"""
-
-MUTATION_COMPLETE_UPLOAD = """
-  mutation CompleteUpload (\$fileId: ID!, \$completedUpload: CompletedUploadInput!) {
-    completeUpload(fileId: \$fileId, completedUpload: \$completedUpload)
   }"""
 
 MUTATION_PROC_CALIBRATION = """
