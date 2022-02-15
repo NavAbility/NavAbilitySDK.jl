@@ -68,7 +68,7 @@ function getVariables(navAbilityClient::NavAbilityClient, client::Client; detail
             "userId" => client.userId,
             "robotId" => client.robotId,
             "sessionId" => client.sessionId,
-            "fields_summary" => detail === SUMMARY,
+            "fields_summary" => detail === SUMMARY || detail === FULL,
             "fields_full" => detail === FULL,
         )
     ))
