@@ -26,7 +26,7 @@ DocStringExtensions = "0.8"
 IncrementalInference = "0.26"
 JSON = "0.21"
 JSONWebTokens = "1.1"
-RoME = "0.17"
+RoME = "0.17, 0.18"
 Unmarshal = "0.4"
 julia = "1.6"
 
