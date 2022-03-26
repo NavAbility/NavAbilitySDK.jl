@@ -16,5 +16,10 @@
   )
   @test JSON.json(f) == "{\"eliminated\":false,\"potentialused\":false,\"edgeIDs\":[],\"fnc\":{\"corners\":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],\"homography\":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],\"K\":[300.0,0.0,0.0,0.0,300.0,0.0,180.0,120.0,1.0],\"taglength\":0.25,\"id\":0,\"_type\":\"/application/JuliaLang/PackedPose2AprilTag4Corners\"},\"multihypo\":[],\"certainhypo\":[1,2],\"nullhypo\":0.0,\"solveInProgress\":0,\"inflation\":3.0}"
 
-
+  # Pose2Point2BearingRange
+  f = Pose2Point2BearingRange(
+    bearing=Normal(0, 5),
+    range=Normal(20, 0)
+  )
+  @test JSON.json(f) == "{\"eliminated\":false,\"potentialused\":false,\"edgeIDs\":[],\"fnc\":{\"bearstr\":{\"mu\":0.0,\"sigma\":5.0,\"_type\":\"IncrementalInference.PackedNormal\"},\"rangstr\":{\"mu\":20.0,\"sigma\":0.0,\"_type\":\"IncrementalInference.PackedNormal\"}},\"multihypo\":[],\"certainhypo\":[1,2],\"nullhypo\":0.0,\"solveInProgress\":0,\"inflation\":3.0}"
 end

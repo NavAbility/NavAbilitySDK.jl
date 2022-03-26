@@ -58,6 +58,18 @@ end
 
 """
 $(SIGNATURES)
+Create a Pose2->Point2 bearing+range factor with distributions:
+- bearing: The bearing from the pose to the point, default `Normal(0, 1)`.
+- range: The range from the pose to the point, default `Normal(1, 1)`.
+"""
+function Pose2Point2BearingRange(;bearing::Distribution = Normal(0, 1), range::Distribution = Normal(1, 1))::FactorData
+    data = FactorData(fnc = Pose2Point2BearingRangeInferenceType(bearing, range), certainhypo = [1, 2])
+    return data
+end
+
+
+"""
+$(SIGNATURES)
 Create a AprilTags factor that directly relates a Pose2 to the information from an AprilTag reading.
 Corners need to be provided, homography and tag length are defaulted and can be overwritten.
 """
@@ -72,6 +84,8 @@ function Pose2AprilTag4CornersData(id, corners::Vector{Float64}, homography::Vec
     data = FactorData(fnc = fnc, certainhypo = [1, 2])
     return data
 end
+
+
 
 function Factor(label::String, fncType::String, variableOrderSymbols::Vector{String}, data::FactorData; tags::Vector{String}=["FACTOR"], timestamp::String = string(now(Dates.UTC))*"Z")::Factor
     # TODO: Remove independent updates of this and set certainhypo here.
