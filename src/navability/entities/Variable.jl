@@ -3,12 +3,13 @@ using JSON
 
 DFG_VERSION = "0.18.1";
 
-#TODO: Is this used? If not, we should remove.
-@enum VariableType begin
-    POINT2
-    POSE2
-    CONTINUOUSSCALAR
-end
+_variableTypeConvert = Dict{Symbol, String}(
+    :Point2 => "RoME.Point2",
+    :Pose2 => "RoME.Pose2",
+    :ContinuousScalar => "IncrementalInference.ContinuousScalar",
+    # TBD - https://github.com/JuliaRobotics/Caesar.jl/discussions/810
+    :Pose1 => "IncrementalInference.ContinuousScalar"
+)
 
 struct Variable
     label::String
@@ -84,13 +85,16 @@ function _getSolverDataDict(variableType::String, solveKey::String)::SolverDataD
     throw(error("Variable type '$(variableType)' not supported."))
 end
 
-function Variable(label::String, type::String, tags::Vector{String} = ["VARIABLE"], timestamp::String = string(now(Dates.UTC))*"Z")::Variable
-    solverDataDict = Dict("default" => _getSolverDataDict(type, "default"))
+function Variable(label::String, type::Union{String, Symbol}, tags::Vector{String} = ["VARIABLE"], timestamp::String = string(now(Dates.UTC))*"Z")::Variable
+    variableType = type isa Symbol ? get(_variableTypeConvert, type, Nothing) : type
+    type == Nothing && error("Variable type '$(type) is not supported")
+
+    solverDataDict = Dict("default" => _getSolverDataDict(variableType, "default"))
     result = Variable(
         label,
         "{}",
         "0",
-        type,
+        variableType,
         "{}",
         "{}",
         json(solverDataDict),

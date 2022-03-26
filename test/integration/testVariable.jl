@@ -11,7 +11,7 @@ function testAddVariable(apiUrl, userId, robotId, sessionId)
     client = NavAbilityHttpsClient(apiUrl)
     context = Client(userId,robotId,sessionId)
     testVariableLabels = ["x0", "x1"]
-    testVariableTypes = ["RoME.Pose2","RoME.Pose2"]
+    testVariableTypes = [:Pose2,"RoME.Pose2"] # Test both types
     addVariable(client,context,Variable(testVariableLabels[1], testVariableTypes[1]))
     addVariable(client,context,Variable(testVariableLabels[2], testVariableTypes[2]))
     return true
@@ -21,7 +21,7 @@ function testLs(apiUrl, userId, robotId, sessionId)
     client = NavAbilityHttpsClient(apiUrl)
     context = Client(userId,robotId,sessionId)
     testVariableLabels = ["x0", "x1"]
-    testVariableTypes = ["RoME.Pose2","RoME.Pose2"]
+    testVariableTypes = [:Pose2,"RoME.Pose2"]
     addVariable(client,context,Variable(testVariableLabels[1], testVariableTypes[1]))
     addVariable(client,context,Variable(testVariableLabels[2], testVariableTypes[2]))
     for i in 1:MAX_POLLING_TRIES
@@ -41,7 +41,8 @@ function testGetVariable(apiUrl, userId, robotId, sessionId)
     client = NavAbilityHttpsClient(apiUrl)
     context = Client(userId,robotId,sessionId)
     testVariableLabels = ["x0", "x1"]
-    testVariableTypes = ["RoME.Pose2","RoME.Pose2"]
+    testVariableTypes = [:Pose2,"RoME.Pose2"]
+    testVariableTypeStrings = ["RoME.Pose2","RoME.Pose2"]
     addVariable(client,context,Variable(testVariableLabels[1], testVariableTypes[1]))
     addVariable(client,context,Variable(testVariableLabels[2], testVariableTypes[2]))
     addSucceeded = false
@@ -62,7 +63,7 @@ function testGetVariable(apiUrl, userId, robotId, sessionId)
         if !(actualVariable["label"] == testVariableLabels[i])
             return false
         end
-        if !(actualVariable["variableType"] == testVariableTypes[i])
+        if !(actualVariable["variableType"] == testVariableTypeStrings[i])
             return false
         end
     end
@@ -73,7 +74,7 @@ function testGetVariables(apiUrl, userId, robotId, sessionId)
     client = NavAbilityHttpsClient(apiUrl)
     context = Client(userId,robotId,sessionId)
     testVariableLabels = ["x0", "x1"]
-    testVariableTypes = ["RoME.Pose2","RoME.Pose2"]
+    testVariableTypes = [:Pose2,"RoME.Pose2"]
     addVariable(client,context,Variable(testVariableLabels[1], testVariableTypes[1]))
     addVariable(client,context,Variable(testVariableLabels[2], testVariableTypes[2]))
     addSucceeded = false
