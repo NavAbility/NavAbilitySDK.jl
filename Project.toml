@@ -3,16 +3,19 @@ uuid = "f3e6a059-199c-4ada-8143-fcefb97e6165"
 keywords = ["navability", "navigation", "slam", "sdk", "robotics", "robots"]
 desc = "NavAbility SDK: Access NavAbility Cloud factor graph features. Note that this SDK and the related API are still in development. Please let us know if you have any issues at info@navability.io."
 authors = ["NavAbility <info@navability.io>"]
-version = "0.3.0"
+version = "0.4.0"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 Diana = "070d9d8b-17a7-5814-83fa-42438ba5c6e0"
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]
 Diana = "0.2"
+DocStringExtensions = "0.8, 0.9, 0.10, 1"
 JSON = "0.21"
 julia = "1.6, 1.7"
 
