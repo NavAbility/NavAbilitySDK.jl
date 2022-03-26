@@ -34,12 +34,24 @@ end
 
 """
 $(SIGNATURES)
-Create a prior for a Pose2 factor with a distribution Z representing (x,y,theta) prior information, 
+Create a prior factor for a Pose2 with a distribution Z representing (x,y,theta) prior information, 
     e.g. `FullNormal([0.0, 0.0, 0.0], diagm([0.01, 0.01, 0.01]))`.
 
 Default value of Z = `FullNormal([0.0, 0.0, 0.0], diagm([0.01, 0.01, 0.01]))`.
 """
 function PriorPose2Data(;Z::Distribution = FullNormal([0.0, 0.0, 0.0], diagm([0.01, 0.01, 0.01])))::FactorData
+    data = FactorData(fnc = ZInferenceType(Z), certainhypo = [1])
+    return data
+end
+
+"""
+$(SIGNATURES)
+Create a prior factor for a Point2 with a distribution Z representing (x,y) prior information, 
+    e.g. `FullNormal([0.0, 0.0.0], diagm([0.01, 0.01]))`.
+
+Default value of Z = `FullNormal([0.0, 0.0], diagm([0.01, 0.01]))`.
+"""
+function PriorPoint2Data(;Z::Distribution = FullNormal([0.0, 0.0], diagm([0.01, 0.01])))::FactorData
     data = FactorData(fnc = ZInferenceType(Z), certainhypo = [1])
     return data
 end
@@ -58,6 +70,28 @@ end
 
 """
 $(SIGNATURES)
+Create a Pose2->Point2 bearing+range factor with 1D distributions:
+- bearing: The bearing from the pose to the point, default `Normal(0, 1)`.
+- range: The range from the pose to the point, default `Normal(1, 1)`.
+"""
+function Pose2Point2BearingRange(;bearing::Distribution = Normal(0, 1), range::Distribution = Normal(1, 1))::FactorData
+    data = FactorData(fnc = Pose2Point2BearingRangeInferenceType(bearing, range), certainhypo = [1, 2])
+    return data
+end
+
+"""
+$(SIGNATURES)
+Create a Point2->Point2 range factor with a 1D distribution:
+- range: The range from the pose to the point, default `Normal(1, 1)`.
+"""
+function Point2Point2Range(;range::Distribution = Normal(1, 1))::FactorData
+    data = FactorData(fnc = ZInferenceType(range), certainhypo = [1, 2])
+    return data
+end
+
+
+"""
+$(SIGNATURES)
 Create a AprilTags factor that directly relates a Pose2 to the information from an AprilTag reading.
 Corners need to be provided, homography and tag length are defaulted and can be overwritten.
 """
@@ -72,6 +106,8 @@ function Pose2AprilTag4CornersData(id, corners::Vector{Float64}, homography::Vec
     data = FactorData(fnc = fnc, certainhypo = [1, 2])
     return data
 end
+
+
 
 function Factor(label::String, fncType::String, variableOrderSymbols::Vector{String}, data::FactorData; tags::Vector{String}=["FACTOR"], timestamp::String = string(now(Dates.UTC))*"Z")::Factor
     # TODO: Remove independent updates of this and set certainhypo here.

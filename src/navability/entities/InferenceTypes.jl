@@ -16,8 +16,18 @@ between variables.
 Used by: Prior, LinearRelative, PriorPose2, PriorPoint2, Pose2Pose2,
 Point2Point2Range, etc.
 """
-Base.@kwdef mutable struct ZInferenceType <: InferenceType
+Base.@kwdef struct ZInferenceType <: InferenceType
   Z::Distribution
+end
+
+"""
+$(TYPEDEF)
+Pose2Point2BearingRangeInferenceType is used to represent a bearing
++ range measurement.
+"""
+Base.@kwdef struct Pose2Point2BearingRangeInferenceType <: InferenceType
+  bearstr::Distribution
+  rangstr::Distribution
 end
 
 """
