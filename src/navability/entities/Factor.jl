@@ -70,12 +70,22 @@ end
 
 """
 $(SIGNATURES)
-Create a Pose2->Point2 bearing+range factor with distributions:
+Create a Pose2->Point2 bearing+range factor with 1D distributions:
 - bearing: The bearing from the pose to the point, default `Normal(0, 1)`.
 - range: The range from the pose to the point, default `Normal(1, 1)`.
 """
 function Pose2Point2BearingRange(;bearing::Distribution = Normal(0, 1), range::Distribution = Normal(1, 1))::FactorData
     data = FactorData(fnc = Pose2Point2BearingRangeInferenceType(bearing, range), certainhypo = [1, 2])
+    return data
+end
+
+"""
+$(SIGNATURES)
+Create a Point2->Point2 range factor with a 1D distribution:
+- range: The range from the pose to the point, default `Normal(1, 1)`.
+"""
+function Point2Point2Range(;range::Distribution = Normal(1, 1))::FactorData
+    data = FactorData(fnc = ZInferenceType(range), certainhypo = [1, 2])
     return data
 end
 

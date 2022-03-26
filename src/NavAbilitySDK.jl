@@ -33,7 +33,7 @@ export Client, Scope
 export QueryDetail, LABEL, SKELETON, SUMMARY, FULL
 export Distribution, Normal, Rayleigh, FullNormal, Uniform, Categorical
 export VariableType, Variable
-export FactorData, PriorPose2Data, PriorPoint2Data, Pose2Pose2Data, Pose2AprilTag4CornersData, Pose2Point2BearingRange
+export FactorData, PriorPose2Data, PriorPoint2Data, Pose2Pose2Data, Pose2AprilTag4CornersData, Pose2Point2BearingRange, Point2Point2Range
 export FactorType, Factor
 
 # Services
