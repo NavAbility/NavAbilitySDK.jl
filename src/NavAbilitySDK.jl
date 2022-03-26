@@ -1,5 +1,9 @@
 module NavAbilitySDK
 
+# Global imports
+using DocStringExtensions
+using LinearAlgebra
+
 # Graphql
 include("./navability/graphql/Factor.jl")
 include("./navability/graphql/Variable.jl")
@@ -20,11 +24,14 @@ export SUBSCRIPTION_UPDATES
 include("./navability/entities/NavAbilityClient.jl")
 include("./navability/entities/Client.jl")
 include("./navability/entities/Common.jl")
+include("./navability/entities/Distributions.jl")
 include("./navability/entities/Variable.jl")
+include("./navability/entities/InferenceTypes.jl")
 include("./navability/entities/Factor.jl")
 export NavAbilityClient, NavAbilityWebsocketClient, NavAbilityHttpsClient, QueryOptions, MutationOptions
 export Client, Scope
 export QueryDetail, LABEL, SKELETON, SUMMARY, FULL
+export Distribution, Normal, Rayleigh, FullNormal, Uniform, Categorical
 export VariableType, Variable
 export FactorData, PriorPose2Data, Pose2Pose2Data, Pose2AprilTag4CornersData
 export FactorType, Factor
