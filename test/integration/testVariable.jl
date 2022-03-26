@@ -7,112 +7,107 @@ using .NavAbilitySDK
 
 MAX_POLLING_TRIES = 150
 
-function testAddVariable(apiUrl, userId, robotId, sessionId)
+function testAddVariable(apiUrl, userId, robotId, sessionId, variableLabels, variableTypes, variableTypeStrings)
     client = NavAbilityHttpsClient(apiUrl)
     context = Client(userId,robotId,sessionId)
-    testVariableLabels = ["x0", "x1"]
-    testVariableTypes = [:Pose2,"RoME.Pose2"] # Test both types
-    addVariable(client,context,Variable(testVariableLabels[1], testVariableTypes[1]))
-    addVariable(client,context,Variable(testVariableLabels[2], testVariableTypes[2]))
-    return true
+
+    for (index, label) in enumerate(variableLabels)
+        @test addVariable(client,context,Variable(label, variableTypes[index])) != "Error"
+    end
 end
 
-function testLs(apiUrl, userId, robotId, sessionId)
+function testLs(apiUrl, userId, robotId, sessionId, variableLabels, variableTypes, variableTypeStrings)
     client = NavAbilityHttpsClient(apiUrl)
     context = Client(userId,robotId,sessionId)
-    testVariableLabels = ["x0", "x1"]
-    testVariableTypes = [:Pose2,"RoME.Pose2"]
-    addVariable(client,context,Variable(testVariableLabels[1], testVariableTypes[1]))
-    addVariable(client,context,Variable(testVariableLabels[2], testVariableTypes[2]))
+
+    for (index, label) in enumerate(variableLabels)
+        @test addVariable(client,context,Variable(label, variableTypes[index])) != "Error"
+    end
+
     for i in 1:MAX_POLLING_TRIES
         actualVariableLabels = ls(client,context)
-        if setdiff(testVariableLabels,actualVariableLabels) == []
-            return true
+        if setdiff(variableLabels,actualVariableLabels) == []
+            return
         end
         sleep(2)
         if i % 10 == 0
-            @info "Polling for: $(setdiff(testVariableLabels,actualVariableLabels))"
+            @info "Polling for: $(setdiff(variableLabels,actualVariableLabels))"
         end
     end
-    return false
+    error("Exceeded polling time")
 end
 
-function testGetVariable(apiUrl, userId, robotId, sessionId)
+function testGetVariable(apiUrl, userId, robotId, sessionId, variableLabels, variableTypes, variableTypeStrings)
     client = NavAbilityHttpsClient(apiUrl)
     context = Client(userId,robotId,sessionId)
-    testVariableLabels = ["x0", "x1"]
-    testVariableTypes = [:Pose2,"RoME.Pose2"]
-    testVariableTypeStrings = ["RoME.Pose2","RoME.Pose2"]
-    addVariable(client,context,Variable(testVariableLabels[1], testVariableTypes[1]))
-    addVariable(client,context,Variable(testVariableLabels[2], testVariableTypes[2]))
+
+    for (index, label) in enumerate(variableLabels)
+        addVariable(client,context,Variable(label, variableTypes[index]))
+    end
+
     addSucceeded = false
     for i in 1:MAX_POLLING_TRIES
         actualVariableLabels = ls(client,context)
-        if setdiff(testVariableLabels,actualVariableLabels) == []
+        if setdiff(variableLabels,actualVariableLabels) == []
             addSucceeded = true
             break
         end
         sleep(2)
         if i % 10 == 0
-            @info "Polling for: $(setdiff(testVariableLabels,actualVariableLabels))"
+            @info "Polling for: $(setdiff(variableLabels,actualVariableLabels))"
         end
     end
-    if !addSucceeded return false end
-    for i in 1:size(testVariableLabels)[1]
-        actualVariable = getVariable(client,context,testVariableLabels[i])
-        if !(actualVariable["label"] == testVariableLabels[i])
-            return false
-        end
-        if !(actualVariable["variableType"] == testVariableTypeStrings[i])
-            return false
-        end
+    !addSucceeded && error("Exceeded polling time")
+
+    for i in 1:size(variableLabels)[1]
+        actualVariable = getVariable(client,context,variableLabels[i])
+        @test actualVariable["label"] == variableLabels[i]
+        @test actualVariable["variableType"] == variableTypeStrings[i]
     end
-    return true
 end
 
-function testGetVariables(apiUrl, userId, robotId, sessionId)
+function testGetVariables(apiUrl, userId, robotId, sessionId, variableLabels, variableTypes, variableTypeStrings)
     client = NavAbilityHttpsClient(apiUrl)
     context = Client(userId,robotId,sessionId)
-    testVariableLabels = ["x0", "x1"]
-    testVariableTypes = [:Pose2,"RoME.Pose2"]
-    addVariable(client,context,Variable(testVariableLabels[1], testVariableTypes[1]))
-    addVariable(client,context,Variable(testVariableLabels[2], testVariableTypes[2]))
+
+    for (index, label) in enumerate(variableLabels)
+        addVariable(client,context,Variable(label, variableTypes[index]))
+    end
+
     addSucceeded = false
     for i in 1:MAX_POLLING_TRIES
         actualVariableLabels = ls(client,context)
-        if setdiff(testVariableLabels,actualVariableLabels) == []
+        if setdiff(variableLabels,actualVariableLabels) == []
             addSucceeded = true
             break
         end
         sleep(2)
         if i % 10 == 0
-            @info "Polling for: $(setdiff(testVariableLabels,actualVariableLabels))"
+            @info "Polling for: $(setdiff(variableLabels,actualVariableLabels))"
         end
     end
-    if !addSucceeded return false end
-    variables = getVariables(client,context;detail=SUMMARY)
+    !addSucceeded && error("Exceeded polling time")
+    # Make a quick dictionary of the expected variable Types
+    varIdType = Dict(variableLabels .=> variableTypeStrings)
+
+    variables = getVariables(client, context; detail=SUMMARY)
     for v in variables
-        if !haskey(v,"label") || !haskey(v,"variableType")
-            return false
-        end
-        if v["label"] == "x0" && !(v["variableType"] == "RoME.Pose2")
-            return false
-        end
-        if v["label"] == "x1" && !(v["variableType"] == "RoME.Pose2")
-            return false
-        end
+        @test v["variableType"] == varIdType[v["label"]]
     end
-    return true
 end
 
 function RunTests(apiUrl, userId, robotId, sessionId)
-    @testset "variable-testset" begin
+    @testset "Testing Variables" begin
         @info "Running variable-testset"
 
-        @test testAddVariable(apiUrl, userId, robotId, sessionId*"_testAddVariable")
-        @test testLs(apiUrl, userId, robotId, sessionId*"_testLs")
-        @test testGetVariable(apiUrl, userId, robotId, sessionId*"_testGetVariable")
-        @test testGetVariables(apiUrl, userId, robotId, sessionId*"_testGetVariables")
+        variableLabels = ["x0", "x1", "l1", "x3"]
+        variableTypes = [:Pose2,"RoME.Pose2", :Point2, :ContinuousScalar]
+        variableTypeStrings = ["RoME.Pose2","RoME.Pose2", "RoME.Point2", "IncrementalInference.Position{1}"]
+    
+        @testset "Adding" begin testAddVariable(apiUrl, userId, robotId, sessionId*"_testAddVariable", variableLabels, variableTypes, variableTypeStrings); end
+        @testset "Listing" begin testLs(apiUrl, userId, robotId, sessionId*"_testLs", variableLabels, variableTypes, variableTypeStrings); end
+        @testset "Getting" begin testGetVariable(apiUrl, userId, robotId, sessionId*"_testGetVariable", variableLabels, variableTypes, variableTypeStrings); end
+        @testset "Getting Lists" begin testGetVariables(apiUrl, userId, robotId, sessionId*"_testGetVariables", variableLabels, variableTypes, variableTypeStrings); end 
     end
 end
 
