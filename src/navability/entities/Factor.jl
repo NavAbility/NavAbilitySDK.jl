@@ -34,12 +34,24 @@ end
 
 """
 $(SIGNATURES)
-Create a prior for a Pose2 factor with a distribution Z representing (x,y,theta) prior information, 
+Create a prior factor for a Pose2 with a distribution Z representing (x,y,theta) prior information, 
     e.g. `FullNormal([0.0, 0.0, 0.0], diagm([0.01, 0.01, 0.01]))`.
 
 Default value of Z = `FullNormal([0.0, 0.0, 0.0], diagm([0.01, 0.01, 0.01]))`.
 """
 function PriorPose2Data(;Z::Distribution = FullNormal([0.0, 0.0, 0.0], diagm([0.01, 0.01, 0.01])))::FactorData
+    data = FactorData(fnc = ZInferenceType(Z), certainhypo = [1])
+    return data
+end
+
+"""
+$(SIGNATURES)
+Create a prior factor for a Point2 with a distribution Z representing (x,y) prior information, 
+    e.g. `FullNormal([0.0, 0.0.0], diagm([0.01, 0.01]))`.
+
+Default value of Z = `FullNormal([0.0, 0.0], diagm([0.01, 0.01]))`.
+"""
+function PriorPoint2Data(;Z::Distribution = FullNormal([0.0, 0.0], diagm([0.01, 0.01])))::FactorData
     data = FactorData(fnc = ZInferenceType(Z), certainhypo = [1])
     return data
 end
