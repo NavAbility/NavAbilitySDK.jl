@@ -32,7 +32,7 @@ end
 
 """
 $(TYPEDEF)
-InferenceType for Pose2AprilTag4Corners.
+InferenceType for Pose2AprilTag4CornersData.
 """
 Base.@kwdef struct Pose2AprilTag4CornersInferenceType <: InferenceType
   corners::Vector{Float64}
@@ -41,4 +41,16 @@ Base.@kwdef struct Pose2AprilTag4CornersInferenceType <: InferenceType
   taglength::Float64
   id::Int
   _type::String = "/application/JuliaLang/PackedPose2AprilTag4Corners"
+end
+
+"""
+$(TYPEDEF)
+InferenceType for MixtureData.
+"""
+Base.@kwdef struct MixtureInferenceType <: InferenceType
+  N::Integer
+  F_::String
+  S::Vector{String}
+  components::Vector{Distribution}
+  diversity::Categorical
 end

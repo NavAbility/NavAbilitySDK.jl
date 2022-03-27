@@ -139,14 +139,31 @@ distributions that should be mixed, the probabilities of each distribution
 ContinuousScalar=1, Pose2Pose2=3, etc.).
 
 Args:
-    mechanics (type): The underlying factor type.
-    components (OrderedDict[Distribution]): The named set of distributions that
-    should be mixed, e.g. probabilities (List[float]): The probabilities of each
-    distribution (the mix)
-    dims (int): The dimensions of the underlying factor.
+    mechanics (Type{FactorData}): The underlying factor data type, e.g. Pose2Pose2Data. NOTE: This will change in later versions 
+    but for now it can be any of the FactorData classes (e,g, LinearRelative, not the object LinearRelative()).
+    components (NamedTuple): The named tuple set of distributions that
+    should be mixed, e.g. NamedTuple(hypo1=Normal(0, 2)), hypo2=Uniform(30, 55)).
+    probabilities (List[float]): The probabilities of each distribution (the mix), e.g. [0.4, 0.6].
+    dims (int): The dimensions of the underlying factor, e.g. for Pose2Pose2 it's 3.
 """
-function LinearRelativeData(;Z::Distribution = Normal(1.0, 0.1))::FactorData
-    data = FactorData(fnc = ZInferenceType(Z), certainhypo = [1, 2])
+function MixtureData(
+        # TODO: Need to make this type constrained to Type{<:InferenceType}
+        mechanics, 
+        # TODO: Need to made this something cleaner and more type stable, maybe OrderedDict
+        components::NamedTuple,
+        probabilities::Vector{Float64},
+        dims::Integer  # TODO: Confirming we can remove.
+        )::FactorData #where T<:FactorData
+    data = FactorData(
+        fnc = MixtureInferenceType(
+            N = length(components),
+            # @jim-hill-r this is why I don't like the Data suffix.
+            F_ = "Packed$(replace(string(mechanics), "Data" => ""))",
+            S = collect(string.(keys(components))),
+            components = collect(values(components)),
+            diversity = Categorical(probabilities)
+        ), certainhypo = [] # This should be updated in the Factor constructor below.
+    )
     return data
 end
 

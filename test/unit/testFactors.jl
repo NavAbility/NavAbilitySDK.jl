@@ -38,4 +38,11 @@
   )
   @test JSON.json(f) == "{\"eliminated\":false,\"potentialused\":false,\"edgeIDs\":[],\"fnc\":{\"Z\":{\"mu\":20.0,\"sigma\":1.0,\"_type\":\"IncrementalInference.PackedNormal\"}},\"multihypo\":[],\"certainhypo\":[1,2],\"nullhypo\":0.0,\"solveInProgress\":0,\"inflation\":3.0}"
 
+  # MixtureData
+  f = MixtureData(
+    LinearRelativeData,
+    (hypo1=Normal(0, 2), hypo2=Uniform(30, 55)),
+    [0.4, 0.6],
+    2)
+  @test JSON.json(f) == "{\"eliminated\":false,\"potentialused\":false,\"edgeIDs\":[],\"fnc\":{\"N\":2,\"F_\":\"PackedLinearRelative\",\"S\":[\"hypo1\",\"hypo2\"],\"components\":[{\"mu\":0.0,\"sigma\":2.0,\"_type\":\"IncrementalInference.PackedNormal\"},{\"a\":30.0,\"b\":55.0,\"_type\":\"IncrementalInference.PackedUniform\"}],\"diversity\":{\"p\":[0.4,0.6],\"_type\":\"IncrementalInference.PackedCategorical\"}},\"multihypo\":[],\"certainhypo\":[],\"nullhypo\":0.0,\"solveInProgress\":0,\"inflation\":3.0}"
 end
