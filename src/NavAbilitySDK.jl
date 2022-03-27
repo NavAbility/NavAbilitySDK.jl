@@ -3,12 +3,12 @@ module NavAbilitySDK
 # Global imports
 using DocStringExtensions
 using LinearAlgebra
+using JSON
 
 # Graphql
 include("./navability/graphql/Factor.jl")
+include("./navability/graphql/Status.jl")
 include("./navability/graphql/Variable.jl")
-export GQL_FRAGMENT_FACTORS, GQL_GETFACTOR, GQL_GETFACTORS, GQL_GETFACTORSFILTERED
-export GQL_FRAGMENT_VARIABLES, GQL_GETVARIABLE, GQL_GETVARIABLES, GQL_GETVARIABLESFILTERED
 
 include("./navability/graphql/QueriesDeprecated.jl")
 export QUERY_VARIABLE_LABELS
@@ -40,10 +40,14 @@ export FactorType, Factor
 include("./navability/services/Variable.jl")
 include("./navability/services/Factor.jl")
 include("./navability/services/Solve.jl")
+include("./navability/services/Status.jl")
+include("./navability/services/Utils.jl")
 export getVariable, getVariables, listVariables, ls
 export addVariable, addPackedVariable
 export getFactor, getFactors, listFactors, lsf
 export addFactor, addPackedFactor
 export solveSession, solveFederated
+export getStatusMessages, getStatusLatest, getStatusesLatest
+export waitForCompletion
 
 end

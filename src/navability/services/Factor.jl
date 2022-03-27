@@ -1,5 +1,3 @@
-using ..NavAbilitySDK
-using JSON
 
 function addPackedFactor(navAbilityClient::NavAbilityClient, client::Client, factor)::String
     response = navAbilityClient.mutate(MutationOptions(

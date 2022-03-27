@@ -1,5 +1,3 @@
-using ..NavAbilitySDK
-using JSON
 
 function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, variable)::String
     response = navAbilityClient.mutate(MutationOptions(

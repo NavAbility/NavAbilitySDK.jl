@@ -1,179 +1,52 @@
-module TestFactor
 
-using Test
-
-include("../../src/NavAbilitySDK.jl")
-using .NavAbilitySDK
-
-MAX_POLLING_TRIES = 150
-
-
-function testAddFactor(apiUrl, userId, robotId, sessionId)
-    client = NavAbilityHttpsClient(apiUrl)
-    context = Client(userId,robotId,sessionId)
-    testVariableLabels = ["x0", "x1"]
-    testVariableTypes = ["RoME.Pose2","RoME.Pose2"]
-    addVariable(client,context,Variable(testVariableLabels[1], testVariableTypes[1]))
-    addVariable(client,context,Variable(testVariableLabels[2], testVariableTypes[2]))
-    testFactorLabels = ["x0x1f1","x0f1"]
-    testFactorTypes = ["Pose2Pose2","PriorPose2"]
-    addFactor(client,context,Factor(testFactorLabels[1], testFactorTypes[1], testVariableLabels, Pose2Pose2Data()))
-    addFactor(client,context,Factor(testFactorLabels[2], testFactorTypes[2], [testVariableLabels[1]], PriorPose2Data()))
-    return true
+function testAddFactor(client, context, factorLabels, factorTypes, factorVariables, factorData)
+    resultIds = String[]
+    for (index, label) in enumerate(factorLabels)
+        resultId = addFactor(client,context,Factor(label, factorTypes[index], factorVariables[index], factorData[index]))
+        @test resultId != "Error"
+        push!(resultIds, resultId)
+    end
+    
+    waitForCompletion(client, resultIds, expectedStatuses=["Complete"])
+    return resultIds
 end
 
-function testLsf(apiUrl, userId, robotId, sessionId)
-    client = NavAbilityHttpsClient(apiUrl)
-    context = Client(userId,robotId,sessionId)
-    testVariableLabels = ["x0", "x1"]
-    testVariableTypes = ["RoME.Pose2","RoME.Pose2"]
-    addVariable(client,context,Variable(testVariableLabels[1], testVariableTypes[1]))
-    addVariable(client,context,Variable(testVariableLabels[2], testVariableTypes[2]))
-    variableAddSucceeded = false
-    for i in 1:MAX_POLLING_TRIES
-        actualVariableLabels = ls(client,context)
-        if setdiff(testVariableLabels,actualVariableLabels) == []
-            variableAddSucceeded = true
-            break
-        end
-        sleep(2)
-        if i % 10 == 0
-            @info "Polling for: $(setdiff(testVariableLabels,actualVariableLabels))"
-        end
-    end
-    if !variableAddSucceeded return false end
-    testFactorLabels = ["x0x1f1","x0f1"]
-    testFactorTypes = ["Pose2Pose2","PriorPose2"]
-    addFactor(client,context,Factor(testFactorLabels[1], testFactorTypes[1], testVariableLabels, Pose2Pose2Data()))
-    addFactor(client,context,Factor(testFactorLabels[2], testFactorTypes[2], [testVariableLabels[1]], PriorPose2Data()))
-    factorAddSucceeded = false
-    for i in 1:MAX_POLLING_TRIES
-        actualFactorLabels = lsf(client,context)
-        if setdiff(testFactorLabels,actualFactorLabels) == []
-            factorAddSucceeded = true
-            break
-        end
-        sleep(2)
-        if i % 10 == 0
-            @info "Polling for: $(setdiff(testFactorLabels,actualFactorLabels))"
-        end
-    end
-    if !factorAddSucceeded return false end
-
-    return true
+function testLsf(client, context, factorLabels, factorTypes)
+    @show setdiff(factorLabels, lsf(client, context))
+    @test setdiff(factorLabels, lsf(client, context)) == []
 end
 
-function testGetFactor(apiUrl, userId, robotId, sessionId)
-    client = NavAbilityHttpsClient(apiUrl)
-    context = Client(userId,robotId,sessionId)
-    testVariableLabels = ["x0", "x1"]
-    testVariableTypes = ["RoME.Pose2","RoME.Pose2"]
-    addVariable(client,context,Variable(testVariableLabels[1], testVariableTypes[1]))
-    addVariable(client,context,Variable(testVariableLabels[2], testVariableTypes[2]))
-    variableAddSucceeded = false
-    for i in 1:MAX_POLLING_TRIES
-        actualVariableLabels = ls(client,context)
-        if setdiff(testVariableLabels,actualVariableLabels) == []
-            variableAddSucceeded = true
-            break
-        end
-        sleep(2)
-        if i % 10 == 0
-            @info "Polling for: $(setdiff(testVariableLabels,actualVariableLabels))"
-        end
+function testGetFactor(client, context, factorLabels, factorTypes)
+    for i in 1:length(factorLabels)
+        actualFactor = getFactor(client,context,factorLabels[i])
+        @test actualFactor["label"] == factorLabels[i]
+        @test actualFactor["fnctype"] == factorTypes[i]
     end
-    if !variableAddSucceeded return false end
-    testFactorLabels = ["x0x1f1","x0f1"]
-    testFactorTypes = ["Pose2Pose2","PriorPose2"]
-    addFactor(client,context,Factor(testFactorLabels[1], testFactorTypes[1], testVariableLabels, Pose2Pose2Data()))
-    addFactor(client,context,Factor(testFactorLabels[2], testFactorTypes[2], [testVariableLabels[1]], PriorPose2Data()))
-    factorAddSucceeded = false
-    for i in 1:MAX_POLLING_TRIES
-        actualFactorLabels = lsf(client,context)
-        if setdiff(testFactorLabels,actualFactorLabels) == []
-            factorAddSucceeded = true
-            break
-        end
-        sleep(2)
-        if i % 10 == 0
-            @info "Polling for: $(setdiff(testFactorLabels,actualFactorLabels))"
-        end
-    end
-    if !factorAddSucceeded return false end
-    for i in 1:size(testFactorLabels)[1]
-        actualFactor = getFactor(client,context,testFactorLabels[i])
-        if !(actualFactor["label"] == testFactorLabels[i])
-            return false
-        end
-        if !(actualFactor["fnctype"] == testFactorTypes[i])
-            return false
-        end
-    end
-    return true
 end
 
-function testGetFactors(apiUrl, userId, robotId, sessionId)
-    client = NavAbilityHttpsClient(apiUrl)
-    context = Client(userId,robotId,sessionId)
-    testVariableLabels = ["x0", "x1"]
-    testVariableTypes = ["RoME.Pose2","RoME.Pose2"]
-    addVariable(client,context,Variable(testVariableLabels[1], testVariableTypes[1]))
-    addVariable(client,context,Variable(testVariableLabels[2], testVariableTypes[2]))
-    variableAddSucceeded = false
-    for i in 1:MAX_POLLING_TRIES
-        actualVariableLabels = ls(client,context)
-        if setdiff(testVariableLabels,actualVariableLabels) == []
-            variableAddSucceeded = true
-            break
-        end
-        sleep(2)
-        if i % 10 == 0
-            @info "Polling for: $(setdiff(testVariableLabels,actualVariableLabels))"
-        end
-    end
-    if !variableAddSucceeded return false end
-    testFactorLabels = ["x0x1f1","x0f1"]
-    testFactorTypes = ["Pose2Pose2","PriorPose2"]
-    addFactor(client,context,Factor(testFactorLabels[1], testFactorTypes[1], testVariableLabels, Pose2Pose2Data()))
-    addFactor(client,context,Factor(testFactorLabels[2], testFactorTypes[2], [testVariableLabels[1]], PriorPose2Data()))
-    factorAddSucceeded = false
-    for i in 1:MAX_POLLING_TRIES
-        actualFactorLabels = lsf(client,context)
-        if setdiff(testFactorLabels,actualFactorLabels) == []
-            factorAddSucceeded = true
-            break
-        end
-        sleep(2)
-        if i % 10 == 0
-            @info "Polling for: $(setdiff(testFactorLabels,actualFactorLabels))"
-        end
-    end
-    if !factorAddSucceeded return false end
+function testGetFactors(client, context, factorLabels, factorTypes)
+    # Make a quick dictionary of the expected variable Types
+    factorIdType = Dict(factorLabels .=> factorTypes)
 
-    factors = getFactors(client,context;detail=FULL)
+    factors = getFactors(client, context; detail=SUMMARY)
     for f in factors
-        if !haskey(f,"label") || !haskey(f,"fnctype")
-            return false
-        end
-        if f["label"] == "x0x1f1" && !(f["fnctype"] == "Pose2Pose2")
-            return false
-        end
-        if f["label"] == "x0f1" && !(f["fnctype"] == "PriorPose2")
-            return false
-        end
+        @test f["fnctype"] == factorIdType[f["label"]]
     end
-    return true
 end
 
-function RunTests(apiUrl, userId, robotId, sessionId)
+function runFactorTests(client, context)
     @testset "factor-testset" begin
         @info "Running factor-testset"
 
-        @test testAddFactor(apiUrl, userId, robotId, sessionId*"_testAddFactor")
-        @test testLsf(apiUrl, userId, robotId, sessionId*"_testLsf")
-        @test testGetFactor(apiUrl, userId, robotId, sessionId*"_testGetFactor")
-        @test testGetFactors(apiUrl, userId, robotId, sessionId*"_testGetFactors")
-    end
-end
+        # TODO: Refactor as a dictionary, or just do most of this in addFactor.
+        factorLabels = ["x0x1f1","x0f1"]
+        factorTypes = ["Pose2Pose2","PriorPose2"]
+        factorVariables = [["x0", "x1"], ["x0"]]
+        factorData = [Pose2Pose2Data(), PriorPose2Data()]
 
+        @test testAddFactor(client, context, factorLabels, factorTypes, factorVariables, factorData)
+        @test testLsf(client, context, factorLabels, factorTypes)
+        @test testGetFactor(client, context, factorLabels, factorTypes)
+        @test testGetFactors(client, context, factorLabels, factorTypes)
+    end
 end

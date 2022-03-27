@@ -1,4 +1,3 @@
-using ..NavAbilitySDK
 
 function solveSession(navAbilityClient::NavAbilityClient, client::Client)::String
     response = navAbilityClient.mutate(MutationOptions(
