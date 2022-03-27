@@ -31,7 +31,7 @@ function addVariable(
   #
   
   v = Variable(lbl, varType)
-  addVariable(pltf.navability_client, pltf.client, v)
+  addVariable(nva.navability_client, nva.client, v)
 end
 
 # function addFactor(
