@@ -1,7 +1,7 @@
 @testset "FactorData Tests" begin
   
   f = PriorData(Z = Normal(0.0, 10.0))
-  @test JSON.json(f) == "{\"eliminated\":false,\"potentialused\":false,\"edgeIDs\":[],\"fnc\":{\"Z\":{\"mu\":0.0,\"sigma\":10.0,\"_type\":\"IncrementalInference.PackedNormal\"}},\"multihypo\":[],\"certainhypo\":[1,2],\"nullhypo\":0.0,\"solveInProgress\":0,\"inflation\":3.0}"
+  @test JSON.json(f) == "{\"eliminated\":false,\"potentialused\":false,\"edgeIDs\":[],\"fnc\":{\"Z\":{\"mu\":0.0,\"sigma\":10.0,\"_type\":\"IncrementalInference.PackedNormal\"}},\"multihypo\":[],\"certainhypo\":[1],\"nullhypo\":0.0,\"solveInProgress\":0,\"inflation\":3.0}"
 
   f = PriorPose2Data(Z = FullNormal([0.0, 0.0, 0.0], diagm([0.01, 0.01, 0.01])))
   @test JSON.json(f) == "{\"eliminated\":false,\"potentialused\":false,\"edgeIDs\":[],\"fnc\":{\"Z\":{\"mu\":[0.0,0.0,0.0],\"cov\":[0.01,0.0,0.0,0.0,0.01,0.0,0.0,0.0,0.01],\"_type\":\"IncrementalInference.PackedFullNormal\"}},\"multihypo\":[],\"certainhypo\":[1],\"nullhypo\":0.0,\"solveInProgress\":0,\"inflation\":3.0}"
