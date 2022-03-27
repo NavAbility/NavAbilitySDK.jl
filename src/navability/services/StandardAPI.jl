@@ -5,7 +5,7 @@ function NavAbilityPlatform(;
       apiUrl::AbstractString="https://api.d1.navability.io",
       UserId::AbstractString="Guest",
       RobotId::AbstractString=ENV["USER"],
-      SessionId::AbstractString="Session_" + string(uuid4())[1:8])
+      SessionId::AbstractString="Session_" * string(uuid4())[1:8])
   #
   navability_client = NavAbilityHttpsClient(apiUrl)
   client = Client(UserId, RobotId, SessionId)

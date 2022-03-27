@@ -50,4 +50,6 @@ export getFactor, getFactors, listFactors, lsf
 export addFactor, addPackedFactor
 export solveSession, solveFederated
 
+include("navability/services/StandardAPI.jl")
+
 end
