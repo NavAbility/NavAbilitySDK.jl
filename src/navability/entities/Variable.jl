@@ -3,12 +3,18 @@ using JSON
 
 DFG_VERSION = "0.18.1";
 
+const Pose2 = :Pose2
+const Point2 = :Point2    # should be Position2
+const Position2 = :Point2 # should be Position2
+const ContinuousScalar = :ContinuousScalar
+const Position1 = :ContinuousScalar
+
 _variableTypeConvert = Dict{Symbol, String}(
     :Point2 => "RoME.Point2",
     :Pose2 => "RoME.Pose2",
     :ContinuousScalar => "IncrementalInference.ContinuousScalar",
-    # TBD - https://github.com/JuliaRobotics/Caesar.jl/discussions/810
-    :Pose1 => "IncrementalInference.ContinuousScalar"
+    # TBD - https://github.com/JuliaRobotics/Caesar.jl/discussions/807
+    :Position1 => "IncrementalInference.ContinuousScalar" # not Pose1
 )
 
 struct Variable

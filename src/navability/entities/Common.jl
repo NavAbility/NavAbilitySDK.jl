@@ -4,3 +4,8 @@
   SUMMARY
   FULL
 end
+
+mutable struct NavAbilityPlatform
+  navability_client
+  client
+end

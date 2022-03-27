@@ -3,6 +3,10 @@ module NavAbilitySDK
 # Global imports
 using DocStringExtensions
 using LinearAlgebra
+using UUIDs
+
+const NVA = NavAbilitySDK
+export NVA
 
 # Graphql
 include("./navability/graphql/Factor.jl")
