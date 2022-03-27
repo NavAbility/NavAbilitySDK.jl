@@ -30,7 +30,7 @@ function addVariable(
       varType::Union{<:AbstractString,Symbol} )
   #
   
-  v = Variable(lbl, varType)
+  v = Variable(string(lbl), Symbol(varType))
   addVariable(nva.navability_client, nva.client, v)
 end
 
