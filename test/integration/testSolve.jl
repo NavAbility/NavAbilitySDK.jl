@@ -1,22 +1,27 @@
-MAX_POLLING_TRIES = 150
 
-function testSolveSession(client, context)
-    testVariableLabels = ls(client, context)
+function testSolveSession(client, context, variableLabels)
+    # allVariableLabels = ls(client, context, variableLabels)
 
     resultId = solveSession(client,context)
 
     # Wait for them to be done before proceeding.
     waitForCompletion(client, [resultId], expectedStatuses=["Complete"])
 
-    # Get PPE's to confirm all is there.
-    # This'll blow up if not.
-    Dict((vId=>getVariable(client, context, vId; detail=SUMMARY)["ppes"]["default"]) for vId in testVariableLabels)
+    # Get PPE's are there for the connected variables.
+    # TODO - complete the factor graph.
+    for v in variableLabels # getVariables(client, context, detail=SUMMARY)
+        # First solve key (only) is the default result
+        @test getVariable(client, context, v)["ppes"][1]["solveKey"] == "default"
+    end
 end
 
 function runSolveTests(client, context)
     @testset "solve-testset" begin
         @info "Running solve-testset"
 
-        @test testSolveSession(client, context)
+        # TODO: Test the rest of the variables.
+        variableLabels = ["x0", "x1"]
+
+        testSolveSession(client, context, variableLabels)
     end
 end

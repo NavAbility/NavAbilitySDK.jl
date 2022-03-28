@@ -6,13 +6,12 @@ function testAddFactor(client, context, factorLabels, factorTypes, factorVariabl
         @test resultId != "Error"
         push!(resultIds, resultId)
     end
-    
+
     waitForCompletion(client, resultIds, expectedStatuses=["Complete"])
     return resultIds
 end
 
 function testLsf(client, context, factorLabels, factorTypes)
-    @show setdiff(factorLabels, lsf(client, context))
     @test setdiff(factorLabels, lsf(client, context)) == []
 end
 
@@ -28,7 +27,7 @@ function testGetFactors(client, context, factorLabels, factorTypes)
     # Make a quick dictionary of the expected variable Types
     factorIdType = Dict(factorLabels .=> factorTypes)
 
-    factors = getFactors(client, context; detail=SUMMARY)
+    factors = getFactors(client, context, detail=FULL)
     for f in factors
         @test f["fnctype"] == factorIdType[f["label"]]
     end
@@ -44,9 +43,9 @@ function runFactorTests(client, context)
         factorVariables = [["x0", "x1"], ["x0"]]
         factorData = [Pose2Pose2Data(), PriorPose2Data()]
 
-        @test testAddFactor(client, context, factorLabels, factorTypes, factorVariables, factorData)
-        @test testLsf(client, context, factorLabels, factorTypes)
-        @test testGetFactor(client, context, factorLabels, factorTypes)
-        @test testGetFactors(client, context, factorLabels, factorTypes)
+        @testset "Adding" begin testAddFactor(client, context, factorLabels, factorTypes, factorVariables, factorData) end
+        @testset "Listing" begin testLsf(client, context, factorLabels, factorTypes) end
+        @testset "Getting" begin testGetFactor(client, context, factorLabels, factorTypes) end
+        @testset "Getting Lists" begin testGetFactors(client, context, factorLabels, factorTypes) end
     end
 end

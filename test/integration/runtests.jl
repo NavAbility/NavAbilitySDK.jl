@@ -24,5 +24,5 @@ sessionId2d = get(ENV,"SESSION_ID","TestSession2D"*randstring(7))
     # integration test.
     runVariableTests(client, navabilityClient2D)
     runFactorTests(client, navabilityClient2D)
-    # runSolverTests(client, navabilityClient2D)
+    runSolveTests(client, navabilityClient2D)
 end
