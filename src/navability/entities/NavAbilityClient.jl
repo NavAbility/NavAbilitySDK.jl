@@ -21,7 +21,7 @@ function NavAbilityWebsocketClient(apiUrl::String)::NavAbilityClient
     throw("Not implemented")
 end
 
-function NavAbilityHttpsClient(apiUrl::String)::NavAbilityClient
+function NavAbilityHttpsClient(apiUrl::String="https://api.d1.navability.io")::NavAbilityClient
     dianaClient = GraphQLClient(apiUrl)
     function query(options::QueryOptions)
         dianaClient.Query(options.query, operationName=options.name, vars=options.variables)
