@@ -5,63 +5,76 @@ function createClients(apiUrl, userId, robotId, sessionId)
   return client, context
 end
 
-# function example1DGraph(client, context)
-#     variables = [
-#         Variable("x0", :ContinuousScalar),
-#         Variable("x1", :ContinuousScalar),
-#         Variable("x2", :ContinuousScalar),
-#         Variable("x3", :ContinuousScalar),
-#     ]
-#     factors = [
-#         Factor("x0f1", "Prior", ["x0"], FactorData(fnc=Prior(Normal(0, 1)).dump())),
-#         Factor(
-#             "x0x1f1",
-#             "LinearRelative",
-#             ["x0", "x1"],
-#             FactorData(fnc=LinearRelative(Normal(10, 0.1)).dump()),
-#         ),
-#         Factor(
-#             "x1x2f1",
-#             "Mixture",
-#             ["x1", "x2"],
-#             FactorData(
-#                 fnc=Mixture(
-#                     LinearRelative,
-#                     OrderedDict([("hypo1", Normal(0, 2)), ("hypo2", Uniform(30, 55))]),
-#                     [0.4, 0.6],
-#                     2,
-#                 ).dump()
-#             ),
-#         ),
-#         Factor(
-#             "x2x3f1",
-#             "LinearRelative",
-#             ["x2", "x3"],
-#             FactorData(fnc=LinearRelative(Normal(-50, 1)).dump()),
-#         ),
-#         Factor(
-#             "x3x0f1",
-#             "LinearRelative",
-#             ["x3", "x0"],
-#             FactorData(fnc=LinearRelative(Normal(40, 1)).dump()),
-#         ),
-#     ]
-#     # Variables
-#     result_ids = [
-#         await addVariable(navability_https_client, client_1d, v) for v in variables
-#     ] + [await addFactor(navability_https_client, client_1d, f) for f in factors]
+function exampleGraph1D(client, context; doSolve=true)
+    variables = [
+        Variable("x0", :ContinuousScalar),
+        Variable("x1", :ContinuousScalar),
+        Variable("x2", :ContinuousScalar),
+        Variable("x3", :ContinuousScalar),
+    ]
+    factors = [
+        Factor( "x0f1", 
+                "Prior", 
+                ["x0"], 
+                PriorData( Z=Normal(0, 1) )
+        ),
+        Factor(
+            "x0x1f1",
+            "LinearRelative",
+            ["x0", "x1"],
+            LinearRelativeData(Z=Normal(10, 0.1)),
+        ),
+        Factor(
+            "x1x2f1",
+            "Mixture",
+            ["x1", "x2"],
+                MixtureData(
+                    "LinearRelative",
+                    (;hypo1=Normal(0, 2),hypo2=Uniform(30, 55)),
+                    [0.4, 0.6],
+                    2,
+                )
+        ),
+        Factor(
+            "x2x3f1",
+            "LinearRelative",
+            ["x2", "x3"],
+            LinearRelativeData(Z=Normal(-50, 1)),
+        ),
+        Factor(
+            "x3x0f1",
+            "LinearRelative",
+            ["x3", "x0"],
+            LinearRelativeData(Z=Normal(40, 1)),
+        ),
+    ]
+    # Variables
+    @info "[Fixture] Adding variables, waiting for completion"
+    resultIds = String[]
+    for v in variables
+      push!(resultIds, addVariable(client, context, v))
+    end
+    waitForCompletion(client, string.(resultIds); expectedStatuses=["Complete"])
+  
+    # Add the factors
+    @info "[Fixture] Adding factors, waiting for completion"
+    resultIds = String[]
+    for f in factors
+      push!(resultIds, addFactor(client, context, f))
+    end
+    waitForCompletion(client, string.(resultIds); expectedStatuses=["Complete"])
+    
+    if doSolve
+      @info "[Fixture] solving, waiting for completion"
+      resultId = solveSession(client, context)
+      waitForCompletion(client, String[resultIds;]; expectedStatuses=["Complete"])
+    end
 
-#     logging.info(f"[Fixture] Adding variables and factors, waiting for completion")
+    # and done
+    return (client, context, variables, factors)
+end
+# vals = getVariables(client, context; detail=SUMMARY) .|> x->x["ppes"][1]["suggested"]
 
-#     # Await for only Complete messages, otherwise fail.
-#     await waitForCompletion(
-#         navability_https_client,
-#         result_ids,
-#         expectedStatuses=["Complete"],
-#         maxSeconds=120,
-#     )
-
-#     return (navability_https_client, client_1d, variables, factors)
 
 
 # @pytest.fixture(scope="module")
