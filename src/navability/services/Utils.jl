@@ -10,10 +10,10 @@ Args:
 """
 function waitForCompletion(
     navAbilityClient::NavAbilityClient,
-    requestIds::Vector{String};
-    maxSeconds::Int = 60,
-    expectedStatuses::Vector{String} = Nothing,
-    exceptionMessage::String = "Requests did not complete in time")
+    requestIds::AbstractVector{<:AbstractString};
+    maxSeconds::Integer = 60,
+    expectedStatuses::AbstractVector{<:AbstractString} = Nothing,
+    exceptionMessage::AbstractString = "Requests did not complete in time")
 #
     if expectedStatuses == Nothing
         expectedStatuses = ["Complete", "Failed"]
@@ -31,4 +31,14 @@ function waitForCompletion(
             wait_time <= 0 && throw(error(exceptionMessage))
         end
     end
+end
+
+# Dispatch for vector of Tasks
+function waitForCompletion(
+    navAbilityClient::NavAbilityClient,
+    requestIds::AbstractVector{<:Task};
+    kw...)
+    #
+    rids = fetch.(requestIds) .|> string
+    waitForCompletion(navAbilityClient, rids; kw...)
 end

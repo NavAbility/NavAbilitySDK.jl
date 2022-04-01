@@ -20,8 +20,8 @@ function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, v
     return addVariable
 end
 
-function addVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Variable)::String
-    return addPackedVariable(navAbilityClient, client, variable)
+function addVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Variable)
+    return @async addPackedVariable(navAbilityClient, client, variable)
 end
 
 function getVariable(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}

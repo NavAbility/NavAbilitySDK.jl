@@ -1,5 +1,5 @@
 
-function solveSession(navAbilityClient::NavAbilityClient, client::Client)::String
+function solveSessionEvent(navAbilityClient::NavAbilityClient, client::Client)::String
     response = navAbilityClient.mutate(MutationOptions(
         "solveSession",
         MUTATION_SOLVESESSION,
@@ -17,7 +17,10 @@ function solveSession(navAbilityClient::NavAbilityClient, client::Client)::Strin
     return solveSession
 end
 
-function solveFederated(navAbilityClient::NavAbilityClient, scope::Scope)::String
+solveSession(w...;kw...) = @async solveSessionEvent(w...; kw...)
+
+
+function solveFederatedEvent(navAbilityClient::NavAbilityClient, scope::Scope)::String
     response = navAbilityClient.mutate(MutationOptions(
         "solveFederated",
         MUTATION_SOLVEFEDERATED,
@@ -30,3 +33,7 @@ function solveFederated(navAbilityClient::NavAbilityClient, scope::Scope)::Strin
     solveSession = get(data,"solveSession","Error")
     return solveSession
 end
+
+solveFederated(w...;kw...) = @async solveFederatedEvent(w...;kw...)
+
+#
