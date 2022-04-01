@@ -1,0 +1,25 @@
+name: Slack Release Announcement
+
+# Controls when the workflow will run
+on:
+  release:
+    types: [published]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  slack_notify:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: announcements
+          SLACK_COLOR: ${{ job.status }} # or a specific color like 'good' or '#ff00ff'
+          SLACK_ICON: https://github.com/gearsad.png?size=48
+          SLACK_MESSAGE: '*Release ${{ github.ref }}*: ${{ job.status }}'
+          SLACK_TITLE: '*Release ${{ github.ref }}*: ${{ job.status }}'
+          SLACK_USERNAME: Github Actions
+          SLACK_WEBHOOK: ${{ secrets.SLACK_ANNOUNCE_WEBHOOK  }}
