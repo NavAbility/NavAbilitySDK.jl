@@ -24,7 +24,7 @@ function addFactor(navAbilityClient::NavAbilityClient, client::Client, factor::F
     return @async addPackedFactor(navAbilityClient, client, factor)
 end
 
-function getFactor(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
+function _getFactor(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
     response = navAbilityClient.query(QueryOptions(
         "sdk_get_factor",
         """
@@ -55,7 +55,9 @@ function getFactor(navAbilityClient::NavAbilityClient, client::Client, label::St
     return factors[1]
 end
 
-function getFactors(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON)::Vector{Dict{String,Any}}
+getFactor(navAbilityClient::NavAbilityClient, client::Client, label::String) = @async _getFactor(navAbilityClient, client, label)
+
+function _getFactors(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON)::Vector{Dict{String,Any}}
     response = navAbilityClient.query(QueryOptions(
         "sdk_get_factors",
         """
@@ -85,11 +87,15 @@ function getFactors(navAbilityClient::NavAbilityClient, client::Client; detail::
     return get(sessions[1],"factors",[])
 end
 
-function listFactors(navAbilityClient::NavAbilityClient, client::Client)::Vector{String}
-    factors = getFactors(navAbilityClient,client)
-    return map(v -> v["label"], factors)
+getFactors( navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON) = @async _getFactors(navAbilityClient, client; detail )
+
+function listFactors(navAbilityClient::NavAbilityClient, client::Client)
+    @async begin
+        factors = fetch(getFactors(navAbilityClient,client))
+        map(v -> v["label"], factors)
+    end
 end
 
-function lsf(navAbilityClient::NavAbilityClient, client::Client)::Vector{String}
+function lsf(navAbilityClient::NavAbilityClient, client::Client)
     return listFactors(navAbilityClient,client)
 end

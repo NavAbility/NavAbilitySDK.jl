@@ -7,7 +7,7 @@ Args:
     navAbilityClient (NavAbilityClient): The NavAbility client.
     id (String): The ID of the request that you want the statuses on.
 """
-function getStatusMessages(navAbilityClient::NavAbilityClient, id::String)
+function _getStatusMessages(navAbilityClient::NavAbilityClient, id::String)
     response = navAbilityClient.mutate(MutationOptions(
         "sdk_ls_statusmessages",
         GQL_GETSTATUSMESSAGES,
@@ -26,6 +26,8 @@ function getStatusMessages(navAbilityClient::NavAbilityClient, id::String)
     return statusMessages
 end
 
+getStatusMessages(navAbilityClient::NavAbilityClient, id::String) = @async _getStatusMessages(navAbilityClient, id)
+
 """
 $(SIGNATURES)
 Get the latest status message for a request.
@@ -34,7 +36,7 @@ Args:
     navAbilityClient (NavAbilityClient): The NavAbility client.
     id (String): The ID of the request that you want the latest status on.
 """
-function getStatusLatest(navAbilityClient::NavAbilityClient, id::String)
+function _getStatusLatest(navAbilityClient::NavAbilityClient, id::String)
     response = navAbilityClient.mutate(MutationOptions(
         "sdk_get_statuslatest",
         GQL_GETSTATUSLATEST,
@@ -54,6 +56,8 @@ function getStatusLatest(navAbilityClient::NavAbilityClient, id::String)
     return statusMessage
 end
 
+getStatusLatest(navAbilityClient::NavAbilityClient, id::String) = @async _getStatusLatest(navAbilityClient, id)
+
 """
 $(SIGNATURES)
 Helper function to get a dictionary of all latest statues for a list of results.
@@ -63,5 +67,7 @@ Args:
     ids (Vector{String}): A list of the IDS that you want statuses on.
 """
 function getStatusesLatest(navAbilityClient::NavAbilityClient, ids::Vector{String})
-    return Dict(r=>getStatusLatest(navAbilityClient, r) for r in ids)
+    @async begin
+        return Dict(r=>fetch(getStatusLatest(navAbilityClient, r)) for r in ids)
+    end
 end

@@ -24,9 +24,11 @@ end
 function NavAbilityHttpsClient(apiUrl::String="https://api.d1.navability.io")::NavAbilityClient
     dianaClient = GraphQLClient(apiUrl)
     function query(options::QueryOptions)
+        # TODO does Diana or Deloittes return async?
         dianaClient.Query(options.query, operationName=options.name, vars=options.variables)
     end
     function mutate(options::MutationOptions)
+        # TODO does Diana or Deloittes return async?
         dianaClient.Query(options.mutation, operationName=options.name, vars=options.variables)
     end
     return NavAbilityClient(query, mutate)
