@@ -37,7 +37,7 @@ function _getFactorEvent(navAbilityClient::NavAbilityClient, client::Client, lab
             "robotId" => client.robotId,
             "sessionId" => client.sessionId
         )
-    ))
+    )) |> fetch
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
         throw("Error: $(rootData["errors"])")
@@ -71,7 +71,7 @@ function getFactorsEvent(navAbilityClient::NavAbilityClient, client::Client; det
             "fields_summary" => detail === SUMMARY || detail === FULL,
             "fields_full" => detail === FULL,
         )
-    ))
+    )) |> fetch
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
         throw("Error: $(rootData["errors"])")
