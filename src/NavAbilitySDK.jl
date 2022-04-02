@@ -4,6 +4,11 @@ module NavAbilitySDK
 using DocStringExtensions
 using LinearAlgebra
 using JSON
+using UUIDs
+
+# pass through exports used often
+export diagm
+export uuid4
 
 # Graphql
 include("./navability/graphql/Factor.jl")
