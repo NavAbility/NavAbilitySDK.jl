@@ -9,7 +9,7 @@ function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, v
                 "packedData" => json(variable)
             )
         )
-    ))
+    )) |> fetch
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
         throw("Error: $(rootData["errors"])")
@@ -37,7 +37,7 @@ function getVariableEvent(navAbilityClient::NavAbilityClient, client::Client, la
             "robotId" => client.robotId,
             "sessionId" => client.sessionId
         )
-    ))
+    )) |> fetch
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
         throw("Error: $(rootData["errors"])")
@@ -71,7 +71,7 @@ function getVariablesEvent(navAbilityClient::NavAbilityClient, client::Client; d
             "fields_summary" => detail === SUMMARY || detail === FULL,
             "fields_full" => detail === FULL,
         )
-    ))
+    )) |> fetch
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
         throw("Error: $(rootData["errors"])")

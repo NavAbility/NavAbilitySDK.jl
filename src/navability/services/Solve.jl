@@ -6,7 +6,7 @@ function solveSessionEvent(navAbilityClient::NavAbilityClient, client::Client)::
         Dict(
             "client" => client,
         )
-    ))
+    )) |> fetch
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
         throw("Error: $(rootData["errors"])")
@@ -27,7 +27,7 @@ function solveFederatedEvent(navAbilityClient::NavAbilityClient, scope::Scope)::
         Dict(
             "scope" => scope,
         )
-    ))
+    )) |> fetch
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
         throw("Error: $(rootData["errors"])")
