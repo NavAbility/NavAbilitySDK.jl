@@ -1,5 +1,5 @@
 
-function solveSession(navAbilityClient::NavAbilityClient, client::Client)::String
+function solveSessionEvent(navAbilityClient::NavAbilityClient, client::Client)::String
     response = navAbilityClient.mutate(MutationOptions(
         "solveSession",
         MUTATION_SOLVESESSION,
@@ -9,7 +9,7 @@ function solveSession(navAbilityClient::NavAbilityClient, client::Client)::Strin
     ))
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
-        throw("Error: $(data["errors"])")
+        throw("Error: $(rootData["errors"])")
     end
     data = get(rootData,"data",nothing)
     if data === nothing return "Error" end
@@ -17,7 +17,10 @@ function solveSession(navAbilityClient::NavAbilityClient, client::Client)::Strin
     return solveSession
 end
 
-function solveFederated(navAbilityClient::NavAbilityClient, scope::Scope)::String
+solveSession(navAbilityClient::NavAbilityClient, client::Client) = @async solveSessionEvent(navAbilityClient, client)
+
+
+function solveFederatedEvent(navAbilityClient::NavAbilityClient, scope::Scope)::String
     response = navAbilityClient.mutate(MutationOptions(
         "solveFederated",
         MUTATION_SOLVEFEDERATED,
@@ -25,8 +28,16 @@ function solveFederated(navAbilityClient::NavAbilityClient, scope::Scope)::Strin
             "scope" => scope,
         )
     ))
+    rootData = JSON.parse(response.Data)
+    if haskey(rootData, "errors")
+        throw("Error: $(rootData["errors"])")
+    end
     data = get(rootData,"data",nothing)
     if data === nothing return "Error" end
     solveSession = get(data,"solveSession","Error")
     return solveSession
 end
+
+solveFederated(navAbilityClient::NavAbilityClient, scope::Scope) = @async solveFederatedEvent(navAbilityClient, scope)
+
+#

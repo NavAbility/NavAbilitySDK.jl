@@ -5,13 +5,13 @@ function testSolveSession(client, context, variableLabels)
     resultId = solveSession(client,context)
 
     # Wait for them to be done before proceeding.
-    waitForCompletion(client, [resultId], expectedStatuses=["Complete"])
+    waitForCompletion(client, Task[resultId;], expectedStatuses=["Complete"])
 
     # Get PPE's are there for the connected variables.
     # TODO - complete the factor graph.
     for v in variableLabels # getVariables(client, context, detail=SUMMARY)
         # First solve key (only) is the default result
-        @test getVariable(client, context, v)["ppes"][1]["solveKey"] == "default"
+        @test fetch( getVariable(client, context, v) )["ppes"][1]["solveKey"] == "default"
     end
 end
 

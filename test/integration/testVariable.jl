@@ -1,6 +1,6 @@
 
 function testAddVariable(client, context, variableLabels, variableTypes, variableTypeStrings)
-    resultIds = String[]
+    resultIds = Task[]
     for (index, label) in enumerate(variableLabels)
         resultId = addVariable(client, context, Variable(label, variableTypes[index]))
         @test resultId != "Error"
@@ -14,12 +14,12 @@ function testAddVariable(client, context, variableLabels, variableTypes, variabl
 end
 
 function testLs(client, context, variableLabels, variableTypes, variableTypeStrings)
-    @test setdiff(variableLabels, ls(client, context)) == []
+    @test length( setdiff(variableLabels, fetch( ls(client, context) )) ) == 0
 end
 
 function testGetVariable(client, context, variableLabels, variableTypes, variableTypeStrings)
     for i in 1:length(variableLabels)
-        actualVariable = getVariable(client,context,variableLabels[i])
+        actualVariable = getVariable(client,context,variableLabels[i]) |> fetch
         @test actualVariable["label"] == variableLabels[i]
         @test actualVariable["variableType"] == variableTypeStrings[i]
     end
@@ -29,7 +29,7 @@ function testGetVariables(client, context, variableLabels, variableTypes, variab
     # Make a quick dictionary of the expected variable Types
     varIdType = Dict(variableLabels .=> variableTypeStrings)
 
-    variables = getVariables(client, context; detail=SUMMARY)
+    variables = getVariables(client, context; detail=SUMMARY) |> fetch
     for v in variables
         @test v["variableType"] == varIdType[v["label"]]
     end

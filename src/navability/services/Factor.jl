@@ -20,11 +20,11 @@ function addPackedFactor(navAbilityClient::NavAbilityClient, client::Client, fac
     return addFactor
 end
 
-function addFactor(navAbilityClient::NavAbilityClient, client::Client, factor::Factor)::String
-    return addPackedFactor(navAbilityClient, client, factor)
+function addFactor(navAbilityClient::NavAbilityClient, client::Client, factor::Factor)
+    return @async addPackedFactor(navAbilityClient, client, factor)
 end
 
-function getFactor(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
+function _getFactorEvent(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
     response = navAbilityClient.query(QueryOptions(
         "sdk_get_factor",
         """
@@ -55,7 +55,9 @@ function getFactor(navAbilityClient::NavAbilityClient, client::Client, label::St
     return factors[1]
 end
 
-function getFactors(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON)::Vector{Dict{String,Any}}
+getFactor(navAbilityClient::NavAbilityClient, client::Client, label::String) = @async _getFactorEvent(navAbilityClient, client, label)
+
+function getFactorsEvent(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON)::Vector{Dict{String,Any}}
     response = navAbilityClient.query(QueryOptions(
         "sdk_get_factors",
         """
@@ -85,11 +87,15 @@ function getFactors(navAbilityClient::NavAbilityClient, client::Client; detail::
     return get(sessions[1],"factors",[])
 end
 
-function listFactors(navAbilityClient::NavAbilityClient, client::Client)::Vector{String}
-    factors = getFactors(navAbilityClient,client)
-    return map(v -> v["label"], factors)
+getFactors( navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON) = @async getFactorsEvent(navAbilityClient, client; detail )
+
+function listFactors(navAbilityClient::NavAbilityClient, client::Client)
+    @async begin
+        factors = getFactors(navAbilityClient,client) |> fetch
+        map(v -> v["label"], factors)
+    end
 end
 
-function lsf(navAbilityClient::NavAbilityClient, client::Client)::Vector{String}
+function lsf(navAbilityClient::NavAbilityClient, client::Client)
     return listFactors(navAbilityClient,client)
 end

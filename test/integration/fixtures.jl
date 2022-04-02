@@ -50,24 +50,24 @@ function exampleGraph1D(client, context; doSolve=true)
     ]
     # Variables
     @info "[Fixture] Adding variables, waiting for completion"
-    resultIds = String[]
+    resultIds = Task[]
     for v in variables
       push!(resultIds, addVariable(client, context, v))
     end
-    waitForCompletion(client, string.(resultIds); expectedStatuses=["Complete"])
+    waitForCompletion(client, resultIds; expectedStatuses=["Complete"])
   
     # Add the factors
     @info "[Fixture] Adding factors, waiting for completion"
-    resultIds = String[]
+    resultIds = Task[]
     for f in factors
       push!(resultIds, addFactor(client, context, f))
     end
-    waitForCompletion(client, string.(resultIds); expectedStatuses=["Complete"])
+    waitForCompletion(client, resultIds; expectedStatuses=["Complete"])
     
     if doSolve
       @info "[Fixture] solving, waiting for completion"
       resultId = solveSession(client, context)
-      waitForCompletion(client, String[resultIds;]; expectedStatuses=["Complete"])
+      waitForCompletion(client, Task[resultIds;]; expectedStatuses=["Complete"])
     end
 
     # and done

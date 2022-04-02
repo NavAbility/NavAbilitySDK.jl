@@ -20,11 +20,11 @@ function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, v
     return addVariable
 end
 
-function addVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Variable)::String
-    return addPackedVariable(navAbilityClient, client, variable)
+function addVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Variable)
+    return @async addPackedVariable(navAbilityClient, client, variable)
 end
 
-function getVariable(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
+function getVariableEvent(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
     response = navAbilityClient.query(QueryOptions(
         "sdk_get_variable",
         """
@@ -55,7 +55,9 @@ function getVariable(navAbilityClient::NavAbilityClient, client::Client, label::
     return variables[1]
 end
 
-function getVariables(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON)::Vector{Dict{String,Any}}
+getVariable(navAbilityClient::NavAbilityClient, client::Client, label::String) = @async getVariableEvent(navAbilityClient, client, label)
+
+function getVariablesEvent(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON)::Vector{Dict{String,Any}}
     response = navAbilityClient.query(QueryOptions(
         "sdk_get_variables",
         """
@@ -85,11 +87,15 @@ function getVariables(navAbilityClient::NavAbilityClient, client::Client; detail
     return get(sessions[1],"variables",[])
 end
 
-function listVariables(navAbilityClient::NavAbilityClient, client::Client)::Vector{String}
-    variables = getVariables(navAbilityClient,client)
-    return map(v -> v["label"], variables)
+getVariables(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON) = @async getVariablesEvent(navAbilityClient, client; detail)
+
+function listVariables(navAbilityClient::NavAbilityClient, client::Client)
+    @async begin
+        variables = getVariables(navAbilityClient,client) |> fetch
+        map(v -> v["label"], variables)
+    end
 end
 
-function ls(navAbilityClient::NavAbilityClient, client::Client)::Vector{String}
+function ls(navAbilityClient::NavAbilityClient, client::Client)
     return listVariables(navAbilityClient,client)
 end
