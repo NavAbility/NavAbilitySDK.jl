@@ -7,7 +7,7 @@ Args:
     navAbilityClient (NavAbilityClient): The NavAbility client.
     id (String): The ID of the request that you want the statuses on.
 """
-function _getStatusMessages(navAbilityClient::NavAbilityClient, id::String)
+function getStatusMessagesEvent(navAbilityClient::NavAbilityClient, id::String)
     response = navAbilityClient.mutate(MutationOptions(
         "sdk_ls_statusmessages",
         GQL_GETSTATUSMESSAGES,
@@ -26,7 +26,7 @@ function _getStatusMessages(navAbilityClient::NavAbilityClient, id::String)
     return statusMessages
 end
 
-getStatusMessages(navAbilityClient::NavAbilityClient, id::String) = @async _getStatusMessages(navAbilityClient, id)
+getStatusMessages(navAbilityClient::NavAbilityClient, id::String) = @async getStatusMessagesEvent(navAbilityClient, id)
 
 """
 $(SIGNATURES)
@@ -36,7 +36,7 @@ Args:
     navAbilityClient (NavAbilityClient): The NavAbility client.
     id (String): The ID of the request that you want the latest status on.
 """
-function _getStatusLatest(navAbilityClient::NavAbilityClient, id::String)
+function getStatusLatestEvent(navAbilityClient::NavAbilityClient, id::String)
     response = navAbilityClient.mutate(MutationOptions(
         "sdk_get_statuslatest",
         GQL_GETSTATUSLATEST,
@@ -56,7 +56,7 @@ function _getStatusLatest(navAbilityClient::NavAbilityClient, id::String)
     return statusMessage
 end
 
-getStatusLatest(navAbilityClient::NavAbilityClient, id::String) = @async _getStatusLatest(navAbilityClient, id)
+getStatusLatest(navAbilityClient::NavAbilityClient, id::String) = @async getStatusLatestEvent(navAbilityClient, id)
 
 """
 $(SIGNATURES)

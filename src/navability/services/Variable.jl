@@ -24,7 +24,7 @@ function addVariable(navAbilityClient::NavAbilityClient, client::Client, variabl
     return @async addPackedVariable(navAbilityClient, client, variable)
 end
 
-function _getVariable(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
+function getVariableEvent(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
     response = navAbilityClient.query(QueryOptions(
         "sdk_get_variable",
         """
@@ -55,9 +55,9 @@ function _getVariable(navAbilityClient::NavAbilityClient, client::Client, label:
     return variables[1]
 end
 
-getVariable(navAbilityClient::NavAbilityClient, client::Client, label::String) = @async _getVariable(navAbilityClient, client, label)
+getVariable(navAbilityClient::NavAbilityClient, client::Client, label::String) = @async getVariableEvent(navAbilityClient, client, label)
 
-function _getVariables(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON)::Vector{Dict{String,Any}}
+function getVariablesEvent(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON)::Vector{Dict{String,Any}}
     response = navAbilityClient.query(QueryOptions(
         "sdk_get_variables",
         """
@@ -87,7 +87,7 @@ function _getVariables(navAbilityClient::NavAbilityClient, client::Client; detai
     return get(sessions[1],"variables",[])
 end
 
-getVariables(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON) = @async _getVariables(navAbilityClient, client; detail)
+getVariables(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON) = @async getVariablesEvent(navAbilityClient, client; detail)
 
 function listVariables(navAbilityClient::NavAbilityClient, client::Client)
     @async begin
