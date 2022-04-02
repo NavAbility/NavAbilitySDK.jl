@@ -29,7 +29,7 @@ function NavAbilityHttpsClient(apiUrl::String="https://api.d1.navability.io")::N
     end
     function mutate(options::MutationOptions)
         # NOTE, the query client library used is synchronous, locally converted to async for package consistency
-        dianaClient.Query(options.mutation, operationName=options.name, vars=options.variables)
+        @async dianaClient.Query(options.mutation, operationName=options.name, vars=options.variables)
     end
     return NavAbilityClient(query, mutate)
 end

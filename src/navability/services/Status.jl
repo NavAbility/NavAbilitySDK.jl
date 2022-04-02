@@ -14,7 +14,7 @@ function getStatusMessagesEvent(navAbilityClient::NavAbilityClient, id::String)
         Dict(
             "id" => id
         )
-    ))
+    )) |> fetch
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
         throw("Error: $(data["errors"])")
@@ -44,7 +44,7 @@ function getStatusLatestEvent(navAbilityClient::NavAbilityClient, id::String)
             # "client" => client,
             "id" => id
         )
-    ))
+    )) |> fetch
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
         throw("Error: $(data["errors"])")

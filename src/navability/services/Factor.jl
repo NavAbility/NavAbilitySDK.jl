@@ -9,7 +9,7 @@ function addPackedFactor(navAbilityClient::NavAbilityClient, client::Client, fac
                 "packedData" => json(factor)
             )
         )
-    ))
+    )) |> fetch
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
         throw("Error: $(rootData["errors"])")
