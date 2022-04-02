@@ -91,8 +91,8 @@ getVariables(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDe
 
 function listVariables(navAbilityClient::NavAbilityClient, client::Client)
     @async begin
-        variables = getVariables(navAbilityClient,client)
-        return map(v -> v["label"], variables)
+        variables = getVariables(navAbilityClient,client) |> fetch
+        map(v -> v["label"], variables)
     end
 end
 

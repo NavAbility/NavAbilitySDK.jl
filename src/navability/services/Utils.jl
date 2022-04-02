@@ -21,7 +21,7 @@ function waitForCompletion(
     wait_time = maxSeconds
     tasksComplete = false
     while !tasksComplete
-        statuses = values(getStatusesLatest(navAbilityClient, requestIds))
+        statuses = values(fetch( getStatusesLatest(navAbilityClient, requestIds) ))
         tasksComplete = all(s["state"] in expectedStatuses for s in statuses)
         if tasksComplete
             return

@@ -91,7 +91,7 @@ getFactors( navAbilityClient::NavAbilityClient, client::Client; detail::QueryDet
 
 function listFactors(navAbilityClient::NavAbilityClient, client::Client)
     @async begin
-        factors = fetch(getFactors(navAbilityClient,client))
+        factors = getFactors(navAbilityClient,client) |> fetch
         map(v -> v["label"], factors)
     end
 end

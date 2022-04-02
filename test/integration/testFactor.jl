@@ -1,6 +1,6 @@
 
 function testAddFactor(client, context, factorLabels, factorTypes, factorVariables, factorData)
-    resultIds = String[]
+    resultIds = Task[]
     for (index, label) in enumerate(factorLabels)
         resultId = addFactor(client,context,Factor(label, factorTypes[index], factorVariables[index], factorData[index]))
         @test resultId != "Error"
@@ -12,12 +12,12 @@ function testAddFactor(client, context, factorLabels, factorTypes, factorVariabl
 end
 
 function testLsf(client, context, factorLabels, factorTypes)
-    @test setdiff(factorLabels, lsf(client, context)) == []
+    @test setdiff(factorLabels, fetch( lsf(client, context) )) == []
 end
 
 function testGetFactor(client, context, factorLabels, factorTypes)
     for i in 1:length(factorLabels)
-        actualFactor = getFactor(client,context,factorLabels[i])
+        actualFactor = fetch( getFactor(client,context,factorLabels[i]) )
         @test actualFactor["label"] == factorLabels[i]
         @test actualFactor["fnctype"] == factorTypes[i]
     end
@@ -27,7 +27,7 @@ function testGetFactors(client, context, factorLabels, factorTypes)
     # Make a quick dictionary of the expected variable Types
     factorIdType = Dict(factorLabels .=> factorTypes)
 
-    factors = getFactors(client, context, detail=FULL)
+    factors = fetch( getFactors(client, context, detail=FULL) )
     for f in factors
         @test f["fnctype"] == factorIdType[f["label"]]
     end
