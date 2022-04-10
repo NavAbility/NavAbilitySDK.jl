@@ -13,7 +13,7 @@ Base.@kwdef mutable struct FactorData
     potentialused::Bool = false
     edgeIDs::Vector{String} = []
     fnc::InferenceType
-    multihypo::Vector{Int} = []
+    multihypo::Vector{Float64} = []
     certainhypo::Vector{Int} = []
     nullhypo::Float64 = 0.0
     solveInProgress::Int = 0
@@ -167,9 +167,10 @@ function MixtureData(
     return data
 end
 
-function Factor(label::String, fncType::String, variableOrderSymbols::Vector{String}, data::FactorData; tags::Vector{String}=["FACTOR"], timestamp::String = string(now(Dates.UTC))*"Z")::Factor
+function Factor(label::String, fncType::String, variableOrderSymbols::Vector{String}, data::FactorData; tags::Vector{String}=["FACTOR"], timestamp::String = string(now(Dates.UTC))*"Z", multihypo=Float64[])::Factor
     # TODO: Remove independent updates of this and set certainhypo here.
     data.certainhypo = Vector{Int}(1:size(variableOrderSymbols)[1])
+    data.multihypo = multihypo
     
     result = Factor(
         label,
