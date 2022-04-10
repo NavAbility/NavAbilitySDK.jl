@@ -6,8 +6,9 @@ using LinearAlgebra
 using JSON
 using UUIDs
 
-# pass through exports used often
-export diagm
+# LinearAlgebra pass through exports
+export diagm, norm
+# UUIDs pass through exports
 export uuid4
 
 # Graphql
