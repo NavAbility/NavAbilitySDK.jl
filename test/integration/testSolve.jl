@@ -1,11 +1,11 @@
 
-function testSolveSession(client, context, variableLabels)
+function testSolveSession(client, context, variableLabels; maxSeconds=180)
     # allVariableLabels = ls(client, context, variableLabels)
 
     resultId = solveSession(client,context)
 
     # Wait for them to be done before proceeding.
-    waitForCompletion(client, Task[resultId;], expectedStatuses=["Complete"])
+    waitForCompletion(client, Task[resultId;]; expectedStatuses=["Complete"], maxSeconds)
 
     # Get PPE's are there for the connected variables.
     # TODO - complete the factor graph.
