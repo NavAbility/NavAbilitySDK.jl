@@ -11,8 +11,8 @@ Args:
 function waitForCompletion(
     navAbilityClient::NavAbilityClient,
     requestIds::AbstractVector{<:AbstractString};
-    maxSeconds::Integer = 60,
-    expectedStatuses::AbstractVector{<:AbstractString} = Nothing,
+    maxSeconds::Integer = 120,
+    expectedStatuses::Union{Nothing,<:AbstractVector{<:AbstractString}} = nothing,
     exceptionMessage::AbstractString = "Requests did not complete in time")
 #
     if expectedStatuses == Nothing
@@ -42,3 +42,12 @@ function waitForCompletion(
     rids = fetch.(requestIds) .|> string
     waitForCompletion(navAbilityClient, rids; kw...)
 end
+
+# helper functions to construct for most likely user object
+GraphVizApp(ct::Client) = GraphVizApp("https://app.navability.io/cloud/graph/?userId=$(ct.userId)&robotStartsWith=$(ct.robotId)&sessionStartsWith=$(ct.sessionId)")
+MapVizApp(ct::Client) = MapVizApp("https://app.navability.io/cloud/map/?userId=$(ct.userId)&robotStartsWith=$(ct.robotId)&sessionStartsWith=$(ct.sessionId)")
+
+# overload show dispatch for convenient static and interactive links to NavAbility App visualizations
+Base.show(io::IO, ::MIME"text/plain", gv::Union{GraphVizApp,MapVizApp}) = println(gv.url)
+Base.show(io::IO, ::MIME"text/markdown", gv::GraphVizApp) = display("text/markdown", "[![Navigate to Factor Graph]($assetGraphVizImg)]($(gv.url))")
+Base.show(io::IO, ::MIME"text/markdown", gv::MapVizApp) = display("text/markdown", "[![Navigate to Factor Graph]($assetGeomVizImg)]($(gv.url))")

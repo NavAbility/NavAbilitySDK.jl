@@ -6,8 +6,12 @@ using LinearAlgebra
 using JSON
 using UUIDs
 
-# pass through exports used often
-export diagm
+# for overloading with visualization helpers
+import Base: show
+
+# LinearAlgebra pass through exports
+export diagm, norm
+# UUIDs pass through exports
 export uuid4
 
 # Graphql
@@ -54,5 +58,6 @@ export addFactor, addPackedFactor
 export solveSession, solveFederated
 export getStatusMessages, getStatusLatest, getStatusesLatest
 export waitForCompletion
+export GraphVizApp, MapVizApp
 
 end
