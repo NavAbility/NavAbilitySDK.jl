@@ -55,5 +55,6 @@ export addFactor, addPackedFactor
 export solveSession, solveFederated
 export getStatusMessages, getStatusLatest, getStatusesLatest
 export waitForCompletion
+export GraphVizApp, MapVizApp
 
 end
