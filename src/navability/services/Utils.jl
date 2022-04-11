@@ -12,7 +12,7 @@ function waitForCompletion(
     navAbilityClient::NavAbilityClient,
     requestIds::AbstractVector{<:AbstractString};
     maxSeconds::Integer = 60,
-    expectedStatuses::AbstractVector{<:AbstractString} = Nothing,
+    expectedStatuses::Union{Nothing,<:AbstractVector{<:AbstractString}} = nothing,
     exceptionMessage::AbstractString = "Requests did not complete in time")
 #
     if expectedStatuses == Nothing
