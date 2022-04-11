@@ -1,7 +1,8 @@
 
 function testSolveSession(client, context, variableLabels; maxSeconds=180)
     # allVariableLabels = ls(client, context, variableLabels)
-
+    
+    # do the solve
     resultId = solveSession(client,context)
 
     # Wait for them to be done before proceeding.
@@ -15,6 +16,13 @@ function testSolveSession(client, context, variableLabels; maxSeconds=180)
     end
 end
 
+function testVizHelpersApp(context)
+    @show GraphVizApp(context)
+    @show MapVizApp(context)
+    
+    nothing
+end
+
 function runSolveTests(client, context)
     @testset "solve-testset" begin
         @info "Running solve-testset"
@@ -23,5 +31,10 @@ function runSolveTests(client, context)
         variableLabels = ["x0", "x1"]
 
         testSolveSession(client, context, variableLabels)
+    end
+    
+    @testset "appviz-testset" begin
+        # generate viz help objects from current context
+        testVizHelpersApp(context) 
     end
 end
