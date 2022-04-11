@@ -8,7 +8,7 @@ function testAddVariable(client, context, variableLabels, variableTypes, variabl
     end
 
     # Wait for them to be done before proceeding.
-    waitForCompletion(client, resultIds, expectedStatuses=["Complete"])
+    waitForCompletion(client, resultIds, expectedStatuses=["Complete"], maxSeconds=180)
 
     return resultIds
 end
