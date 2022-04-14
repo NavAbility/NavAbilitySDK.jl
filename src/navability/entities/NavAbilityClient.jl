@@ -17,11 +17,11 @@ struct NavAbilityClient
     mutate::Function
 end
 
-function NavAbilityWebsocketClient(apiUrl::String)::NavAbilityClient
+function NavAbilityWebsocketClient(apiUrl::String="wss://api.navability.io/graphql")::NavAbilityClient
     throw("Not implemented")
 end
 
-function NavAbilityHttpsClient(apiUrl::String="https://api.d1.navability.io")::NavAbilityClient
+function NavAbilityHttpsClient(apiUrl::String="https://api.navability.io")::NavAbilityClient
     dianaClient = GraphQLClient(apiUrl)
     function query(options::QueryOptions)
         # NOTE, the query client library used is synchronous, locally converted to async for package consistency
