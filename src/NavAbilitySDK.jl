@@ -1,5 +1,8 @@
 module NavAbilitySDK
 
+const NVA = NavAbilitySDK
+export NVA
+
 # Global imports
 using DocStringExtensions
 using LinearAlgebra
@@ -51,6 +54,7 @@ include("./navability/services/Factor.jl")
 include("./navability/services/Solve.jl")
 include("./navability/services/Status.jl")
 include("./navability/services/Utils.jl")
+include("./navability/services/StandardAPI.jl")
 export getVariable, getVariables, listVariables, ls
 export addVariable, addPackedVariable
 export getFactor, getFactors, listFactors, lsf
