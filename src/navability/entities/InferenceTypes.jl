@@ -20,6 +20,15 @@ Base.@kwdef struct ZInferenceType <: InferenceType
   Z::Distribution
 end
 
+Base.@kwdef struct LinearRelative <: InferenceType
+  Z::Distribution
+end
+
+Base.@kwdef struct Prior <: InferenceType
+  Z::Distribution
+end
+
+
 """
 $(TYPEDEF)
 Pose2Point2BearingRangeInferenceType is used to represent a bearing
