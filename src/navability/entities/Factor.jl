@@ -40,8 +40,8 @@ Create a prior factor for a ContinuousScalar (a.k.a. Pose1) with a distribution 
 
 Default value of Z = `Normal(0.0, 0.1)`.
 """
-function PriorData(;Z::Distribution = Normal(0.0, 0.1))::FactorData
-    data = FactorData(fnc = ZInferenceType(Z), certainhypo = [1])
+function PriorData(;Z::Distribution = Normal(0.0, 0.1), kwargs...)::FactorData
+    data = FactorData(;fnc = ZInferenceType(Z), certainhypo = [1], kwargs...)
     return data
 end
 
@@ -52,8 +52,8 @@ Create a prior factor for a Pose2 with a distribution Z representing (x,y,theta)
 
 Default value of Z = `FullNormal([0.0, 0.0, 0.0], diagm([0.01, 0.01, 0.01]))`.
 """
-function PriorPose2Data(;Z::Distribution = FullNormal([0.0, 0.0, 0.0], diagm([0.01, 0.01, 0.01])))::FactorData
-    data = FactorData(fnc = ZInferenceType(Z), certainhypo = [1])
+function PriorPose2Data(;Z::Distribution = FullNormal([0.0, 0.0, 0.0], diagm([0.01, 0.01, 0.01])), kwargs...)::FactorData
+    data = FactorData(;fnc = ZInferenceType(Z), certainhypo = [1], kwargs...)
     return data
 end
 
@@ -64,8 +64,8 @@ Create a prior factor for a Point2 with a distribution Z representing (x,y) prio
 
 Default value of Z = `FullNormal([0.0, 0.0], diagm([0.01, 0.01]))`.
 """
-function PriorPoint2Data(;Z::Distribution = FullNormal([0.0, 0.0], diagm([0.01, 0.01])))::FactorData
-    data = FactorData(fnc = ZInferenceType(Z), certainhypo = [1])
+function PriorPoint2Data(;Z::Distribution = FullNormal([0.0, 0.0], diagm([0.01, 0.01])), kwargs...)::FactorData
+    data = FactorData(;fnc = ZInferenceType(Z), certainhypo = [1], kwargs...)
     return data
 end
 
@@ -76,8 +76,8 @@ between the variables, e.g. `Normal(1.0, 0.1)`.
 
 Default value of Z = `Normal(1.0, 0.1)`.
 """
-function LinearRelativeData(;Z::Distribution = Normal(1.0, 0.1))::FactorData
-    data = FactorData(fnc = ZInferenceType(Z), certainhypo = [1, 2])
+function LinearRelativeData(;Z::Distribution = Normal(1.0, 0.1), kwargs...)::FactorData
+    data = FactorData(;fnc = ZInferenceType(Z), certainhypo = [1, 2], kwargs...)
     return data
 end
 
@@ -88,8 +88,8 @@ between the variables, e.g. `FullNormal([1,0,0.3333*π], diagm([0.01,0.01,0.01])
 
 Default value of Z = `FullNormal([1,0,0.3333*π], diagm([0.01,0.01,0.01]))`.
 """
-function Pose2Pose2Data(;Z::Distribution = FullNormal([1,0,0.3333*π], diagm([0.01, 0.01, 0.01])))::FactorData
-    data = FactorData(fnc = ZInferenceType(Z), certainhypo = [1, 2])
+function Pose2Pose2Data(;Z::Distribution = FullNormal([1,0,0.3333*π], diagm([0.01, 0.01, 0.01])), kwargs...)::FactorData
+    data = FactorData(;fnc = ZInferenceType(Z), certainhypo = [1, 2], kwargs...)
     return data
 end
 
@@ -99,8 +99,8 @@ Create a Pose2->Point2 bearing+range factor with 1D distributions:
 - bearing: The bearing from the pose to the point, default `Normal(0, 1)`.
 - range: The range from the pose to the point, default `Normal(1, 1)`.
 """
-function Pose2Point2BearingRangeData(;bearing::Distribution = Normal(0, 1), range::Distribution = Normal(1, 1))::FactorData
-    data = FactorData(fnc = Pose2Point2BearingRangeInferenceType(bearing, range), certainhypo = [1, 2])
+function Pose2Point2BearingRangeData(;bearing::Distribution = Normal(0, 1), range::Distribution = Normal(1, 1), kwargs...)::FactorData
+    data = FactorData(;fnc = Pose2Point2BearingRangeInferenceType(bearing, range), certainhypo = [1, 2], kwargs...)
     return data
 end
 
@@ -109,8 +109,8 @@ $(SIGNATURES)
 Create a Point2->Point2 range factor with a 1D distribution:
 - range: The range from the pose to the point, default `Normal(1, 1)`.
 """
-function Point2Point2RangeData(;range::Distribution = Normal(1, 1))::FactorData
-    data = FactorData(fnc = ZInferenceType(range), certainhypo = [1, 2])
+function Point2Point2RangeData(;range::Distribution = Normal(1, 1), kwargs...)::FactorData
+    data = FactorData(;fnc = ZInferenceType(range), certainhypo = [1, 2], kwargs...)
     return data
 end
 
@@ -119,7 +119,7 @@ $(SIGNATURES)
 Create a AprilTags factor that directly relates a Pose2 to the information from an AprilTag reading.
 Corners need to be provided, homography and tag length are defaulted and can be overwritten.
 """
-function Pose2AprilTag4CornersData(id, corners::Vector{Float64}, homography::Vector{Float64}; K::Vector{Float64}=[300.0,0.0,0.0,0.0,300.0,0.0,180.0,120.0,1.0], taglength::Float64=0.25)::FactorData
+function Pose2AprilTag4CornersData(id, corners::Vector{Float64}, homography::Vector{Float64}; K::Vector{Float64}=[300.0,0.0,0.0,0.0,300.0,0.0,180.0,120.0,1.0], taglength::Float64=0.25, kwargs...)::FactorData
     fnc = Pose2AprilTag4CornersInferenceType(
         corners=corners,
         homography=homography,
@@ -127,7 +127,7 @@ function Pose2AprilTag4CornersData(id, corners::Vector{Float64}, homography::Vec
         taglength=taglength,
         id=id
     )
-    data = FactorData(fnc = fnc, certainhypo = [1, 2])
+    data = FactorData(;fnc = fnc, certainhypo = [1, 2], kwargs...)
     return data
 end
 
@@ -154,7 +154,7 @@ function MixtureData(
         probabilities::Vector{Float64},
         dims::Integer  # TODO: Confirming we can remove.
         )::FactorData #where T<:FactorData
-    data = FactorData(
+    data = FactorData(;
         fnc = MixtureInferenceType(
             N = length(components),
             # @jim-hill-r this is why I don't like the Data suffix.
@@ -167,10 +167,13 @@ function MixtureData(
     return data
 end
 
-function Factor(label::String, fncType::String, variableOrderSymbols::Vector{String}, data::FactorData; tags::Vector{String}=["FACTOR"], timestamp::String = string(now(Dates.UTC))*"Z", multihypo=Float64[])::Factor
+function Factor(label::String, fncType::String, variableOrderSymbols::Vector{String}, data::FactorData; tags::Vector{String}=["FACTOR"], timestamp::String = string(now(Dates.UTC))*"Z", multihypo=nothing)::Factor
     # TODO: Remove independent updates of this and set certainhypo here.
     data.certainhypo = Vector{Int}(1:size(variableOrderSymbols)[1])
-    data.multihypo = multihypo
+    
+    if multihypo !== nothing
+        data.multihypo = multihypo
+    end
     
     result = Factor(
         label,
