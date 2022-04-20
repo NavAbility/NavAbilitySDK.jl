@@ -14,7 +14,7 @@ Base.@kwdef mutable struct Normal <: Distribution
   sigma::Float64
   _type::String = "IncrementalInference.PackedNormal"
 end
-Normal(mu::Number, sigma::Number) = Normal(mu=mu, sigma=sigma)
+Normal(mu::Number, sigma::Number) = Normal(;mu, sigma)
 
 """
 $(TYPEDEF)
@@ -36,7 +36,7 @@ Base.@kwdef mutable struct FullNormal <: Distribution
   _type::String = "IncrementalInference.PackedFullNormal"
 end
 # TODO: Generalize this to any number type.
-FullNormal(mu::Vector{Float64}, cov::Matrix{Float64}) = FullNormal(mu=mu, cov=vec(cov))
+FullNormal(mu::Vector{Float64}, cov::Matrix{Float64}) = FullNormal(;mu, cov=vec(cov))
 
 """
 $(TYPEDEF)
@@ -47,7 +47,7 @@ Base.@kwdef mutable struct Uniform <: Distribution
   b::Float64
   _type::String = "IncrementalInference.PackedUniform"
 end
-Uniform(a::Number, b::Number) = Uniform(a=a, b=b)
+Uniform(a::Number, b::Number) = Uniform(;a, b)
 
 """
 $(TYPEDEF)
@@ -58,4 +58,15 @@ Base.@kwdef mutable struct Categorical <: Distribution
   _type::String = "IncrementalInference.PackedCategorical"
 end
 # TODO: Generalize this to any number type.
-Categorical(p::Vector{Float64}) = Categorical(p=p)
+Categorical(p::Vector{Float64}) = Categorical(;p)
+
+
+Base.@kwdef mutable struct ManifoldKernelDensity <: Distribution
+  varType::String
+  pts::Vector{Vector{Float64}}
+  bw::Vector{Float64}   = Float64[]
+  partial::Vector{Int}  = Int[]
+  infoPerCoord::Vector{Float64} = zeros(length(pts[1]))
+  _type::String         = "IncrementalInference.PackedManifoldKernelDensity"
+end
+ManifoldKernelDensity(varType::String, pts::AbstractVector{<:AbstractVector{<:Real}}; kw...) = ManifoldKernelDensity(;varType,pts,kw...)
