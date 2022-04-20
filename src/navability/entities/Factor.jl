@@ -134,8 +134,8 @@ function ScatterAlignPose2Data(
         varType::AbstractString, 
         cloud1::AbstractVector{<:AbstractVector{<:Real}}, 
         cloud2::AbstractVector{<:AbstractVector{<:Real}},
-        bw1::AbstractVector{<:Real}=[],
-        bw2::AbstractVector{<:Real}=[];
+        bw1::AbstractVector{<:Real}=Float64[],
+        bw2::AbstractVector{<:Real}=Float64[];
         mkd1 = ManifoldKernelDensity(; varType, pts=cloud1, bw=bw1 ),
         mkd2 = ManifoldKernelDensity(; varType, pts=cloud2, bw=bw2 ),
         kw_sap...

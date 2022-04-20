@@ -45,4 +45,16 @@
     [0.4, 0.6],
     2)
   @test JSON.json(f) == "{\"eliminated\":false,\"potentialused\":false,\"edgeIDs\":[],\"fnc\":{\"N\":2,\"F_\":\"PackedLinearRelative\",\"S\":[\"hypo1\",\"hypo2\"],\"components\":[{\"mu\":0.0,\"sigma\":2.0,\"_type\":\"IncrementalInference.PackedNormal\"},{\"a\":30.0,\"b\":55.0,\"_type\":\"IncrementalInference.PackedUniform\"}],\"diversity\":{\"p\":[0.4,0.6],\"_type\":\"IncrementalInference.PackedCategorical\"}},\"multihypo\":[],\"certainhypo\":[],\"nullhypo\":0.0,\"solveInProgress\":0,\"inflation\":3.0}"
+
+  # ScatterAlignPose2 and implicityly ManifoldKernelDensity
+  Random.seed!(42)
+  pts1 = [randn(2) for i in 1:50]
+  pts2 = [randn(2) for i in 1:50]
+  sap = ScatterAlignPose2Data("Point2",pts1,pts2)
+  fid = open(joinpath(@__DIR__,"testdata","sap_test.json"))
+  ref = readline(fid)
+  close(fid)
+  @test ref == JSON.json(sap);
+
+
 end
