@@ -45,7 +45,7 @@ end
 
 
 Base.@kwdef struct ScatterAlignPose2InferenceType <: InferenceType
-  """ SDK only support MKD clouds at this time, CJL also support HeatmapGridDensity, TODO """
+  """ This SDK only supports MKD clouds at this time. Note CJL also supports HeatmapGridDensity, TODO """
   cloud1::ManifoldKernelDensity
   cloud2::ManifoldKernelDensity
   """ Common grid scale for both images -- i.e. units/pixel.  
