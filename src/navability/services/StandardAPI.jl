@@ -1,44 +1,42 @@
 ## Wrap to standard API spec
 
-
+# Leaving as comment for future plans, see https://github.com/NavAbility/nva-sdk/issues/21
 # TODO What to use:
 # - NavAbilityPlatform
 # - NavAbilityConnection
 # - NavAbilityClientContext
 # - 
-mutable struct NavAbilityPlatform{T}
-    client
-    context::T
-end
+# mutable struct NavAbilityPlatform{T}
+#     client
+#     context::T
+# end
 
-function NavAbilityPlatform(;
-            apiUrl::AbstractString="https://api.navability.io",
-            UserId::AbstractString="guest@navability.io",
-            RobotId::AbstractString=ENV["USER"],
-            SessionId::AbstractString="Session_" * string(uuid4())[1:8])
-    #
-    client = NavAbilityHttpsClient(apiUrl)
-    context = Client(UserId, RobotId, SessionId)
-    return NavAbilityPlatform(client, context)
-end
+# function NavAbilityPlatform(;
+#             apiUrl::AbstractString="https://api.navability.io",
+#             UserId::AbstractString="guest@navability.io",
+#             RobotId::AbstractString=ENV["USER"],
+#             SessionId::AbstractString="Session_" * string(uuid4())[1:8])
+#     #
+#     client = NavAbilityHttpsClient(apiUrl)
+#     context = Client(UserId, RobotId, SessionId)
+#     return NavAbilityPlatform(client, context)
+# end
 
 """
   addVariable
 Add a variable to the NavAbility Platform service
 Example
 ```julia
-nva = NavAbilityPlatform()
-addVariable(nva, "x0", NVA.Pose2)
+addVariable(client, context, "x0", NVA.Pose2)
 ```
 """
-function addVariable(
-            nva::NavAbilityPlatform, 
-            lbl::Union{<:AbstractString,Symbol},
-            varType::Union{<:AbstractString,Symbol} )
+function addVariable(client,
+                     context,
+                     lbl::Union{<:AbstractString,Symbol},
+                     varType::Union{<:AbstractString,Symbol})
     #
-
     v = Variable(string(lbl), Symbol(varType))
-    return addVariable(nva.client, nva.context, v)
+    return addVariable(client, context, v)
 end
 
 
@@ -53,14 +51,15 @@ end
 
 #TODO solverParams
 
-function addFactor(nva::NavAbilityPlatform,
+function addFactor(client,
+                   context,
                    xisyms::Union{Vector{String},Vector{Symbol}},
                    fnc::InferenceType;
                    multihypo::Vector{Float64}=Float64[],
                    nullhypo::Float64=0.0,
                    solvable::Int=1,
                    tags::Vector{String}=["FACTOR"],
-                   # timestamp::Union{DateTime,ZonedDateTime}=now(localzone()),
+                   # timestamp::Union{DateTime,ZonedDateTime}=now(localzone()), #TODO why timestamp difference from IIF 
                    timestamp::String = string(now(Dates.UTC))*"Z",
                    inflation::Real=3.0,
                    namestring::String = assembleFactorName(xisyms),
@@ -89,7 +88,7 @@ function addFactor(nva::NavAbilityPlatform,
         DFG_VERSION
     )
     # add factor
-    resultId = addFactor(nva.client, nva.context, factor)
+    resultId = addFactor(client, context, factor)
 
     return factor, resultId
 end
