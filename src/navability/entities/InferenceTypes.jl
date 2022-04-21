@@ -28,6 +28,14 @@ Base.@kwdef struct Prior <: InferenceType
   Z::Distribution
 end
 
+Base.@kwdef struct PriorPose2 <: InferenceType
+  Z::Distribution
+end
+
+Base.@kwdef struct Pose2Pose2 <: InferenceType
+  Z::Distribution
+end
+
 
 """
 $(TYPEDEF)

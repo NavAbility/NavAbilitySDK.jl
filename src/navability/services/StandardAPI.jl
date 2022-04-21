@@ -90,5 +90,5 @@ function addFactor(client,
     # add factor
     resultId = addFactor(client, context, factor)
 
-    return factor, resultId
+    return resultId
 end
