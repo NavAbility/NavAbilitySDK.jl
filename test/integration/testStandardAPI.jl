@@ -25,4 +25,11 @@ sessionId = get(ENV,"SESSION_ID","TestSession_"*string(uuid4())[1:8])
     addVariable(client, context,  "y0", :Position1)
     addFactor(client, context, ["y0"], NVA.Prior(Z=Normal(0.0, 1.0)))  
 
+
+    addVariable(client, context,  "z0", :Point2)
+    addFactor(client, context, ["z0"], NVA.PriorPoint2(Z=FullNormal([1.,0.], diagm([1.,1]))))
+    
+    addVariable(client, context,  "z1", :Point2)
+    addFactor(client, context, ["z0", "z1"], NVA.Point2Point2(Z=FullNormal([1.,0.], diagm([1.,1]))))  
+
 end

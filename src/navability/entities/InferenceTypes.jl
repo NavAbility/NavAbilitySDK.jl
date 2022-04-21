@@ -8,6 +8,7 @@ functions inside of factors.
 """
 abstract type InferenceType end
 
+#TODO maybe generate all ZInferenceTypes with a macro
 """
 $(TYPEDEF)
 ZInferenceType is used by many factors as a common inference
@@ -35,6 +36,19 @@ end
 Base.@kwdef struct Pose2Pose2 <: InferenceType
   Z::Distribution
 end
+
+Base.@kwdef struct PriorPoint2 <: InferenceType
+  Z::Distribution
+end
+
+Base.@kwdef struct Point2Point2 <: InferenceType
+  Z::Distribution
+end
+
+Base.@kwdef struct Point2Point2Range <: InferenceType
+  Z::Distribution
+end
+
 
 
 """
