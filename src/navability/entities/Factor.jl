@@ -138,11 +138,12 @@ function ScatterAlignPose2Data(
         bw2::AbstractVector{<:Real}=Float64[];
         mkd1 = ManifoldKernelDensity(; varType, pts=cloud1, bw=bw1 ),
         mkd2 = ManifoldKernelDensity(; varType, pts=cloud2, bw=bw2 ),
+        kw_sap::NamedTuple=(;),
         kwargs...
     )
     #
     
-    fnc = ScatterAlignPose2InferenceType(; cloud1=mkd1, cloud2=mkd2)
+    fnc = ScatterAlignPose2InferenceType(; cloud1=mkd1, cloud2=mkd2, kw_sap...)
     data = FactorData(; fnc, certainhypo = [1, 2], kwargs...)
     return data
 end
