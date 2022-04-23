@@ -120,13 +120,29 @@ Create a AprilTags factor that directly relates a Pose2 to the information from 
 Corners need to be provided, homography and tag length are defaulted and can be overwritten.
 """
 function Pose2AprilTag4CornersData(id, corners::Vector{Float64}, homography::Vector{Float64}; K::Vector{Float64}=[300.0,0.0,0.0,0.0,300.0,0.0,180.0,120.0,1.0], taglength::Float64=0.25)::FactorData
-    fnc = Pose2AprilTag4CornersInferenceType(
-        corners=corners,
-        homography=homography,
-        K=K,
-        taglength=taglength,
-        id=id
+    fnc = Pose2AprilTag4CornersInferenceType(;corners,homography,K,taglength,id)
+    data = FactorData(fnc = fnc, certainhypo = [1, 2])
+    return data
+end
+
+"""
+$(SIGNATURES)
+
+Returns `<:FactorData`
+"""
+function ScatterAlignPose2Data(
+        varType::AbstractString, 
+        cloud1::AbstractVector{<:AbstractVector{<:Real}}, 
+        cloud2::AbstractVector{<:AbstractVector{<:Real}},
+        bw1::AbstractVector{<:Real}=Float64[],
+        bw2::AbstractVector{<:Real}=Float64[];
+        mkd1 = ManifoldKernelDensity(; varType, pts=cloud1, bw=bw1 ),
+        mkd2 = ManifoldKernelDensity(; varType, pts=cloud2, bw=bw2 ),
+        kw_sap...
     )
+    #
+    
+    fnc = ScatterAlignPose2InferenceType(; cloud1=mkd1, cloud2=mkd2, kw_sap...)
     data = FactorData(fnc = fnc, certainhypo = [1, 2])
     return data
 end
