@@ -44,9 +44,12 @@ function waitForCompletion(
 end
 
 # helper functions to construct for most likely user object
-GraphVizApp(ct::Client) = GraphVizApp("https://app.navability.io/cloud/graph/?userId=$(ct.userId)&robotStartsWith=$(ct.robotId)&sessionStartsWith=$(ct.sessionId)")
-function MapVizApp(ct::Client; variableStartsWith::AbstractString="")
-    suffix = 0 === length(variableStartsWith) ? "" : "&variableStartsWith=$variableStartsWith"
+function GraphVizApp(ct::Client; variableStartsWith=nothing)
+    suffix = variableStartsWith isa Nothing ? "" : "&variableStartsWith=$variableStartsWith"
+    GraphVizApp("https://app.navability.io/cloud/graph/?userId=$(ct.userId)&robotStartsWith=$(ct.robotId)&sessionStartsWith=$(ct.sessionId)"*suffix)
+end
+function MapVizApp(ct::Client; variableStartsWith=nothing)
+    suffix = variableStartsWith isa Nothing ? "" : "&variableStartsWith=$variableStartsWith"
     MapVizApp("https://app.navability.io/cloud/map/?userId=$(ct.userId)&robotStartsWith=$(ct.robotId)&sessionStartsWith=$(ct.sessionId)"*suffix)
 end
 
