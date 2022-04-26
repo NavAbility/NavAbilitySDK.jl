@@ -44,8 +44,26 @@ function waitForCompletion(
 end
 
 # helper functions to construct for most likely user object
-GraphVizApp(ct::Client) = GraphVizApp("https://app.navability.io/cloud/graph/?userId=$(ct.userId)&robotStartsWith=$(ct.robotId)&sessionStartsWith=$(ct.sessionId)")
-MapVizApp(ct::Client) = MapVizApp("https://app.navability.io/cloud/map/?userId=$(ct.userId)&robotStartsWith=$(ct.robotId)&sessionStartsWith=$(ct.sessionId)")
+function GraphVizApp(ct::Client; variableStartsWith=nothing)
+    suffix = ""
+    if !(variableStartsWith isa Nothing)
+        suffix *= "&variableStartsWith"
+        if 0<length(variableStartsWith)
+            suffix *= "=$variableStartsWith"
+        end
+    end
+    GraphVizApp("https://app.navability.io/cloud/graph/?userId=$(ct.userId)&robotStartsWith=$(ct.robotId)&sessionStartsWith=$(ct.sessionId)"*suffix)
+end
+function MapVizApp(ct::Client; variableStartsWith=nothing)
+    suffix = ""
+    if !(variableStartsWith isa Nothing)
+        suffix *= "&variableStartsWith"
+        if 0<length(variableStartsWith)
+            suffix *= "=$variableStartsWith"
+        end
+    end
+    MapVizApp("https://app.navability.io/cloud/map/?userId=$(ct.userId)&robotStartsWith=$(ct.robotId)&sessionStartsWith=$(ct.sessionId)"*suffix)
+end
 
 # overload show dispatch for convenient static and interactive links to NavAbility App visualizations
 Base.show(io::IO, ::MIME"text/plain", gv::Union{GraphVizApp,MapVizApp}) = println(gv.url)
