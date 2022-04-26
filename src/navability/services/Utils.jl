@@ -45,11 +45,23 @@ end
 
 # helper functions to construct for most likely user object
 function GraphVizApp(ct::Client; variableStartsWith=nothing)
-    suffix = variableStartsWith isa Nothing ? "" : "&variableStartsWith=$variableStartsWith"
+    suffix = ""
+    if !(variableStartsWith isa Nothing)
+        suffix *= "&variableStartsWith"
+        if 0<length(variableStartsWith)
+            suffix *= "=$variableStartsWith"
+        end
+    end
     GraphVizApp("https://app.navability.io/cloud/graph/?userId=$(ct.userId)&robotStartsWith=$(ct.robotId)&sessionStartsWith=$(ct.sessionId)"*suffix)
 end
 function MapVizApp(ct::Client; variableStartsWith=nothing)
-    suffix = variableStartsWith isa Nothing ? "" : "&variableStartsWith=$variableStartsWith"
+    suffix = ""
+    if !(variableStartsWith isa Nothing)
+        suffix *= "&variableStartsWith"
+        if 0<length(variableStartsWith)
+            suffix *= "=$variableStartsWith"
+        end
+    end
     MapVizApp("https://app.navability.io/cloud/map/?userId=$(ct.userId)&robotStartsWith=$(ct.robotId)&sessionStartsWith=$(ct.sessionId)"*suffix)
 end
 
