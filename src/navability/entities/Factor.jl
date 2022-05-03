@@ -184,12 +184,25 @@ function MixtureData(
     return data
 end
 
-function Factor(label::String, fncType::String, variableOrderSymbols::Vector{String}, data::FactorData; tags::Vector{String}=["FACTOR"], timestamp::String = string(now(Dates.UTC))*"Z", multihypo=nothing)::Factor
+
+function Factor(
+        label::String, 
+        fncType::String, 
+        variableOrderSymbols::Vector{String}, 
+        data::FactorData; 
+        tags::Vector{String}=["FACTOR"], 
+        timestamp::String = string(now(Dates.UTC))*"Z", 
+        multihypo=nothing,
+        nullhypo=nothing
+    )::Factor
+    #
     # TODO: Remove independent updates of this and set certainhypo here.
     data.certainhypo = Vector{Int}(1:size(variableOrderSymbols)[1])
-    
     if multihypo !== nothing
         data.multihypo = multihypo
+    end
+    if nullhypo !== nothing
+        data.nullhypo = float(nullhypo)
     end
     
     result = Factor(
