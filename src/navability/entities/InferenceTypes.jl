@@ -8,7 +8,23 @@ functions inside of factors.
 """
 abstract type InferenceType end
 
-#TODO maybe generate all ZInferenceTypes with a macro
+macro nvaZInferenceType(inferencetype)
+  return esc(quote
+      Base.@__doc__ struct $inferencetype <: NVA.InferenceType 
+          Z::Distribution
+      end
+      $inferencetype(;Z) = $inferencetype(Z)
+  end)
+end
+
+@nvaZInferenceType Prior
+@nvaZInferenceType LinearRelative
+@nvaZInferenceType PriorPose2
+@nvaZInferenceType Pose2Pose2
+@nvaZInferenceType PriorPoint2
+@nvaZInferenceType Point2Point2
+@nvaZInferenceType Point2Point2Range
+
 """
 $(TYPEDEF)
 ZInferenceType is used by many factors as a common inference
@@ -20,36 +36,6 @@ Point2Point2Range, etc.
 Base.@kwdef struct ZInferenceType <: InferenceType
   Z::Distribution
 end
-
-Base.@kwdef struct LinearRelative <: InferenceType
-  Z::Distribution
-end
-
-Base.@kwdef struct Prior <: InferenceType
-  Z::Distribution
-end
-
-Base.@kwdef struct PriorPose2 <: InferenceType
-  Z::Distribution
-end
-
-Base.@kwdef struct Pose2Pose2 <: InferenceType
-  Z::Distribution
-end
-
-Base.@kwdef struct PriorPoint2 <: InferenceType
-  Z::Distribution
-end
-
-Base.@kwdef struct Point2Point2 <: InferenceType
-  Z::Distribution
-end
-
-Base.@kwdef struct Point2Point2Range <: InferenceType
-  Z::Distribution
-end
-
-
 
 """
 $(TYPEDEF)
