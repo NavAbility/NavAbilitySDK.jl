@@ -32,10 +32,17 @@ addVariable(client, context, "x0", NVA.Pose2)
 """
 function addVariable(client,
                      context,
-                     lbl::Union{<:AbstractString,Symbol},
-                     varType::Union{<:AbstractString,Symbol})
+                     label::Union{<:AbstractString,Symbol},
+                     varType::Union{<:AbstractString,Symbol};
+                     tags::Vector{String}=String[],
+                     timestamp::String = string(now(Dates.UTC))*"Z")
+                    # TODO
+                    # solvable::Int=1
+                    # nanosecondtime,
+                    # smalldata,
     #
-    v = Variable(string(lbl), Symbol(varType))
+    union!(tags, ["VARIABLE"])
+    v = Variable(string(label), Symbol(varType), tags, timestamp)
     return addVariable(client, context, v)
 end
 
@@ -58,7 +65,7 @@ function addFactor(client,
                    multihypo::Vector{Float64}=Float64[],
                    nullhypo::Float64=0.0,
                    solvable::Int=1,
-                   tags::Vector{String}=["FACTOR"],
+                   tags::Vector{String}=String[],
                    # timestamp::Union{DateTime,ZonedDateTime}=now(localzone()), #TODO why timestamp difference from IIF 
                    timestamp::String = string(now(Dates.UTC))*"Z",
                    inflation::Real=3.0,
@@ -75,6 +82,8 @@ function addFactor(client,
     factordata = FactorData(;fnc, multihypo, nullhypo, inflation)
 
     fncType = getFncTypeName(fnc)
+
+    union!(tags, ["FACTOR"])
     # create factor 
     factor = Factor(
         namestring,
