@@ -8,6 +8,8 @@ using DocStringExtensions
 using LinearAlgebra
 using JSON
 using UUIDs
+using Downloads
+using HTTP
 
 # for overloading with visualization helpers
 import Base: show
@@ -21,6 +23,7 @@ export uuid4
 include("./navability/graphql/Factor.jl")
 include("./navability/graphql/Status.jl")
 include("./navability/graphql/Variable.jl")
+include("./navability/graphql/DataBlobs.jl")
 
 include("./navability/graphql/QueriesDeprecated.jl")
 export QUERY_VARIABLE_LABELS
@@ -57,6 +60,7 @@ include("./navability/services/Solve.jl")
 include("./navability/services/Status.jl")
 include("./navability/services/Utils.jl")
 include("./navability/services/StandardAPI.jl")
+include("./navability/services/DataBlobs.jl")
 export getVariable, getVariables, listVariables, ls
 export addVariable, addPackedVariable
 export getFactor, getFactors, listFactors, lsf
@@ -65,5 +69,6 @@ export solveSession, solveFederated
 export getStatusMessages, getStatusLatest, getStatusesLatest
 export waitForCompletion
 export GraphVizApp, MapVizApp
+
 
 end
