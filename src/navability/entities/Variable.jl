@@ -7,7 +7,9 @@ _variableTypeConvert = Dict{Symbol, String}(
     :Point2 => "RoME.Point2",
     :Pose2 => "RoME.Pose2",
     :ContinuousScalar => "IncrementalInference.ContinuousScalar",
-    # TBD - https://github.com/JuliaRobotics/Caesar.jl/discussions/810
+    # TBD - https://github.com/JuliaRobotics/Caesar.jl/discussions/807
+    :Position1 => "IncrementalInference.ContinuousScalar",
+    #TODO deprecate
     :Pose1 => "IncrementalInference.ContinuousScalar"
 )
 
