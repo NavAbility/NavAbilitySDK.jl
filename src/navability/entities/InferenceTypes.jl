@@ -8,6 +8,23 @@ functions inside of factors.
 """
 abstract type InferenceType end
 
+macro nvaZInferenceType(inferencetype)
+  return esc(quote
+      Base.@__doc__ struct $inferencetype <: NVA.InferenceType 
+          Z::Distribution
+      end
+      $inferencetype(;Z) = $inferencetype(Z)
+  end)
+end
+
+@nvaZInferenceType Prior
+@nvaZInferenceType LinearRelative
+@nvaZInferenceType PriorPose2
+@nvaZInferenceType Pose2Pose2
+@nvaZInferenceType PriorPoint2
+@nvaZInferenceType Point2Point2
+@nvaZInferenceType Point2Point2Range
+
 """
 $(TYPEDEF)
 ZInferenceType is used by many factors as a common inference
@@ -25,16 +42,18 @@ $(TYPEDEF)
 Pose2Point2BearingRangeInferenceType is used to represent a bearing
 + range measurement.
 """
-Base.@kwdef struct Pose2Point2BearingRangeInferenceType <: InferenceType
+Base.@kwdef struct Pose2Point2BearingRange <: InferenceType
   bearstr::Distribution
   rangstr::Distribution
 end
+
+const Pose2Point2BearingRangeInferenceType = Pose2Point2BearingRange
 
 """
 $(TYPEDEF)
 InferenceType for Pose2AprilTag4CornersData.
 """
-Base.@kwdef struct Pose2AprilTag4CornersInferenceType <: InferenceType
+Base.@kwdef struct Pose2AprilTag4Corners <: InferenceType
   corners::Vector{Float64}
   homography::Vector{Float64}
   K::Vector{Float64}
@@ -43,8 +62,9 @@ Base.@kwdef struct Pose2AprilTag4CornersInferenceType <: InferenceType
   _type::String = "/application/JuliaLang/PackedPose2AprilTag4Corners"
 end
 
+const Pose2AprilTag4CornersInferenceType = Pose2AprilTag4Corners
 
-Base.@kwdef struct ScatterAlignPose2InferenceType <: InferenceType
+Base.@kwdef struct ScatterAlignPose2 <: InferenceType
   """ This SDK only supports MKD clouds at this time. Note CJL also supports HeatmapGridDensity, TODO """
   cloud1::ManifoldKernelDensity
   cloud2::ManifoldKernelDensity
@@ -66,6 +86,8 @@ Base.@kwdef struct ScatterAlignPose2InferenceType <: InferenceType
   """ Convention store type within the object """
   _type::String            = "Caesar.PackedScatterAlignPose2"
 end
+
+const ScatterAlignPose2InferenceType = ScatterAlignPose2
 
 """
 $(TYPEDEF)
