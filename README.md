@@ -1,6 +1,8 @@
-[![Unit tests](https://github.com/NavAbility/NavAbilitySDK.jl/actions/workflows/tests.yml/badge.svg)](https://github.com/NavAbility/NavAbilitySDK.jl/actions/workflows/tests.yml)
-
 # NavAbilitySDK.jl
+
+[![Unit tests](https://github.com/NavAbility/NavAbilitySDK.jl/actions/workflows/tests.yml/badge.svg)](https://github.com/NavAbility/NavAbilitySDK.jl/actions/workflows/tests.yml)
+[![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://navability.github.io/NavAbilitySDK.jl/dev/)
+
 Access NavAbility Cloud factor graph features from Julia.
 
 Note that this SDK and the related API are still in development. Please let us know if you have any issues.
