@@ -51,6 +51,7 @@ function getDataEvent(
   io
 end
 
+getDataEvent(client::NavAbilityClient, context::Client, w...) = getDataEvent(client, context.userId, w...)
 getData(w...) = @async getDataEvent(w...)
 
 
@@ -218,13 +219,22 @@ function addDataEntryEvent(
   return addentryresp
 end
 
+addDataEntryEvent(client::NavAbilityClient, 
+                  context::Client, 
+                  w...) = addDataEntryEvent(client, 
+                                            context.userId, 
+                                            context.robotId, 
+                                            context.sessionId, 
+                                            w...)
+#
+
 addDataEntry(w...) = @async addDataEntryEvent(w...)
 
 
 ##
 
 
-function listDataVariableEvent(
+function listDataEntriesEvent(
     navAbilityClient::NavAbilityClient, 
     userId::AbstractString,
     robotId::AbstractString,
@@ -233,8 +243,8 @@ function listDataVariableEvent(
   )
   #
   response = navAbilityClient.mutate(MutationOptions(
-    "sdk_listdatavariable",
-    GQL_LISTDATAVARIABLE,
+    "sdk_listdataentries",
+    GQL_LISTDATAENTRIES,
     Dict(
       "userId" => userId,
       "robotId" => robotId,
@@ -262,7 +272,16 @@ function listDataVariableEvent(
   return ret
 end
 
-listDataVariable(w...) = @async listDataVariableEvent(w...)
+listDataEntriesEvent(client::NavAbilityClient, 
+                      context::Client, 
+                      w...) = listDataEntriesEvent(client, 
+                                                    context.userId, 
+                                                    context.robotId, 
+                                                    context.sessionId, 
+                                                    w...)
+#
+
+listDataEntries(w...) = @async listDataEntriesEvent(w...)
 
 
 ##

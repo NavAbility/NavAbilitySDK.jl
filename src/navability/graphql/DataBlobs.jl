@@ -71,8 +71,8 @@ mutation sdk_adddataentry(\$userId: ResourceId!, \$robotId: ResourceId!, \$sessi
 """
 
 
-GQL_LISTDATAVARIABLE = """
-query sdk_listdatavariable(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$variableLabel: ID!) {
+GQL_LISTDATAENTRIES = """
+query sdk_listdataentries(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$variableLabel: ID!) {
   users (
     where: {id: \$userId}
   ) {
