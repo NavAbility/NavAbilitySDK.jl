@@ -31,7 +31,7 @@ Base.@kwdef struct Variable
 end
 
 Base.@kwdef struct SolverDataDict
-    vecval::Vector{Float64}     = zeros(0) # FIXME, this is a waste, init can happen on receive sid
+    vecval::Vector{Float64}     = zeros(0) # FIXME, this is a waste, init can happen on receive side
     dimval::Int
     vecbw::Vector{Float64}      = zeros(dimval)
     dimbw::Int                  = dimval
