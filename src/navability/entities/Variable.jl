@@ -3,6 +3,7 @@ using JSON
 
 DFG_VERSION = "0.18.1";
 
+# FIXME, use dispatch for proper Julian implementation
 _variableTypeConvert = Dict{Symbol, String}(
     :Point2 => "RoME.Point2",
     :Pose2 => "RoME.Pose2",
