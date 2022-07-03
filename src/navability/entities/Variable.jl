@@ -14,19 +14,19 @@ _variableTypeConvert = Dict{Symbol, String}(
     :Pose1 => "IncrementalInference.ContinuousScalar"
 )
 
-struct Variable
+Base.@kwdef struct Variable
     label::String
-    dataEntry::String
-    nstime::String
+    dataEntry::String      = "{}"
+    nstime::String         = "0"
     variableType::String
-    dataEntryType::String
-    ppeDict::String
+    dataEntryType::String  = "{}"
+    ppeDict::String        = "{}"
     solverDataDict::String
-    smallData::String
-    solvable::Int
+    smallData::String      = "{}"
+    solvable::Int          = 1
     tags::String
-    timestamp:: String
-    _version::String
+    timestamp::String      = string(now(Dates.UTC))*"Z" # string(now(TimeZones.localzone()))
+    _version::String       = DFG_VERSION
 end
 
 Base.@kwdef struct SolverDataDict
@@ -80,19 +80,13 @@ function Variable(label::AbstractString, type::Union{<:AbstractString, Symbol}, 
     type == Nothing && error("Variable type '$(type) is not supported")
 
     solverDataDict = Dict("default" => _getSolverDataDict(variableType, "default"))
-    result = Variable(
+    result = Variable(;
         label,
-        "{}",
-        "0",
         variableType,
-        "{}",
-        "{}",
-        json(solverDataDict),
-        "{}",
-        1,
-        json(tags),
-        timestamp,
-        DFG_VERSION
+        # TODO, should not require jsoning, see DFG#867
+        solverDataDict = json(solverDataDict),
+        tags = json(tags),
+        timestamp
     )
     return result
 end
