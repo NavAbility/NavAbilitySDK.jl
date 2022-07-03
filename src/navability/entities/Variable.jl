@@ -3,9 +3,11 @@ using JSON
 
 DFG_VERSION = "0.18.1";
 
+# FIXME, use dispatch for proper Julian implementation
 _variableTypeConvert = Dict{Symbol, String}(
     :Point2 => "RoME.Point2",
     :Pose2 => "RoME.Pose2",
+    :Pose3 => "RoME.Pose3",
     :ContinuousScalar => "IncrementalInference.ContinuousScalar",
     # TBD - https://github.com/JuliaRobotics/Caesar.jl/discussions/807
     :Position1 => "IncrementalInference.ContinuousScalar",
@@ -13,60 +15,46 @@ _variableTypeConvert = Dict{Symbol, String}(
     :Pose1 => "IncrementalInference.ContinuousScalar"
 )
 
-struct Variable
+Base.@kwdef struct Variable
     label::String
-    dataEntry::String
-    nstime::String
+    dataEntry::String      = "{}"
+    nstime::String         = "0"
     variableType::String
-    dataEntryType::String
-    ppeDict::String
+    dataEntryType::String  = "{}"
+    ppeDict::String        = "{}"
     solverDataDict::String
-    smallData::String
-    solvable::Int
+    smallData::String      = "{}"
+    solvable::Int          = 1
     tags::String
-    timestamp:: String
-    _version::String
+    timestamp::String      = string(now(Dates.UTC))*"Z" # string(now(TimeZones.localzone()))
+    _version::String       = DFG_VERSION
 end
 
-struct SolverDataDict
-    vecval::Vector{Float64}
+Base.@kwdef struct SolverDataDict
+    vecval::Vector{Float64}     = zeros(0) # FIXME, this is a waste, init can happen on receive side
     dimval::Int
-    vecbw::Vector{Float64}
-    dimbw::Int
-    BayesNetOutVertIDs::Vector{Int}
-    dimIDs::Vector{Int}
-    dims::Int
-    eliminated::Bool
-    BayesNetVertID::String
-    separator::Vector{Int}
+    vecbw::Vector{Float64}      = zeros(dimval)
+    dimbw::Int                  = dimval
+    BayesNetOutVertIDs::Vector{Int}= []
+    dimIDs::Vector{Int}         = collect(range(0,dimval-1, step=1))
+    dims::Int                   = dimval
+    eliminated::Bool            = false
+    BayesNetVertID::String      = "_null"
+    separator::Vector{Int}      = []
     variableType::String
-    initialized::Bool
-    infoPerCoord::Vector{Float64}
-    ismargin::Bool
-    dontmargin::Bool
-    solveInProgress::Int
-    solvedCount::Int
+    initialized::Bool           = false
+    infoPerCoord::Vector{Float64}= zeros(dimval)
+    ismargin::Bool              = false
+    dontmargin::Bool            = false
+    solveInProgress::Int        = 0
+    solvedCount::Int            = 0
     solveKey::String
 end
-function SolverDataDict(variableType::String, solveKey::String, dims::Int)
-    return SolverDataDict(            
-        zeros(dims*100),
-        dims,
-        zeros(dims),
-        dims,   
-        [],
-        collect(range(0,dims-1, step=1)),
-        dims,
-        false,
-        "_null",
-        [],
+function SolverDataDict(variableType::String, solveKey::String, dimval::Int)
+    return SolverDataDict(;
+        vecval=zeros(dimval*100), # FIXME, this is a waste, numerics can happen on receiver side
+        dimval,
         variableType,
-        false,
-        zeros(dims),
-        false,
-        false,
-        0,
-        0,
         solveKey)
 end
 
@@ -75,36 +63,31 @@ Internal utility function to create the correct solver data (variable data)
 given a variable type.
 """
 function _getSolverDataDict(variableType::String, solveKey::String)::SolverDataDict
-    if variableType == "RoME.Point2"
-        return SolverDataDict(variableType, solveKey, 2)
-    end
-    if variableType == "RoME.Pose2"
-        return SolverDataDict(variableType, solveKey, 3)
-    end
+    # TODO impove to Julian dispatch
     if variableType == "IncrementalInference.ContinuousScalar"
         return SolverDataDict(variableType, solveKey, 1)
+    elseif variableType == "RoME.Point2"
+        return SolverDataDict(variableType, solveKey, 2)
+    elseif variableType == "RoME.Pose2"
+        return SolverDataDict(variableType, solveKey, 3)
+    elseif variableType == "RoME.Pose3"
+        return SolverDataDict(variableType, solveKey, 6)
     end
     throw(error("Variable type '$(variableType)' not supported."))
 end
 
-function Variable(label::String, type::Union{String, Symbol}, tags::Vector{String} = ["VARIABLE"], timestamp::String = string(now(Dates.UTC))*"Z")::Variable
+function Variable(label::AbstractString, type::Union{<:AbstractString, Symbol}, tags::AbstractVector{<:AbstractString} = ["VARIABLE"], timestamp::String = string(now(Dates.UTC))*"Z")::Variable
     variableType = type isa Symbol ? get(_variableTypeConvert, type, Nothing) : type
     type == Nothing && error("Variable type '$(type) is not supported")
 
     solverDataDict = Dict("default" => _getSolverDataDict(variableType, "default"))
-    result = Variable(
+    result = Variable(;
         label,
-        "{}",
-        "0",
         variableType,
-        "{}",
-        "{}",
-        json(solverDataDict),
-        "{}",
-        1,
-        json(tags),
-        timestamp,
-        DFG_VERSION
+        # TODO, should not require jsoning, see DFG#867
+        solverDataDict = json(solverDataDict),
+        tags = json(tags),
+        timestamp
     )
     return result
 end
