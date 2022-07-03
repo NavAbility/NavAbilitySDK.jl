@@ -28,6 +28,7 @@ end
 @nvaZInferenceType Pose2Pose2
 
 @nvaZInferenceType PriorPose3
+@nvaZInferenceType Pose3Pose3
 
 
 """

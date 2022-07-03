@@ -109,6 +109,18 @@ end
 
 """
 $(SIGNATURES)
+Create a Pose3->Pose3 factor with a distribution Z representing the (x,y,theta) relationship
+between the variables, e.g. `FullNormal([1;zeros(5)], diagm(0.01*ones(6)))`.
+
+Default value of Z = `FullNormal(zeros(6), diagm(0.01*ones(6)))`.
+"""
+function Pose3Pose3Data(;Z::Distribution = FullNormal(zeros(6), diagm(0.01*ones(6))), kwargs...)::FactorData
+    data = FactorData(;fnc = ZInferenceType(Z), certainhypo = [1], kwargs...)
+    return data
+end
+
+"""
+$(SIGNATURES)
 Create a Pose2->Point2 bearing+range factor with 1D distributions:
 - bearing: The bearing from the pose to the point, default `Normal(0, 1)`.
 - range: The range from the pose to the point, default `Normal(1, 1)`.
