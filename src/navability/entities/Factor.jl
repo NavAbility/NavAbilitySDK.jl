@@ -57,6 +57,20 @@ function PriorPose2Data(;Z::Distribution = FullNormal([0.0, 0.0, 0.0], diagm([0.
     return data
 end
 
+
+"""
+$(SIGNATURES)
+Create a prior factor for a Pose3 with a distribution Z representing (x,y,z,i,j,k) prior information, 
+    e.g. `FullNormal(zeros(6), diagm(0.01*ones(6)))`.
+
+Default value of Z = `FullNormal(zeros(6), diagm(0.01*ones(6)))`.
+"""
+function PriorPose3Data(;Z::Distribution = FullNormal(zeros(6), diagm(0.01*ones(6))), kwargs...)::FactorData
+    data = FactorData(;fnc = ZInferenceType(Z), certainhypo = [1], kwargs...)
+    return data
+end
+
+
 """
 $(SIGNATURES)
 Create a prior factor for a Point2 with a distribution Z representing (x,y) prior information, 
