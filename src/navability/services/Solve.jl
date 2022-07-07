@@ -1,11 +1,15 @@
 
-function solveSessionEvent(navAbilityClient::NavAbilityClient, client::Client)::String
+function solveSessionEvent(navAbilityClient::NavAbilityClient, client::Client, solveOptions::Union{SolveOptions, Nothing})::String
+    payload = Dict{String, Any}(
+        "client" => client,
+    )
+    if (!isnothing(solveOptions))
+        payload["options"] = solveOptions
+    end
     response = navAbilityClient.mutate(MutationOptions(
         "solveSession",
         MUTATION_SOLVESESSION,
-        Dict(
-            "client" => client,
-        )
+        payload
     )) |> fetch
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
@@ -17,7 +21,7 @@ function solveSessionEvent(navAbilityClient::NavAbilityClient, client::Client)::
     return solveSession
 end
 
-solveSession(navAbilityClient::NavAbilityClient, client::Client) = @async solveSessionEvent(navAbilityClient, client)
+solveSession(navAbilityClient::NavAbilityClient, client::Client, solveOptions::Union{SolveOptions, Nothing} = nothing) = @async solveSessionEvent(navAbilityClient, client, solveOptions)
 
 
 function solveFederatedEvent(navAbilityClient::NavAbilityClient, scope::Scope)::String

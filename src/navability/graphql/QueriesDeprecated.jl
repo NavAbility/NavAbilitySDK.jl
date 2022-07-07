@@ -29,8 +29,8 @@ MUTATION_ADDSESSIONDATA = """
   }"""
 
 MUTATION_SOLVESESSION = """
-  mutation solveSession (\$client: ClientInput!) {
-    solveSession(client: \$client)
+  mutation solveSession (\$client: ClientInput!, \$options: SolveOptionsInput) {
+    solveSession(client: \$client, options: \$options)
   }"""
 
 MUTATION_SOLVEFEDERATED = """

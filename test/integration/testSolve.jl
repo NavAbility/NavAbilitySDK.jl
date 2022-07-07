@@ -1,20 +1,39 @@
 
+function checkForSolverKeys(client, context, key::String, variableLabelsToTest::Vector{String})
+    for v in variableLabelsToTest
+        variable = fetch( getVariable(client, context, v) )
+        solveKeys = map(p -> p["solveKey"], variable["ppes"])
+        @test key in solveKeys
+    end
+end
+
 function testSolveSession(client, context, variableLabels; maxSeconds=180)
     # allVariableLabels = ls(client, context, variableLabels)
     
     # do the solve
     resultId = solveSession(client,context)
-
     # Wait for them to be done before proceeding.
     waitForCompletion(client, Task[resultId;]; expectedStatuses=["Complete"], maxSeconds)
 
     # Get PPE's are there for the connected variables.
     # TODO - complete the factor graph.
-    for v in variableLabels # getVariables(client, context, detail=SUMMARY)
-        # First solve key (only) is the default result
-        @test fetch( getVariable(client, context, v) )["ppes"][1]["solveKey"] == "default"
-    end
+    checkForSolverKeys(client, context, "default", variableLabels)
 end
+
+function testSolveSessionParametric(client, context, variableLabels; maxSeconds=180)
+    # allVariableLabels = ls(client, context, variableLabels)
+    
+    # do the solve
+    options = SolveOptions(key=nothing, useParametric=true)
+    resultId = solveSession(client, context, options)
+    # Wait for them to be done before proceeding.
+    waitForCompletion(client, Task[resultId;]; expectedStatuses=["Complete"], maxSeconds)
+
+    # Get PPE's are there for the connected variables.
+    # TODO - complete the factor graph.
+    checkForSolverKeys(client, context, "parametric", variableLabels)
+end
+
 
 function testVizHelpersApp(context)
     @show GraphVizApp(context)
@@ -31,6 +50,7 @@ function runSolveTests(client, context)
         variableLabels = ["x0", "x1"]
 
         testSolveSession(client, context, variableLabels)
+        testSolveSessionParametric(client, context, variableLabels)
     end
     
     @testset "appviz-testset" begin
