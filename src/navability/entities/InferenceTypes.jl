@@ -19,11 +19,17 @@ end
 
 @nvaZInferenceType Prior
 @nvaZInferenceType LinearRelative
-@nvaZInferenceType PriorPose2
-@nvaZInferenceType Pose2Pose2
+
 @nvaZInferenceType PriorPoint2
 @nvaZInferenceType Point2Point2
 @nvaZInferenceType Point2Point2Range
+
+@nvaZInferenceType PriorPose2
+@nvaZInferenceType Pose2Pose2
+
+@nvaZInferenceType PriorPose3
+@nvaZInferenceType Pose3Pose3
+
 
 """
 $(TYPEDEF)

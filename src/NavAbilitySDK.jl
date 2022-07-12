@@ -10,6 +10,7 @@ using JSON
 using UUIDs
 using Downloads
 using HTTP
+using Dates
 
 # for overloading with visualization helpers
 import Base: show
@@ -43,15 +44,18 @@ include("./navability/entities/Distributions.jl")
 include("./navability/entities/Variable.jl")
 include("./navability/entities/InferenceTypes.jl")
 include("./navability/entities/Factor.jl")
+include("./navability/entities/Solve.jl")
 export NavAbilityClient, NavAbilityWebsocketClient, NavAbilityHttpsClient, QueryOptions, MutationOptions
 export Client, Scope
 export QueryDetail, LABEL, SKELETON, SUMMARY, FULL
 export Distribution, Normal, Rayleigh, FullNormal, Uniform, Categorical
 export ManifoldKernelDensity
-export VariableType, Variable
+export Variable
 export FactorData, PriorData, PriorPose2Data, PriorPoint2Data, LinearRelativeData, Pose2Pose2Data, Pose2AprilTag4CornersData, Pose2Point2BearingRangeData, Point2Point2RangeData, MixtureData
+export PriorPose3, Pose3Pose3
 export ScatterAlignPose2Data
 export FactorType, Factor
+export SolveOptions
 
 # Services
 include("./navability/services/Variable.jl")
