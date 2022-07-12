@@ -17,7 +17,7 @@ function testSolveSession(client, context, variableLabels; maxSeconds=180)
 
     # Get PPE's are there for the connected variables.
     # TODO - complete the factor graph.
-    checkForSolverKeys(client, context, "default", variableLabels)
+    checkForSolveKeys(client, context, "default", variableLabels)
 end
 
 function testSolveSessionParametric(client, context, variableLabels; maxSeconds=180)
