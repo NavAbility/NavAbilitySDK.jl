@@ -44,6 +44,7 @@ include("./navability/entities/Distributions.jl")
 include("./navability/entities/Variable.jl")
 include("./navability/entities/InferenceTypes.jl")
 include("./navability/entities/Factor.jl")
+include("./navability/entities/Solve.jl")
 export NavAbilityClient, NavAbilityWebsocketClient, NavAbilityHttpsClient, QueryOptions, MutationOptions
 export Client, Scope
 export QueryDetail, LABEL, SKELETON, SUMMARY, FULL
@@ -54,6 +55,7 @@ export FactorData, PriorData, PriorPose2Data, PriorPoint2Data, LinearRelativeDat
 export PriorPose3, Pose3Pose3
 export ScatterAlignPose2Data
 export FactorType, Factor
+export SolveOptions
 
 # Services
 include("./navability/services/Variable.jl")
