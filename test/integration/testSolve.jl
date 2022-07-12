@@ -1,5 +1,5 @@
 
-function checkForSolverKeys(client, context, key::String, variableLabelsToTest::Vector{String})
+function checkForSolveKeys(client, context, key::String, variableLabelsToTest::Vector{String})
     for v in variableLabelsToTest
         variable = fetch( getVariable(client, context, v) )
         solveKeys = map(p -> p["solveKey"], variable["ppes"])
