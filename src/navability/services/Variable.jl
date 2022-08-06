@@ -12,6 +12,7 @@ function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, v
     )) |> fetch
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
+        @error response
         throw("Error: $(rootData["errors"])")
     end
     data = get(rootData,"data",nothing)
