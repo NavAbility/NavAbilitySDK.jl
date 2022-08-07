@@ -119,3 +119,36 @@ GQL_GETVARIABLESFILTERED = """
       }
     }
   }"""
+
+GQL_INITVARIABLE = """
+  mutation sdk_init_variable(
+    \$userId: ID!,
+    \$robotId: ID!,
+    \$sessionId: ID!,
+    \$label: String!,
+    \$variableType: VariableType!,
+    \$points: [CartesianPointInput]!) {
+      initVariable(
+        variable: where: {
+          sessionKey: {
+            userId: \$userId,
+            robotId: \$robotId,
+            sessionId: \$sessionId,
+          },
+          label: \$label,
+          variableType: \$variableType
+        },
+        distribution: {
+          particle: {
+            points: \$points
+          }
+        }
+      ) {
+      status {
+        state
+      }
+      context {
+        eventId
+      }
+    }
+  }"""

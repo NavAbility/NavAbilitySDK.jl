@@ -100,3 +100,54 @@ end
 function ls(navAbilityClient::NavAbilityClient, client::Client)
     return listVariables(navAbilityClient,client)
 end
+
+
+function CartesianPointInput(;
+    x::Float64 = 0.0,
+    y::Float64 = 0.0,
+    z::Float64 = 0.0,
+    rotx::Float64 = 0.0,
+    roty::Float64 = 0.0,
+    rotz::Float64 = 0.0
+  )
+  #
+  Dict{String,Float64}(
+    "x" => x,
+    "y" => y,
+    "z" => z,
+    "rotx" => rotx,
+    "roty" => roty,
+    "rotz" => rotz,
+  )
+end
+
+function initVariableEvent(
+        client::NavAbilityClient, 
+        context::Client, 
+        label::String, 
+        varType, 
+        points::AbstractVector{Dict{<:AbstractString,<:Real}}
+    )
+    #
+    response = client.query(QueryOptions(
+        "sdk_init_variable",
+        """
+            $GQL_INITVARIABLE
+        """,
+        Dict(
+            "userId" => context.userId,
+            "robotId" => context.robotId,
+            "sessionId" => context.sessionId,
+            "label" => label,
+            "variableType" => varType,
+            "points" => points
+        )
+    )) |> fetch
+    
+    rootData = JSON.parse(response.Data)
+    if haskey(rootData, "errors")
+        throw("Error: $(rootData["errors"])")
+    end
+    
+    return "FIXME"
+end
