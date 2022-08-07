@@ -99,3 +99,10 @@ function Variable(label::AbstractString, type::Union{<:AbstractString, Symbol}, 
     )
     return result
 end
+
+
+struct InitVariableInput
+    where
+    distribution
+    bandwidth
+end
