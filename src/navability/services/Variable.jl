@@ -125,15 +125,13 @@ function initVariableEvent(
         client::NavAbilityClient, 
         context::Client, 
         label::String, 
-        varType, 
-        points::AbstractVector{Dict{<:AbstractString,<:Real}}
-    )
+        varType::VariableType, 
+        points::AbstractVector{Dict{K,F}}
+    ) where {K<:AbstractString, F<:Real}
     #
-    response = client.query(QueryOptions(
+    @show mo = MutationOptions(
         "sdk_init_variable",
-        """
-            $GQL_INITVARIABLE
-        """,
+        GQL_INITVARIABLE,
         Dict(
             "userId" => context.userId,
             "robotId" => context.robotId,
@@ -142,12 +140,15 @@ function initVariableEvent(
             "variableType" => varType,
             "points" => points
         )
-    )) |> fetch
+    )
+    response = client.mutate(mo) |> fetch
     
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
         throw("Error: $(rootData["errors"])")
     end
     
-    return "FIXME"
+    return response
 end
+
+#

@@ -3,6 +3,7 @@ using Random
 
 include("./fixtures.jl")
 include("./testVariable.jl")
+include("./testInitVariable.jl")
 include("./testFactor.jl")
 include("./testSolve.jl")
 
