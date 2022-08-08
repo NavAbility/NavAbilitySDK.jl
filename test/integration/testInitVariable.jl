@@ -28,7 +28,9 @@ function runInitVariableTests(;client = NVA.NavAbilityHttpsClient(;authorize=fal
     # distr = Dict{String,Any}("distribution"=>distributionInput)
     initVarInp = NVA.InitVariableInput(variableWhere, distributionInput)
 
-    NVA.initVariableEvent(client, context, initVarInp)
+    eventId = NVA.initVariable(client, context, initVarInp) |> fetch
+    @info "waitForCompletion on initVariable" eventId 
+    NVA.waitForCompletion(client, [eventId], expectedStatuses=["Complete"], maxSeconds=180)
 
     @warn "TODO, get values back from API to make sure numerics were properly set."
     res = NVA.getVariable(client, context, "x0")

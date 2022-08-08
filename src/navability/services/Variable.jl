@@ -190,8 +190,7 @@ function initVariableEvent(
     if haskey(rootData, "errors")
         throw("Error: $(rootData["errors"])")
     end
-    
-    return response
+    return rootData["data"]["initVariable"]["context"]["eventId"]
 end
 # Dict(
 #     "userId" => context.userId,
@@ -201,5 +200,7 @@ end
 #     "variableType" => varType,
 #     "points" => points
 # )
+
+initVariable(w...;kw...) = @async initVariableEvent(w...;kw...)
 
 #
