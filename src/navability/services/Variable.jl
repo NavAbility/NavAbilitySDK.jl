@@ -177,7 +177,7 @@ function initVariableEvent(
         initVariableInput::Dict,
     )
     #
-    @show mo = MutationOptions(
+    mo = MutationOptions(
         "sdk_init_variable",
         GQL_INIT_VARIABLE,
         Dict(
