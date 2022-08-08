@@ -102,43 +102,86 @@ function ls(navAbilityClient::NavAbilityClient, client::Client)
 end
 
 
-function CartesianPointInput(;
-    x::Float64 = 0.0,
-    y::Float64 = 0.0,
-    z::Float64 = 0.0,
-    rotx::Float64 = 0.0,
-    roty::Float64 = 0.0,
-    rotz::Float64 = 0.0
+function SessionKey(
+    userId::AbstractString,
+    robotId::AbstractString,
+    sessionId::AbstractString
   )
   #
-  Dict{String,Float64}(
-    "x" => x,
-    "y" => y,
-    "z" => z,
-    "rotx" => rotx,
-    "roty" => roty,
-    "rotz" => rotz,
+  Dict{String,String}(
+    "userId" => userId,
+    "robotId" => robotId,
+    "sessionId" => sessionId,
   )
+end
+
+function VariableWhere(
+        sessionKey,
+        label::AbstractString,
+        variableType::VariableType
+    )
+    #
+    Dict{String,Any}(
+        "sessionKey" => sessionKey,
+        "label" => label,
+        "variableType" => variableType
+    )
+end
+
+function CartesianPointInput(;
+        x::Float64 = 0.0,
+        y::Float64 = 0.0,
+        z::Float64 = 0.0,
+        rotx::Float64 = 0.0,
+        roty::Float64 = 0.0,
+        rotz::Float64 = 0.0
+    )
+    #
+    Dict{String,Float64}(
+        "x" => x,
+        "y" => y,
+        "z" => z,
+        "rotx" => rotx,
+        "roty" => roty,
+        "rotz" => rotz,
+    )
+end
+
+function DistributionInput(;
+        particle=nothing,
+        rayleigh=nothing
+    )
+    #
+    Dict{String,Any}(
+        (particle isa Nothing ? () : ("particle"=>particle,))...,
+        (rayleigh isa Nothing ? () : ("rayleigh"=>rayleigh,))...
+    )
+end
+
+# struct InitVariableInput
+#     where
+#     distribution
+#     bandwidth
+# end
+function InitVariableInput(wh,dstr,bw::AbstractVector=[])
+    Dict{String,Any}(
+        "where"=>wh,
+        "distribution"=>dstr,
+        (0<length(bw) ? ("bandwidth"=>bw,) : ())...
+    )
 end
 
 function initVariableEvent(
         client::NavAbilityClient, 
         context::Client, 
-        label::String, 
-        varType::VariableType, 
-        points::AbstractVector{Dict{K,F}}
-    ) where {K<:AbstractString, F<:Real}
+        initVariableInput::Dict,
+    )
     #
     @show mo = MutationOptions(
         "sdk_init_variable",
-        GQL_INITVARIABLE,
+        GQL_INIT_VARIABLE,
         Dict(
-            "userId" => context.userId,
-            "robotId" => context.robotId,
-            "sessionId" => context.sessionId,
-            "label" => label,
-            "variableType" => varType,
-            "points" => points
+            "variable" => initVariableInput
         )
     )
     response = client.mutate(mo) |> fetch
@@ -150,5 +193,13 @@ function initVariableEvent(
     
     return response
 end
+# Dict(
+#     "userId" => context.userId,
+#     "robotId" => context.robotId,
+#     "sessionId" => context.sessionId,
+#     "label" => label,
+#     "variableType" => varType,
+#     "points" => points
+# )
 
 #

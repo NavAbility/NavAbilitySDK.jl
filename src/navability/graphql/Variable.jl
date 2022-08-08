@@ -121,8 +121,11 @@ GQL_GETVARIABLESFILTERED = """
   }"""
 
 GQL_INIT_VARIABLE = """
-  mutation test_init_variable(\$variable: InitVariableInput!, \$options: EmptyInputOptions) {
-    test: initVariable(variable: \$variable, options:\$options) {
+  mutation sdk_init_variable(
+      \$variable: InitVariableInput!, 
+      \$options: EmptyInputOptions
+    ) {
+    initVariable(variable: \$variable, options:\$options) {
       context {
         eventId
       }
