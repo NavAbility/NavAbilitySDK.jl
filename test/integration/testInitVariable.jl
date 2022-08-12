@@ -35,7 +35,6 @@ function runInitVariableTests(;
     @info "waitForCompletion on initVariable" eventId 
     NVA.waitForCompletion(client, [eventId], expectedStatuses=["Complete"], maxSeconds=180)
 
-    @warn "TODO, get values back from API to make sure numerics were properly set."
     res = NVA.getVariable(client, context, "x0")
     x0 = fetch(res)
 
