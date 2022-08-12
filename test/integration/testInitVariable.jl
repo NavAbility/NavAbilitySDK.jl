@@ -42,6 +42,8 @@ function runInitVariableTests(;
     x0_vv = reshape(x0["solverData"][1]["vecval"],3,:) 
     @cast refvv[i][d] := x0_vv[d,i]
 
+    @show refvv
+
     @test isapprox(pts, refvv; atol=1e-8)
   end
 end
