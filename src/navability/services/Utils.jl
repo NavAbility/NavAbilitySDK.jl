@@ -43,7 +43,7 @@ function waitForCompletion(
     waitForCompletion(navAbilityClient, rids; kw...)
 end
 
-function WaitForCompletion2(client, eventId; maxSeconds=60, totalRequired=1, completeRequired=1)
+function waitForCompletion2(client, eventId; maxSeconds=60, totalRequired=1, completeRequired=1)
     elapsedInSeconds = 0
     incrementInSeconds = 5
     while elapsedInSeconds < maxSeconds
