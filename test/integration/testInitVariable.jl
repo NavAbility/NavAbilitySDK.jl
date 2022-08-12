@@ -33,7 +33,7 @@ function runInitVariableTests(;
 
     eventId = NVA.initVariable(client, context, initVarInp) |> fetch
     @info "waitForCompletion on initVariable" eventId 
-    NVA.waitForCompletion(client, [eventId], expectedStatuses=["Complete"], maxSeconds=180)
+    NVA.waitForCompletion2(client, eventId) #, expectedStatuses=["Complete"], maxSeconds=180)
 
     res = NVA.getVariable(client, context, "x0")
     x0 = fetch(res)

@@ -43,6 +43,32 @@ function waitForCompletion(
     waitForCompletion(navAbilityClient, rids; kw...)
 end
 
+function WaitForCompletion2(client, eventId; maxSeconds=60, totalRequired=1, completeRequired=1)
+    elapsedInSeconds = 0
+    incrementInSeconds = 5
+    while elapsedInSeconds < maxSeconds
+      get_event_response = client.query(QueryOptions(
+        GQL_GET_EVENTS_BY_ID,
+        Dict(
+          "eventId" => eventId
+        )
+      ))
+      payload = JSON.parse(get_event_response.Data)
+      events = payload["data"]["test"]
+      completeEvents = filter(event -> event["status"]["state"] == "Complete", events)
+      if size(events)[1] >= totalRequired && size(completeEvents)[1] >= completeRequired
+        return true
+      end
+      failedEvents = filter(event -> event["status"]["state"] == "Failed", payload["data"]["test"])
+      if size(failedEvents)[1] > 0
+        return false
+      end
+      elapsedInSeconds += incrementInSeconds
+      sleep(incrementInSeconds)
+    end
+    return false
+  end
+
 # helper functions to construct for most likely user object
 function GraphVizApp(ct::Client; variableStartsWith=nothing)
     suffix = ""
