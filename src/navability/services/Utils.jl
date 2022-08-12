@@ -48,11 +48,12 @@ function waitForCompletion2(client, eventId; maxSeconds=60, totalRequired=1, com
     incrementInSeconds = 5
     while elapsedInSeconds < maxSeconds
       get_event_response = client.query(QueryOptions(
+        "sdk_events_by_id",
         GQL_GET_EVENTS_BY_ID,
         Dict(
           "eventId" => eventId
         )
-      ))
+      )) |> fetch
       payload = JSON.parse(get_event_response.Data)
       events = payload["data"]["test"]
       completeEvents = filter(event -> event["status"]["state"] == "Complete", events)
