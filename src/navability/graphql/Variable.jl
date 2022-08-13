@@ -119,3 +119,52 @@ GQL_GETVARIABLESFILTERED = """
       }
     }
   }"""
+
+GQL_INIT_VARIABLE = """
+  mutation sdk_init_variable(
+      \$variable: InitVariableInput!, 
+      \$options: EmptyInputOptions
+    ) {
+    initVariable(variable: \$variable, options:\$options) {
+      context {
+        eventId
+      }
+      status {
+        state
+        progress
+      }
+    }
+  }"""
+
+# GQL_INITVARIABLE = """
+#   mutation sdk_init_variable(
+#     \$userId: ID!,
+#     \$robotId: ID!,
+#     \$sessionId: ID!,
+#     \$label: String!,
+#     \$variableType: VariableType!,
+#     \$points: [CartesianPointInput]!) {
+#       initVariable(
+#         variable: where: {
+#           sessionKey: {
+#             userId: \$userId,
+#             robotId: \$robotId,
+#             sessionId: \$sessionId,
+#           },
+#           label: \$label,
+#           variableType: \$variableType
+#         },
+#         distribution: {
+#           particle: {
+#             points: \$points
+#           }
+#         }
+#       ) {
+#       status {
+#         state
+#       }
+#       context {
+#         eventId
+#       }
+#     }
+#   }"""

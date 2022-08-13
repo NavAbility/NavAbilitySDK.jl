@@ -11,9 +11,11 @@ function testSolveSession(client, context, variableLabels; maxSeconds=180)
     # allVariableLabels = ls(client, context, variableLabels)
     
     # do the solve
-    resultId = solveSession(client,context)
+    resultId = solveSession(client,context) |> fetch
+    @info "solveSession" resultId
     # Wait for them to be done before proceeding.
-    waitForCompletion(client, Task[resultId;]; expectedStatuses=["Complete"], maxSeconds)
+    NVA.waitForCompletion2(client, resultId; maxSeconds) #, expectedStatuses=["Complete"])
+    # NVA.waitForCompletion(client, resultId; maxSeconds, expectedStatuses=["Complete"])
 
     # Get PPE's are there for the connected variables.
     # TODO - complete the factor graph.

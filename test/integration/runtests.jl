@@ -3,6 +3,7 @@ using Random
 
 include("./fixtures.jl")
 include("./testVariable.jl")
+include("./testInitVariable.jl")
 include("./testFactor.jl")
 include("./testSolve.jl")
 
@@ -23,6 +24,7 @@ sessionId2d = get(ENV,"SESSION_ID","TestSession2D"*randstring(7))
     # Note - Tests incrementally build on each other because this is an
     # integration test.
     runVariableTests( client, navabilityClient2D )
+    runInitVariableTests(; client )
     runFactorTests( client, navabilityClient2D )
     runSolveTests( client, navabilityClient2D )
 

@@ -32,4 +32,10 @@ sessionId = get(ENV,"SESSION_ID","TestSession_"*string(uuid4())[1:8])
     addVariable(client, context,  "z1", :Point2)
     addFactor(client, context, ["z0", "z1"], NVA.Point2Point2(Z=FullNormal([1.,0.], diagm([1.,1]))))  
 
+    addVariable(client, context,  "p3_0", :Pose3)
+    addFactor(client, context, ["p3_0"], NVA.PriorPose3(Z=FullNormal([0.;1.;0;zeros(3)], diagm([1.;1;1;ones(3)]))))
+    
+    addVariable(client, context,  :p3_1, :Pose3)
+    addFactor(client, context, [:p3_0,:p3_1], NVA.Pose3Pose3(Z=FullNormal([1.;0.;0;zeros(3)], diagm([1.;1;1;ones(3)]))))
+
 end

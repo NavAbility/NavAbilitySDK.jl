@@ -1,4 +1,5 @@
 using NavAbilitySDK
+NVA = NavAbilitySDK
 using Test
 using JSON
 using LinearAlgebra

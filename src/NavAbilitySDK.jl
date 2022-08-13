@@ -69,6 +69,7 @@ export getVariable, getVariables, listVariables, ls
 export addVariable, addPackedVariable
 export getFactor, getFactors, listFactors, lsf
 export addFactor, addPackedFactor
+export initVariable
 export solveSession, solveFederated
 export getStatusMessages, getStatusLatest, getStatusesLatest
 export waitForCompletion

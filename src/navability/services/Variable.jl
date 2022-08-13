@@ -12,6 +12,7 @@ function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, v
     )) |> fetch
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
+        @error response
         throw("Error: $(rootData["errors"])")
     end
     data = get(rootData,"data",nothing)
@@ -99,3 +100,107 @@ end
 function ls(navAbilityClient::NavAbilityClient, client::Client)
     return listVariables(navAbilityClient,client)
 end
+
+
+function SessionKey(
+    userId::AbstractString,
+    robotId::AbstractString,
+    sessionId::AbstractString
+  )
+  #
+  Dict{String,String}(
+    "userId" => userId,
+    "robotId" => robotId,
+    "sessionId" => sessionId,
+  )
+end
+
+function VariableWhere(
+        sessionKey,
+        label::AbstractString,
+        variableType::VariableType
+    )
+    #
+    Dict{String,Any}(
+        "sessionKey" => sessionKey,
+        "label" => label,
+        "variableType" => variableType
+    )
+end
+
+function CartesianPointInput(;
+        x::Float64 = 0.0,
+        y::Float64 = 0.0,
+        z::Float64 = 0.0,
+        rotx::Float64 = 0.0,
+        roty::Float64 = 0.0,
+        rotz::Float64 = 0.0
+    )
+    #
+    Dict{String,Float64}(
+        "x" => x,
+        "y" => y,
+        "z" => z,
+        "rotx" => rotx,
+        "roty" => roty,
+        "rotz" => rotz,
+    )
+end
+
+function DistributionInput(;
+        particle=nothing,
+        rayleigh=nothing
+    )
+    #
+    Dict{String,Any}(
+        (particle isa Nothing ? () : ("particle"=>particle,))...,
+        (rayleigh isa Nothing ? () : ("rayleigh"=>rayleigh,))...
+    )
+end
+
+# struct InitVariableInput
+#     where
+#     distribution
+#     bandwidth
+# end
+function InitVariableInput(wh,dstr,bw::AbstractVector=[])
+    Dict{String,Any}(
+        "where"=>wh,
+        "distribution"=>dstr,
+        (0<length(bw) ? ("bandwidth"=>bw,) : ())...
+    )
+end
+
+function initVariableEvent(
+        client::NavAbilityClient, 
+        context::Client, 
+        initVariableInput::Dict,
+    )
+    #
+    mo = MutationOptions(
+        "sdk_init_variable",
+        GQL_INIT_VARIABLE,
+        Dict(
+            "variable" => initVariableInput
+        )
+    )
+    response = client.mutate(mo) |> fetch
+    
+    rootData = JSON.parse(response.Data)
+    if haskey(rootData, "errors")
+        throw("Error: $(rootData["errors"])")
+    end
+    return rootData["data"]["initVariable"]["context"]["eventId"]
+end
+# Dict(
+#     "userId" => context.userId,
+#     "robotId" => context.robotId,
+#     "sessionId" => context.sessionId,
+#     "label" => label,
+#     "variableType" => varType,
+#     "points" => points
+# )
+
+initVariable(w...;kw...) = @async initVariableEvent(w...;kw...)
+
+#
