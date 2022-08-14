@@ -60,7 +60,7 @@ export PriorPose3, Pose3Pose3
 export ScatterAlignPose2Data
 export FactorType, Factor
 export SolveOptions
-export BagFormat, SessionKey, SessionId, ExportSessionInput, ExportSessionOptions
+export SessionKey, SessionId, ExportSessionInput, ExportSessionOptions
 
 # Services
 include("./navability/services/Variable.jl")
