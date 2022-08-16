@@ -8,6 +8,10 @@ mutation sdk_export_session(
     context {
       eventId
     }
+    status {
+      state
+      progress
+    }
   }
 }
 """
