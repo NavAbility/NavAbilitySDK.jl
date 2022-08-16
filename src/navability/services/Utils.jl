@@ -35,11 +35,15 @@ end
 
 # Dispatch for vector of Tasks
 function waitForCompletion(
-    navAbilityClient::NavAbilityClient,
-    requestIds::AbstractVector{<:Task};
-    kw...)
+        navAbilityClient::NavAbilityClient,
+        requestIds::AbstractVector{<:Task};
+        kw...
+    )
     #
-    rids = fetch.(requestIds) .|> string
+    rids = String[]
+    for reqId in requestIds
+        push!(rids, fetch(reqId) |> string)
+    end
     waitForCompletion(navAbilityClient, rids; kw...)
 end
 
@@ -53,22 +57,37 @@ function waitForCompletion2(client, eventId; maxSeconds=60, totalRequired=1, com
         Dict(
           "eventId" => eventId
         )
-      )) |> fetch
-      payload = JSON.parse(get_event_response.Data)
-      events = payload["data"]["test"]
-      completeEvents = filter(event -> event["status"]["state"] == "Complete", events)
-      if size(events)[1] >= totalRequired && size(completeEvents)[1] >= completeRequired
-        return true
-      end
-      failedEvents = filter(event -> event["status"]["state"] == "Failed", payload["data"]["test"])
-      if size(failedEvents)[1] > 0
-        return false
-      end
-      elapsedInSeconds += incrementInSeconds
-      sleep(incrementInSeconds)
+        )) |> fetch
+        payload = JSON.parse(get_event_response.Data)
+        events = payload["data"]["test"]
+        completeEvents = filter(event -> event["status"]["state"] == "Complete", events)
+        if size(events)[1] >= totalRequired && size(completeEvents)[1] >= completeRequired
+            return true
+        end
+        failedEvents = filter(event -> event["status"]["state"] == "Failed", payload["data"]["test"])
+        if size(failedEvents)[1] > 0
+            return false
+        end
+        elapsedInSeconds += incrementInSeconds
+        sleep(incrementInSeconds)
     end
     return false
-  end
+end
+
+# Dispatch for vector of Tasks
+function waitForCompletion2(
+        navAbilityClient::NavAbilityClient,
+        requestIds::AbstractVector{<:Task};
+        kw...
+    )
+    #
+    # rids = String[]
+    for reqId in requestIds
+        # push!(rids, fetch(reqId) |> string)
+        waitForCompletion2(navAbilityClient, fetch(reqId) |> string; kw...)
+    end
+end
+
 
 # helper functions to construct for most likely user object
 function GraphVizApp(ct::Client; variableStartsWith=nothing)
