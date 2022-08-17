@@ -14,8 +14,8 @@ function testSolveSession(client, context, variableLabels; maxSeconds=180)
     resultId = solveSession(client,context) |> fetch
     @info "solveSession" resultId
     # Wait for them to be done before proceeding.
-    NVA.waitForCompletion2(client, resultId; maxSeconds) #, expectedStatuses=["Complete"])
-    # NVA.waitForCompletion(client, resultId; maxSeconds, expectedStatuses=["Complete"])
+    # NVA.waitForCompletion2(client, resultId; maxSeconds)
+    NVA.waitForCompletion(client, [resultId;]; maxSeconds, expectedStatuses=["Complete"])
 
     # Get PPE's are there for the connected variables.
     # TODO - complete the factor graph.
