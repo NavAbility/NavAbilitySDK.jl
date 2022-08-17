@@ -27,11 +27,11 @@ function testSolveSessionParametric(client, context, variableLabels; maxSeconds=
     # allVariableLabels = ls(client, context, variableLabels)
     
     # do the solve
-    options = SolveOptions(key=nothing, useParametric=true)
+    options = SolveOptions(key="parametric", useParametric=true)
     eventId = solveSession(client, context, options) |> fetch
     # Wait for them to be done before proceeding.
     @info "test solveParametric eventId" eventId
-    waitForCompletion(client, Task[eventId;]; expectedStatuses=["Complete"], maxSeconds)
+    waitForCompletion(client, [eventId;]; expectedStatuses=["Complete"], maxSeconds)
 
     # Get PPE's are there for the connected variables.
     # TODO - complete the factor graph.
