@@ -8,7 +8,7 @@ include("./testFactor.jl")
 include("./testSolve.jl")
 include("./testExportSession.jl")
 
-apiUrl = get(ENV,"API_URL","https://api.navability.io")
+apiUrl = get(ENV,"API_URL","http://localhost:4343")
 userId = get(ENV,"USER_ID","guest@navability.io")
 robotId = get(ENV,"ROBOT_ID","IntegrationRobot")
 sessionId = get(ENV,"SESSION_ID","TestSession"*randstring(7))
@@ -25,12 +25,12 @@ sessionId2d = get(ENV,"SESSION_ID","TestSession2D"*randstring(7))
     # Note - Tests incrementally build on each other because this is an
     # integration test.
     runVariableTests( client, navabilityClient2D )
-    runInitVariableTests(; client )
+    #runInitVariableTests(; client )
     runFactorTests( client, navabilityClient2D )
     runSolveTests( client, navabilityClient2D )
-    runExportTests( client, navabilityClient2D )
+    #runExportTests( client, navabilityClient2D )
 
     # test fixtures
-    exampleGraph1D( client, navabilityClient1D; doSolve=false )
+    #exampleGraph1D( client, navabilityClient1D; doSolve=false )
 
 end

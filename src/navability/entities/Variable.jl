@@ -59,8 +59,15 @@ Base.@kwdef struct SolverDataDict
     solveKey::String
 end
 function SolverDataDict(variableType::String, solveKey::String, dimval::Int)
+    vecval = zeros(dimval)
+    vecbw = zeros(dimval*3)
+    if solveKey !== "parametric"
+        vecval = zeros(dimval*100)
+        vecbw = zeros(dimval)
+    end
     return SolverDataDict(;
-        vecval=zeros(dimval*100), # FIXME, this is a waste, numerics can happen on receiver side
+        vecval, # FIXME, this is a waste, numerics can happen on receiver side
+        vecbw,
         dimval,
         variableType,
         solveKey)
@@ -88,7 +95,7 @@ function Variable(label::AbstractString, type::Union{<:AbstractString, Symbol}, 
     variableType = type isa Symbol ? get(_variableTypeConvert, type, Nothing) : type
     type == Nothing && error("Variable type '$(type) is not supported")
 
-    solverDataDict = Dict("default" => _getSolverDataDict(variableType, "default"))
+    solverDataDict = Dict("default" => _getSolverDataDict(variableType, "default"), "parametric" => _getSolverDataDict(variableType, "parametric"))
     result = Variable(;
         label,
         variableType,
