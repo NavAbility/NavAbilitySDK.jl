@@ -6,6 +6,7 @@ include("./testVariable.jl")
 include("./testInitVariable.jl")
 include("./testFactor.jl")
 include("./testSolve.jl")
+include("./testExportSession.jl")
 
 apiUrl = get(ENV,"API_URL","https://api.navability.io")
 userId = get(ENV,"USER_ID","guest@navability.io")
@@ -27,6 +28,7 @@ sessionId2d = get(ENV,"SESSION_ID","TestSession2D"*randstring(7))
     runInitVariableTests(; client )
     runFactorTests( client, navabilityClient2D )
     runSolveTests( client, navabilityClient2D )
+    runExportTests( client, navabilityClient2D )
 
     # test fixtures
     exampleGraph1D( client, navabilityClient1D; doSolve=false )

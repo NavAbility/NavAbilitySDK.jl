@@ -1,4 +1,3 @@
-using Diana
 
 struct QueryOptions
     name::String

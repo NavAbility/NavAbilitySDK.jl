@@ -13,9 +13,10 @@ function testSolveSession(client, context, variableLabels; maxSeconds=180)
     # do the solve
     resultId = solveSession(client,context) |> fetch
     @info "solveSession" resultId
+    GraphVizApp(context)
     # Wait for them to be done before proceeding.
-    NVA.waitForCompletion2(client, resultId; maxSeconds) #, expectedStatuses=["Complete"])
-    # NVA.waitForCompletion(client, resultId; maxSeconds, expectedStatuses=["Complete"])
+    # NVA.waitForCompletion2(client, resultId; maxSeconds)
+    NVA.waitForCompletion(client, [resultId;]; maxSeconds, expectedStatuses=["Complete"])
 
     # Get PPE's are there for the connected variables.
     # TODO - complete the factor graph.
@@ -26,10 +27,11 @@ function testSolveSessionParametric(client, context, variableLabels; maxSeconds=
     # allVariableLabels = ls(client, context, variableLabels)
     
     # do the solve
-    options = SolveOptions(key=nothing, useParametric=true)
-    resultId = solveSession(client, context, options)
+    options = SolveOptions(key="parametric", useParametric=true)
+    eventId = solveSession(client, context, options) |> fetch
     # Wait for them to be done before proceeding.
-    waitForCompletion(client, Task[resultId;]; expectedStatuses=["Complete"], maxSeconds)
+    @info "test solveParametric eventId" eventId
+    waitForCompletion(client, [eventId;]; expectedStatuses=["Complete"], maxSeconds)
 
     # Get PPE's are there for the connected variables.
     # TODO - complete the factor graph.
@@ -52,7 +54,8 @@ function runSolveTests(client, context)
         variableLabels = ["x0", "x1"]
 
         testSolveSession(client, context, variableLabels)
-        testSolveSessionParametric(client, context, variableLabels)
+        @error "restore solve parametric test, see #144"
+        # testSolveSessionParametric(client, context, variableLabels)
     end
     
     @testset "appviz-testset" begin
