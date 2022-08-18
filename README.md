@@ -1,7 +1,13 @@
 # NavAbilitySDK.jl
 
-[![Unit tests](https://github.com/NavAbility/NavAbilitySDK.jl/actions/workflows/tests.yml/badge.svg)](https://github.com/NavAbility/NavAbilitySDK.jl/actions/workflows/tests.yml)
-[![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://navability.github.io/NavAbilitySDK.jl/dev/)
+
+| Stable Release | Dev branch | Documentation |
+|----------------|------------|---------------|
+| [![Unit tests stb][sdkjl-ci-stb-img]](https://github.com/NavAbility/NavAbilitySDK.jl/actions/workflows/tests.yml) | [![Unit tests dev][sdkjl-ci-dev-img]](https://github.com/NavAbility/NavAbilitySDK.jl/actions/workflows/tests.yml) | [![Documentation]][sdkjl-docs-url] |
+
+[sdkjl-ci-dev-img]: https://github.com/NavAbility/NavAbilitySDK.jl/actions/workflows/tests.yml/badge.svg?branch=main
+[sdkjl-ci-std-img]: https://github.com/NavAbility/NavAbilitySDK.jl/actions/workflows/tests.yml/badge.svg?branch=release%2Fv0.4
+[sdkjl-docs-url]: https://img.shields.io/badge/docs-dev-blue.svg)](https://navability.github.io/NavAbilitySDK.jl/dev/
 
 Access NavAbility Cloud factor graph features from Julia.
 
