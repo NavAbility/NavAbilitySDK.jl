@@ -42,7 +42,6 @@ function runExportTests(client, context)
   @testset "test exportSession" begin
     @info "Running test exportSession"
 
-    @error "restore exportSession test"
-    # testExportSession(client, context; buildNewGraph=false)
+    testExportSession(client, context; buildNewGraph=false)
   end
 end
