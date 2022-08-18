@@ -54,8 +54,8 @@ function runSolveTests(client, context)
         variableLabels = ["x0", "x1"]
 
         testSolveSession(client, context, variableLabels)
-        @error "restore solve parametric test, see #144"
-        # testSolveSessionParametric(client, context, variableLabels)
+        @info "Running test solve parametric"
+        testSolveSessionParametric(client, context, variableLabels)
     end
     
     @testset "appviz-testset" begin
