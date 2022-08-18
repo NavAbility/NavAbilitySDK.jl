@@ -38,7 +38,7 @@ function testExportSession(
 end
 
 
-function runSolveTests(client, context)
+function runExportTests(client, context)
   @testset "test exportSession" begin
     @info "Running test exportSession"
 
