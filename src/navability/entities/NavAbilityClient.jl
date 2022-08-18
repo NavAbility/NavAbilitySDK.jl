@@ -43,11 +43,43 @@ function NavAbilityHttpsClient(
 
     function query(options::QueryOptions)
         # NOTE, the query client library used is synchronous, locally converted to async for package consistency
-        @async dianaClient.Query(options.query, operationName=options.name, vars=options.variables)
+        @async begin
+            attempts = 0
+            while true
+                try
+                    return dianaClient.Query(options.query, operationName=options.name, vars=options.variables)
+                catch err
+                    if attempts < 3
+                        @warn "[Test Client] WARN Client saw an exception. Retrying!" exception=(err, catch_backtrace())
+                        sleep(2)
+                        attempts += 1
+                    else
+                        rethrow()
+                    end
+                end
+            end
+        end
     end
+
     function mutate(options::MutationOptions)
         # NOTE, the query client library used is synchronous, locally converted to async for package consistency
-        @async dianaClient.Query(options.mutation, operationName=options.name, vars=options.variables)
+        @async begin
+            attempts = 0
+                while true
+                try
+                    return dianaClient.Query(options.mutation, operationName=options.name, vars=options.variables)
+                catch err
+                    if attempts < 3
+                        @warn "[Test Client] WARN Client saw an exception. Retrying!" exception=(err, catch_backtrace())
+                        sleep(2)
+                        attempts += 1
+                    else
+                        rethrow()
+                    end
+                end
+            end
+        end
     end
+    
     return NavAbilityClient(query, mutate)
 end
