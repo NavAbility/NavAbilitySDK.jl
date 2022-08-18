@@ -88,6 +88,14 @@ function waitForCompletion2(
     end
 end
 
+function waitForCompletionExportSession(client::NavAbilityClient, eventId::AbstractString)
+    response = client.query(QueryOptions(
+        GQL_GET_EXPORT_SESSION_COMPLETE_EVENT_BY_ID,
+        Dict("eventId" => eventId)
+    )) |> fetch
+    payload = JSON.parse(response.Data)
+    blobId = payload["data"]["test"][1]["data"]["blob"]["id"]
+end
 
 # helper functions to construct for most likely user object
 function GraphVizApp(ct::Client; variableStartsWith=nothing)

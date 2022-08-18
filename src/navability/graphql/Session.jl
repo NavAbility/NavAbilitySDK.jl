@@ -1,6 +1,10 @@
 
 GQL_GET_SESSION = """
-query test_get_session(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!) {
+query sdk_get_session(
+    \$userId: ID!, 
+    \$robotId: ID!, 
+    \$sessionId: ID!
+  ) {
   users(where: {id: \$userId}) {
     id
     robots(where:{id: \$robotId}) {

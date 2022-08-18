@@ -1,5 +1,6 @@
 
 function exportSessionEvent(
+    client::NavAbilityClient,
     session::ExportSessionInput;
     options = nothing
   )
@@ -7,11 +8,11 @@ function exportSessionEvent(
   payload = Dict{String, Any}(
       "session" => session,
   )
-  if (!isnothing(solveOptions))
+  if (!isnothing(options))
       payload["options"] = options
   end
-  response = navAbilityClient.mutate(MutationOptions(
-      "solveSession",
+  response = client.mutate(MutationOptions(
+      "exportSession",
       MUTATION_EXPORT_SESSION,
       payload
   )) |> fetch
@@ -26,4 +27,28 @@ function exportSessionEvent(
   return data["exportSession"]["context"]["eventId"]
 end
 
-exportSession( session::ExportSessionInput; options = nothing) = @async exportSessionEvent(session; options)
+exportSession( client::NavAbilityClient, session::ExportSessionInput; options = nothing) = @async exportSessionEvent(client,session; options)
+
+function exportSession(
+        client::NavAbilityClient, 
+        context::Client, 
+        filename::AbstractString; options=nothing
+    )
+    #
+    expSessInp = ExportSessionInput(;
+        id = SessionId(;
+            key = SessionKey(
+            userId = context.userId,
+            robotId = context.robotId,
+            sessionId = context.sessionId
+            )
+        ),
+        filename
+    )
+
+    exportSession(client, expSessInp; options)
+end
+
+
+
+#

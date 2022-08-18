@@ -4,6 +4,7 @@ const NVA = NavAbilitySDK
 export NVA
 
 # Global imports
+using Diana
 using DocStringExtensions
 using LinearAlgebra
 using JSON
