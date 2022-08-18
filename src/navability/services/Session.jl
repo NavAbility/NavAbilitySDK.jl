@@ -1,4 +1,15 @@
 
+function getExportSessionBlobId(client::NavAbilityClient, eventId::AbstractString)
+    response = client.query(QueryOptions(
+        "events_by_id",
+        GQL_GET_EXPORT_SESSION_COMPLETE_EVENT_BY_ID,
+        Dict("eventId" => eventId)
+    )) |> fetch
+    payload = JSON.parse(response.Data)
+    blobId = payload["data"]["events"][1]["data"]["blob"]["id"]
+    return blobId
+end
+
 function exportSessionEvent(
     client::NavAbilityClient,
     session::ExportSessionInput;
@@ -12,7 +23,7 @@ function exportSessionEvent(
       payload["options"] = options
   end
   response = client.mutate(MutationOptions(
-      "exportSession",
+      "sdk_export_session",
       MUTATION_EXPORT_SESSION,
       payload
   )) |> fetch

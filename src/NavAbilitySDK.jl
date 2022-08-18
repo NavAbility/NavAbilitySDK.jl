@@ -80,7 +80,7 @@ export initVariable
 export solveSession, solveFederated
 export getStatusMessages, getStatusLatest, getStatusesLatest
 export waitForCompletion
-export exportSession
+export exportSession, getExportSessionBlobId
 export GraphVizApp, MapVizApp
 
 

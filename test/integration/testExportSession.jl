@@ -34,7 +34,9 @@ function testExportSession(
                               )) |> fetch
 
   @info "waiting for export Session" eventId
-  NVA.waitForCompletionExportSession(client, eventId)
+  NVA.waitForCompletion2(client, eventId)
+  blobId = NVA.getExportSessionBlobId(client, eventId)
+  @info "Success: Here is the blobId you can use to download: $blobId"
 end
 
 
