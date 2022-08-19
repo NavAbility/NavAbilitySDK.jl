@@ -39,6 +39,7 @@ mutation sdk_export_session(
 }
 """
 
+# get the blobId given the blob upload eventId
 GQL_GET_EXPORT_SESSION_COMPLETE_EVENT_BY_ID = """
   query events_by_id(\$eventId:String) {
     events(where: {status:{state:Complete}, context:{eventId:\$eventId}}) {
