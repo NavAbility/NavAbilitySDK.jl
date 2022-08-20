@@ -9,7 +9,7 @@ So this indicates a unique session.
 DevNotes
 - Rename to [`SessionKey`](@ref)
 """
-struct Client
+Base.@kwdef struct Client
     userId::String
     robotId::String
     sessionId::String
