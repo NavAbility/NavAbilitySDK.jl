@@ -23,11 +23,11 @@ function testSolveSession(client, context, variableLabels; maxSeconds=180)
     checkForSolveKeys(client, context, "default", variableLabels)
 end
 
-function testSolveSessionParametric(client, context, variableLabels; maxSeconds=180)
+function testSolveSessionParametric(client, context, variableLabels; maxSeconds=500)
     # allVariableLabels = ls(client, context, variableLabels)
     
     # do the solve
-    options = SolveOptions(key="parametric", useParametric=true)
+    options = SolveOptions(;useParametric=true)
     eventId = solveSession(client, context, options) |> fetch
     # Wait for them to be done before proceeding.
     @info "test solveParametric eventId" eventId
@@ -55,7 +55,7 @@ function runSolveTests(client, context)
 
         testSolveSession(client, context, variableLabels)
         @error "restore solve parametric test, see #144"
-        # testSolveSessionParametric(client, context, variableLabels)
+        testSolveSessionParametric(client, context, variableLabels)
     end
     
     @testset "appviz-testset" begin
