@@ -55,6 +55,19 @@ getDataEvent(client::NavAbilityClient, context::Client, w...) = getDataEvent(cli
 getData(w...) = @async getDataEvent(w...)
 
 
+function getDataByLabel(client, context, varlbl, regex::Regex)
+  ble = listDataEntries(client, context, varlbl) |> fetch
+  # filter for the specific blob label
+  ble_s = filter(x->!(match(regex,x.label) isa Nothing) , ble)
+  if 0 < length(ble_s)
+    @assert 1 === length(ble_s) "multiple matches on regex found, please provide a more precise regex: $(regex.pattern), $((s->s.label).(ble_s))"
+    ble_ = ble_s[1]
+    # get blob
+    return NVA.getData(client, context, ble_.id)
+  end
+  return nothing
+end
+
 ## =========================================================================
 ## Upload
 ## =========================================================================
