@@ -30,12 +30,12 @@ function NavAbilityHttpsClient(
 
     # auth
     if authorize
-        # FIXME, use Base.getpass instead of readline once VSCode supports getpass.
-            # st = Base.getpass("Copy-paste auth token")
-            # seekstart(st)
-            # tok = read(st, String)
-            # Base.shred!(st)
         tok = if 0===length(auth_token)
+            # FIXME, use Base.getpass instead of readline once VSCode supports getpass.
+                # st = Base.getpass("Copy-paste auth token")
+                # seekstart(st)
+                # tok = read(st, String)
+                # Base.shred!(st)
             println("  > VSCode ONLY WORKAROUND, input issue, see https://github.com/julia-vscode/julia-vscode/issues/785")
             println("  >  Workaround: first press 0 then enter, and then paste the token and hit enter a second time.")
             println("Copy-paste auth token: ")
