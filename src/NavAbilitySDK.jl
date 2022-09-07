@@ -78,12 +78,13 @@ export getFactor, getFactors, listFactors, lsf
 export addFactor, addPackedFactor
 export initVariable
 export listDataEntries
-export getData, getDataByLabel
+export getDataEntry, getData
 export solveSession, solveFederated
 export getStatusMessages, getStatusLatest, getStatusesLatest
 export waitForCompletion
 export exportSession, getExportSessionBlobId
 export GraphVizApp, MapVizApp
 
+include("Deprecated.jl")
 
 end
