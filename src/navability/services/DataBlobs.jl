@@ -54,32 +54,58 @@ end
 getDataEvent(client::NavAbilityClient, context::Client, w...) = getDataEvent(client, context.userId, w...)
 getData(w...) = @async getDataEvent(w...)
 
-
-function getDataByLabel(
-  client, 
-  context, 
-  varlbl, 
-  regex::Regex; 
+function getDataEntry(
+  client::NavAbilityClient,
+  context::Client,
+  vlbl::AbstractString,
+  regex::Regex;
   lt=isless, 
-  verbose::Bool=true,
   count::Base.RefValue{Int}=Ref(0), # return count of how many matches were found
-  datalabel::Base.RefValue{String}=Ref("")
 )
-  ble = listDataEntries(client, context, varlbl) |> fetch
+  ble = listDataEntries(client, context, vlbl) |> fetch
   # filter for the specific blob label
   ble_s = filter(x->!(match(regex,x.label) isa Nothing) , ble)
   count[] = length(ble_s)
-  if 0 < length(ble_s)
-    lbls = (s->s.label).(ble_s)
-    idx = sortperm(lbls; lt)
-    ble_ = ble_s[idx[end]]
-    datalabel[] = ble_.label
-    (verbose && 1 < length(ble_s)) ? @warn("multiple matches on regex, fetching $(ble_.label), w/ regex: $(regex.pattern), $(lbls)") : nothing
-    # get blob
-    return NVA.getData(client, context, ble_.id)
+  if 0 === count[]
+    return nothing
   end
-  return nothing
+  lbls = (s->s.label).(ble_s)
+  idx = sortperm(lbls; lt)
+  ble_s[idx]
 end
+getDataEntry(
+  client::NavAbilityClient,
+  context::Client,
+  vlbl::AbstractString,
+  key::AbstractString;
+  kw...
+) = getDataEntry(client, context, vlbl, Regex(key); kw...)
+
+function getData(
+  client::NavAbilityClient, 
+  context::Client, 
+  vlbl::AbstractString, 
+  regex::Regex; 
+  verbose::Bool=true,
+  datalabel::Base.RefValue{String}=Ref(""),
+  kw...
+)
+  bles = getDataEntry(client, context, vlbl, regex; kw...)
+  ble_ = bles[end] 
+  (verbose && 1 < length(bles)) ? @warn("multiple matches on regex, fetching $(ble_.label), w/ regex: $(regex.pattern), $((s->s.label).(bles))") : nothing
+  datalabel[] = ble_.label
+  # get blob
+  return NVA.getData(client, context, ble_.id)
+end
+getData(
+  client::NavAbilityClient, 
+  context::Client, 
+  vlbl::AbstractString, 
+  key::AbstractString; 
+  kw...
+) = getData(client, context, vlbl, Regex(key); kw...)
+
+
 
 ## =========================================================================
 ## Upload
