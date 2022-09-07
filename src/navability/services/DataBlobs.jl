@@ -91,6 +91,8 @@ function getData(
   kw...
 )
   bles = getDataEntry(client, context, vlbl, regex; kw...)
+  # skip out if nothing
+  bles isa Nothing ? (return nothing) : nothing
   ble_ = bles[end] 
   (verbose && 1 < length(bles)) ? @warn("multiple matches on regex, fetching $(ble_.label), w/ regex: $(regex.pattern), $((s->s.label).(bles))") : nothing
   datalabel[] = ble_.label
