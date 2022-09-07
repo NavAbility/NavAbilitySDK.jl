@@ -85,5 +85,6 @@ export waitForCompletion
 export exportSession, getExportSessionBlobId
 export GraphVizApp, MapVizApp
 
+include("Deprecated.jl")
 
 end
