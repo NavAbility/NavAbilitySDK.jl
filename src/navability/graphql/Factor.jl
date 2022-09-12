@@ -85,3 +85,19 @@ GQL_GETFACTORSFILTERED = """
       }
     }
   }"""
+
+GQL_DELETEFACTOR = """
+  mutation sdk_delete_factor(
+    \$factor: DeleteFactorInput!, 
+    \$options: DeleteFactorOptions
+  ) {
+  deleteFactor(factor: \$factor, options: \$options) {
+    context {
+      eventId
+    }
+    status {
+      state
+      progress
+    }
+  }
+}"""
