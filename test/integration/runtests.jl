@@ -25,11 +25,10 @@ sessionId2d = get(ENV,"SESSION_ID","TestSession2D"*randstring(7))
     # Note - Tests incrementally build on each other because this is an
     # integration test.
     runVariableTests( client, navabilityClient2D )
-    runInitVariableTests(; client )
     runFactorTests( client, navabilityClient2D )
     runSolveTests( client, navabilityClient2D )
     runExportTests( client, navabilityClient2D )
-
+    runInitVariableTests(; client )
     # test fixtures
     exampleGraph1D( client, navabilityClient1D; doSolve=false )
 

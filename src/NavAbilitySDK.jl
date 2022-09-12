@@ -75,7 +75,7 @@ include("./navability/services/Session.jl")
 export getVariable, getVariables, listVariables, ls
 export addVariable, addPackedVariable
 export getFactor, getFactors, listFactors, lsf
-export addFactor, addPackedFactor
+export addFactor, addPackedFactor, deleteFactor
 export initVariable
 export listDataEntries
 export getDataEntry, getData
