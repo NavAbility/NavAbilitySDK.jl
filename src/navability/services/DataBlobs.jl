@@ -12,7 +12,7 @@ Args:
 function createDownloadEvent(
     navAbilityClient::NavAbilityClient, 
     userId::AbstractString, 
-    fileId::AbstractString
+    fileId::UUID
   )
   #
   response = navAbilityClient.mutate(MutationOptions(
@@ -20,7 +20,7 @@ function createDownloadEvent(
       GQL_CREATEDOWNLOAD,
       Dict(
           "userId" => userId,
-          "fileId" => fileId
+          "fileId" => string(fileId)
       )
   )) |> fetch
   rootData = JSON.parse(response.Data)
@@ -42,7 +42,7 @@ createDownload(w...) = @async createDownloadEvent(w...)
 function getDataEvent(
     client::NavAbilityClient, 
     userId::AbstractString, 
-    fileId::AbstractString
+    fileId::UUID
   )
   #
   url = createDownload(client, userId, fileId) |> fetch
@@ -51,8 +51,9 @@ function getDataEvent(
   io
 end
 
-getDataEvent(client::NavAbilityClient, context::Client, w...) = getDataEvent(client, context.userId, w...)
-getData(w...) = @async getDataEvent(w...)
+getDataEvent(client::NavAbilityClient, context::Client, fileId::UUID) = getDataEvent(client, context.userId, fileId)
+getData(client::NavAbilityClient, context::Client, fileId::UUID) = @async getDataEvent(client, context, fileId)
+
 
 function getDataEntry(
   client::NavAbilityClient,
