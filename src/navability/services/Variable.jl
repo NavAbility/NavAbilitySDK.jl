@@ -165,7 +165,7 @@ end
 # end
 function InitVariableInput(wh,dstr,bw::AbstractVector=[])
     Dict{String,Any}(
-        "where"=>wh,
+        "where"=>wh, # upgrade to "id"
         "distribution"=>dstr,
         (0<length(bw) ? ("bandwidth"=>bw,) : ())...
     )
