@@ -7,7 +7,7 @@ function testAddFactor(client, context, factorLabels, factorTypes, factorVariabl
         push!(resultIds, resultId)
     end
 
-    waitForCompletion(client, resultIds, expectedStatuses=["Complete"])
+    waitForCompletion(client, resultIds; expectedStatuses=["Complete"])
     return resultIds
 end
 
@@ -41,7 +41,7 @@ function testDeleteFactor(client, context, factorLabels)
     waitForCompletion(client, [resultId], expectedStatuses=["Complete"])
     
     resultId = fetch(deleteFactor(client, context, "x0x1f_oops"))
-   
+    
     @test NVA.waitForCompletion2(client, resultId)
 
     @test setdiff(factorLabels, fetch( lsf(client, context) )) == []
@@ -63,7 +63,7 @@ function runFactorTests(client, context)
         @testset "Listing" begin testLsf(client, context, factorLabels, factorTypes) end
         @testset "Getting" begin testGetFactor(client, context, factorLabels, factorTypes) end
         @testset "Getting Lists" begin testGetFactors(client, context, factorLabels, factorTypes) end
-        @testset "Delete" begin testDeleteFactor(client, context, factorLabels) end
+        # @testset "Delete" begin testDeleteFactor(client, context, factorLabels) end
 
     end
 end
