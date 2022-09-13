@@ -123,7 +123,7 @@ GQL_GETVARIABLESFILTERED = """
 GQL_INIT_VARIABLE = """
   mutation sdk_init_variable(
       \$variable: InitVariableInput!, 
-      \$options: EmptyInputOptions
+      \$options: EmptyOptionsInput
     ) {
     initVariable(variable: \$variable, options:\$options) {
       context {

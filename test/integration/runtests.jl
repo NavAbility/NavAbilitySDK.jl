@@ -17,7 +17,7 @@ sessionId2d = get(ENV,"SESSION_ID","TestSession2D"*randstring(7))
 
 @testset "nva-sdk-integration-testset" begin
     # Creating one client and two contexts
-    client, navabilityClient1D = createClients(apiUrl, userId, robotId, sessionId1d)
+    client, context1D = createClients(apiUrl, userId, robotId, sessionId1d)
     client, context2D = createClients(apiUrl, userId, robotId, sessionId2d)
 
     @info "Running nva-sdk-integration-testset..."
@@ -28,8 +28,8 @@ sessionId2d = get(ENV,"SESSION_ID","TestSession2D"*randstring(7))
     runFactorTests( client, context2D )
     runSolveTests( client, context2D )
     runExportTests( client, context2D )
-    runInitVariableTests(; client )
+    # runInitVariableTests(; client )
     # test fixtures
-    exampleGraph1D( client, navabilityClient1D; doSolve=false )
+    exampleGraph1D( client, context1D; doSolve=false )
 
 end
