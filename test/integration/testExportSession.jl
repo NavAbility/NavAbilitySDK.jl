@@ -27,15 +27,15 @@ function testExportSession(
   end
 
   # export the graph
-  # eventId = NVA.exportSession(client, context, "testexport.tar.gz",
-  #                             options=NVA.ExportSessionOptions(
-  #                               format="NVA" # TODO TARGZ
-  #                             )) |> fetch
+  eventId = NVA.exportSession(client, context, "testexport.tar.gz",
+                              options=NVA.ExportSessionOptions(
+                                format="NVA" # TODO TARGZ
+                              )) |> fetch
 
-  # @info "waiting for export Session" eventId
-  # NVA.waitForCompletion2(client, eventId)
-  # blobId = NVA.getExportSessionBlobId(client, eventId)
-  # @info "Success: Here is the blobId you can use to download: $blobId"
+  @info "waiting for export Session" eventId
+  NVA.waitForCompletion2(client, eventId)
+  blobId = NVA.getExportSessionBlobId(client, eventId)
+  @info "Success: Here is the blobId you can use to download: $blobId"
 end
 
 
