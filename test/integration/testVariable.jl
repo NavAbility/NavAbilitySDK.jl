@@ -8,7 +8,8 @@ function testAddVariable(client, context, variableLabels, variableTypes, variabl
     end
 
     # Wait for them to be done before proceeding.
-    NVA.waitForCompletion2(client, resultIds; maxSeconds=180) # expectedStatuses=["Complete"]
+    # NVA.waitForCompletion2(client, resultIds; maxSeconds=180) # expectedStatuses=["Complete"]
+    NVA.waitForCompletion(client, resultIds; maxSeconds=180, expectedStatuses=["Complete"] )
 
     return resultIds
 end
