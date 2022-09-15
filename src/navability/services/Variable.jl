@@ -130,14 +130,14 @@ function VariableKey(
   )
 end
 
-function VariableId(
-    key
-  )
-  #
-  Dict{String,Any}(
-    "key" => key
-  )
-end
+# function VariableId(
+#     key
+#   )
+#   #
+#   Dict{String,Any}(
+#     "key" => key
+#   )
+# end
 
 function VariableId(
     variableKey
