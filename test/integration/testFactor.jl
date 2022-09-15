@@ -40,11 +40,11 @@ function testDeleteFactor(client, context, factorLabels)
 
     waitForCompletion(client, [resultId], expectedStatuses=["Complete"])
     
-    # @show resultId = fetch(deleteFactor(client, context, "x0x1f_oops"))
+    @show resultId = fetch(deleteFactor(client, context, "x0x1f_oops"))
     
-    # @test NVA.waitForCompletion2(client, resultId)
+    @test NVA.waitForCompletion2(client, resultId)
 
-    # @test setdiff(factorLabels, fetch( lsf(client, context) )) == []
+    @test setdiff(factorLabels, fetch( lsf(client, context) )) == []
 
     return nothing
 end

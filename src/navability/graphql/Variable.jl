@@ -136,35 +136,22 @@ GQL_INIT_VARIABLE = """
     }
   }"""
 
-# GQL_INITVARIABLE = """
-#   mutation sdk_init_variable(
-#     \$userId: ID!,
-#     \$robotId: ID!,
-#     \$sessionId: ID!,
-#     \$label: String!,
-#     \$variableType: VariableType!,
-#     \$points: [CartesianPointInput]!) {
-#       initVariable(
-#         variable: where: {
-#           sessionKey: {
-#             userId: \$userId,
-#             robotId: \$robotId,
-#             sessionId: \$sessionId,
-#           },
-#           label: \$label,
-#           variableType: \$variableType
-#         },
-#         distribution: {
-#           particle: {
-#             points: \$points
-#           }
-#         }
-#       ) {
-#       status {
-#         state
-#       }
-#       context {
-#         eventId
-#       }
-#     }
-#   }"""
+GQL_LIST_VARIABLE_NEIGHBORS = """
+  query sdk_list_variable_neighbors (
+    \$userId: ID!, 
+    \$robotId: ID!, 
+    \$sessionId: ID!, 
+    \$variableLabel: ID!
+    ) {
+    users(where:{id: \$userId}) {
+      robots(where:{id: \$robotId}) {
+        sessions(where:{id: \$sessionId}) {
+          variables(where:{label: \$variableLabel}) {
+            factors {
+              label
+            }
+          }
+        }
+      }
+    }
+  }"""

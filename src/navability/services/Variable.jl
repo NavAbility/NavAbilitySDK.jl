@@ -1,4 +1,20 @@
 
+function Variable(label::AbstractString, type::Union{<:AbstractString, Symbol}, tags::AbstractVector{<:AbstractString} = ["VARIABLE"], timestamp::String = string(now(Dates.UTC))*"Z")::Variable
+    variableType = type isa Symbol ? get(_variableTypeConvert, type, Nothing) : type
+    type == Nothing && error("Variable type '$(type) is not supported")
+
+    solverDataDict = Dict("default" => _getSolverDataDict(variableType, "default"))
+    result = Variable(;
+        label,
+        variableType,
+        # TODO, should not require jsoning, see DFG#867
+        solverDataDict = json(solverDataDict),
+        tags = json(tags),
+        timestamp
+    )
+    return result
+end
+
 function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, variable)::String
     response = navAbilityClient.mutate(MutationOptions(
         "addVariable",
@@ -101,75 +117,41 @@ function ls(navAbilityClient::NavAbilityClient, client::Client)
     return listVariables(navAbilityClient,client)
 end
 
-
-function SessionKey(
-    userId::AbstractString,
-    robotId::AbstractString,
-    sessionId::AbstractString
-  )
-  #
-  Dict{String,String}(
-    "userId" => userId,
-    "robotId" => robotId,
-    "sessionId" => sessionId,
-  )
+function listFactorsEvent(
+    client::NavAbilityClient, 
+    ::Client, 
+    variableKey::Dict
+)
+    response = client.query(QueryOptions(
+        "sdk_list_variable_neighbors",
+        GQL_LIST_VARIABLE_NEIGHBORS,
+        variableKey
+    )) |> fetch
+    rootData = JSON.parse(response.Data)
+    if haskey(rootData, "errors")
+        @error response
+        throw("Error: $(rootData["errors"])")
+    end
+    data = get(rootData,"data",nothing)
+    if data === nothing return "Error" end
+    # listVarNei = get(data,"users","Error")
+    return (s->s["label"]).(data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["factors"])
 end
 
-function VariableWhere(
-        sessionKey,
-        label::AbstractString,
-        variableType::VariableType
-    )
-    #
-    Dict{String,Any}(
-        "sessionKey" => sessionKey,
-        "label" => label,
-        "variableType" => variableType
-    )
-end
-
-function CartesianPointInput(;
-        x::Float64 = 0.0,
-        y::Float64 = 0.0,
-        z::Float64 = 0.0,
-        rotx::Float64 = 0.0,
-        roty::Float64 = 0.0,
-        rotz::Float64 = 0.0
-    )
-    #
-    Dict{String,Float64}(
-        "x" => x,
-        "y" => y,
-        "z" => z,
-        "rotx" => rotx,
-        "roty" => roty,
-        "rotz" => rotz,
+function listFactorsEvent(client::NavAbilityClient, context::Client, varLbl::AbstractString)
+    listFactorsEvent(
+        client, 
+        context, 
+        VariableKey(
+            context.userId, 
+            context.robotId, 
+            context.sessionId,
+            varLbl
+        )
     )
 end
 
-function DistributionInput(;
-        particle=nothing,
-        rayleigh=nothing
-    )
-    #
-    Dict{String,Any}(
-        (particle isa Nothing ? () : ("particle"=>particle,))...,
-        (rayleigh isa Nothing ? () : ("rayleigh"=>rayleigh,))...
-    )
-end
-
-# struct InitVariableInput
-#     where
-#     distribution
-#     bandwidth
-# end
-function InitVariableInput(wh,dstr,bw::AbstractVector=[])
-    Dict{String,Any}(
-        "where"=>wh,
-        "distribution"=>dstr,
-        (0<length(bw) ? ("bandwidth"=>bw,) : ())...
-    )
-end
+listFactors(client::NavAbilityClient, context::Client, w...; kw...) = @async listFactorsEvent(client, context, w...; kw...)
 
 function initVariableEvent(
         client::NavAbilityClient, 
