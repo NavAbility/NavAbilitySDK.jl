@@ -28,7 +28,7 @@ sessionId2d = get(ENV,"SESSION_ID","TestSession2D"*randstring(7))
     runFactorTests( client, context2D )
     runSolveTests( client, context2D )
     runExportTests( client, context2D )
-    # runInitVariableTests(; client )
+    runInitVariableTests(; client )
     # test fixtures
     exampleGraph1D( client, context1D; doSolve=false )
 

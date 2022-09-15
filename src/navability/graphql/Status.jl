@@ -32,7 +32,7 @@ query sdk_get_statuslatest(\$id: ID!) {
 
 GQL_GET_EVENTS_BY_ID = """
   query sdk_events_by_id(\$eventId:String) {
-    test: events(where: {context:{eventId:\$eventId}}) {
+    test: events(event: {context:{eventId:\$eventId}}) {
       context {
         eventId
       }
