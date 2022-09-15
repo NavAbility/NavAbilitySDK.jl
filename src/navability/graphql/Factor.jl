@@ -89,7 +89,7 @@ GQL_GETFACTORSFILTERED = """
 GQL_DELETEFACTOR = """
   mutation sdk_delete_factor(
     \$factor: DeleteFactorInput!, 
-    \$options: DeleteFactorOptions
+    \$options: DeleteFactorOptionsInput
   ) {
   deleteFactor(factor: \$factor, options: \$options) {
     context {
