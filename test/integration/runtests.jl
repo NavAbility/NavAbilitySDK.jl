@@ -14,6 +14,7 @@ robotId = get(ENV,"ROBOT_ID","IntegrationRobot")
 sessionId = get(ENV,"SESSION_ID","TestSession"*randstring(7))
 sessionId1d = get(ENV,"SESSION_ID","TestSession1D"*randstring(7))
 sessionId2d = get(ENV,"SESSION_ID","TestSession2D"*randstring(7))
+sessionId3d = get(ENV,"SESSION_ID","TestSession3D"*randstring(7))
 
 @testset "nva-sdk-integration-testset" begin
     # Creating one client and two contexts
@@ -31,5 +32,37 @@ sessionId2d = get(ENV,"SESSION_ID","TestSession2D"*randstring(7))
     runInitVariableTests(; client )
     # test fixtures
     exampleGraph1D( client, context1D; doSolve=false )
+
+end
+
+@testset "testing Pose3" begin
+
+    client, context3D = createClients(apiUrl, userId, robotId, sessionId3d)
+
+resultIds = Task[]
+append!(
+    resultIds,
+    [addVariable(client, context3D, "x0", :Pose3),
+     addVariable(client, context3D, "x1", :Pose3)]
+)
+
+NVA.waitForCompletion(client, resultIds; maxSeconds=180, expectedStatuses=["Complete"] )
+
+resultIds = Task[]
+append!(
+    resultIds,
+    [addFactor(client, context3D, ["x0"], NVA.PriorPose3(Z=NVA.FullNormal([0.,1.,0,0,0,0], diagm([0.1,0.1,0.1,0.01,0.01,0.01].^2)))),
+     addFactor(client, context3D, [:x0,:x1], NVA.Pose3Pose3Rotation(Z=NVA.FullNormal([0.1,0.,0], diagm([0.01,0.01,0.01].^2))))]
+)
+
+
+NVA.waitForCompletion(client, resultIds; maxSeconds=180, expectedStatuses=["Complete"] )
+
+flabels = fetch(NVA.listFactors(client, context3D))
+fac = fetch(NVA.getFactor(client, context3D, "x0x1f_4e37"))
+
+# r = fetch(NVA.solveSession(client, context3D))
+# s = fetch(NVA.getStatusesLatest(client, [r]))
+# v = fetch(NVA.getVariable(client, context3D, "x1"))
 
 end
