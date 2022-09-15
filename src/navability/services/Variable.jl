@@ -115,17 +115,37 @@ function SessionKey(
   )
 end
 
-function VariableWhere(
-        sessionKey,
-        label::AbstractString,
-        variableType::VariableType
-    )
-    #
-    Dict{String,Any}(
-        "sessionKey" => sessionKey,
-        "label" => label,
-        "variableType" => variableType
-    )
+function VariableKey(
+    userId::AbstractString,
+    robotId::AbstractString,
+    sessionId::AbstractString,
+    variableLabel::AbstractString
+  )
+  #
+  Dict{String,String}(
+    "userId" => userId,
+    "robotId" => robotId,
+    "sessionId" => sessionId,
+    "variableLabel" => variableLabel
+  )
+end
+
+# function VariableId(
+#     key
+#   )
+#   #
+#   Dict{String,Any}(
+#     "key" => key
+#   )
+# end
+
+function VariableId(
+    variableKey
+  )
+  #
+  Dict{String,Any}(
+    "key" => variableKey
+  )
 end
 
 function CartesianPointInput(;
@@ -159,13 +179,15 @@ function DistributionInput(;
 end
 
 # struct InitVariableInput
-#     where
+#     id
+#     variableType
 #     distribution
 #     bandwidth
 # end
-function InitVariableInput(wh,dstr,bw::AbstractVector=[])
+function InitVariableInput(id,variableType,dstr,bw::AbstractVector=[])
     Dict{String,Any}(
-        "where"=>wh,
+        "id"=>id,
+        "variableType"=>variableType,
         "distribution"=>dstr,
         (0<length(bw) ? ("bandwidth"=>bw,) : ())...
     )
