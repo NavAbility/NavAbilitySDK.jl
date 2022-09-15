@@ -25,6 +25,20 @@ function SessionId(;
   )
 end
 
+
+# function SessionKey(
+#   userId::AbstractString,
+#   robotId::AbstractString,
+#   sessionId::AbstractString
+# )
+# #
+# Dict{String,String}(
+#   "userId" => userId,
+#   "robotId" => robotId,
+#   "sessionId" => sessionId,
+# )
+# end
+
 Base.@kwdef struct ExportSessionInput
   id::Dict
   filename::String
