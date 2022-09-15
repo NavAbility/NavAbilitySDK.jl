@@ -23,7 +23,7 @@ function testSolveSession(client, context, variableLabels; maxSeconds=180)
     checkForSolveKeys(client, context, "default", variableLabels)
 end
 
-function testSolveSessionParametric(client, context, variableLabels; maxSeconds=180)
+function testSolveSessionParametric(client, context, variableLabels; maxSeconds=240)
     # allVariableLabels = ls(client, context, variableLabels)
     
     # do the solve
