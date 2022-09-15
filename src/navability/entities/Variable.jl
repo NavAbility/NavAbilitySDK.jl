@@ -84,19 +84,71 @@ function _getSolverDataDict(variableType::String, solveKey::String)::SolverDataD
     throw(error("Variable type '$(variableType)' not supported."))
 end
 
-function Variable(label::AbstractString, type::Union{<:AbstractString, Symbol}, tags::AbstractVector{<:AbstractString} = ["VARIABLE"], timestamp::String = string(now(Dates.UTC))*"Z")::Variable
-    variableType = type isa Symbol ? get(_variableTypeConvert, type, Nothing) : type
-    type == Nothing && error("Variable type '$(type) is not supported")
-
-    solverDataDict = Dict("default" => _getSolverDataDict(variableType, "default"))
-    result = Variable(;
-        label,
-        variableType,
-        # TODO, should not require jsoning, see DFG#867
-        solverDataDict = json(solverDataDict),
-        tags = json(tags),
-        timestamp
-    )
-    return result
+function VariableKey(
+    userId::AbstractString,
+    robotId::AbstractString,
+    sessionId::AbstractString,
+    variableLabel::AbstractString
+  )
+  #
+  Dict{String,String}(
+    "userId" => userId,
+    "robotId" => robotId,
+    "sessionId" => sessionId,
+    "variableLabel" => variableLabel
+  )
 end
 
+function VariableId(
+    variableKey
+  )
+  #
+  Dict{String,Any}(
+    "key" => variableKey
+  )
+end
+
+function CartesianPointInput(;
+        x::Float64 = 0.0,
+        y::Float64 = 0.0,
+        z::Float64 = 0.0,
+        rotx::Float64 = 0.0,
+        roty::Float64 = 0.0,
+        rotz::Float64 = 0.0
+    )
+    #
+    Dict{String,Float64}(
+        "x" => x,
+        "y" => y,
+        "z" => z,
+        "rotx" => rotx,
+        "roty" => roty,
+        "rotz" => rotz,
+    )
+end
+
+function DistributionInput(;
+        particle=nothing,
+        rayleigh=nothing
+    )
+    #
+    Dict{String,Any}(
+        (particle isa Nothing ? () : ("particle"=>particle,))...,
+        (rayleigh isa Nothing ? () : ("rayleigh"=>rayleigh,))...
+    )
+end
+
+# struct InitVariableInput
+#     id
+#     variableType
+#     distribution
+#     bandwidth
+# end
+function InitVariableInput(id,variableType,dstr,bw::AbstractVector=[])
+    Dict{String,Any}(
+        "id"=>id,
+        "variableType"=>variableType,
+        "distribution"=>dstr,
+        (0<length(bw) ? ("bandwidth"=>bw,) : ())...
+    )
+end
