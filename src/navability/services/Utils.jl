@@ -114,3 +114,36 @@ end
 Base.show(io::IO, ::MIME"text/plain", gv::Union{GraphVizApp,MapVizApp}) = println(gv.url)
 Base.show(io::IO, ::MIME"text/markdown", gv::GraphVizApp) = display("text/markdown", "[![Navigate to Factor Graph]($assetGraphVizImg)]($(gv.url))")
 Base.show(io::IO, ::MIME"text/markdown", gv::MapVizApp) = display("text/markdown", "[![Navigate to Factor Graph]($assetGeomVizImg)]($(gv.url))")
+
+
+"""
+    $SIGNATURES
+Natural less than for sorting, 
+
+```julia
+sort(["x10"; "x1", "x11"]; lt=NavAbilitySDK.natural_lt)
+````
+
+Notes
+- duplicated from DFG, hence don't export
+"""
+function natural_lt(x::T, y::T) where T <: AbstractString
+    # Adapted from https://rosettacode.org/wiki/Natural_sorting
+    # split at digit to not digit change
+    splitbynum(x::AbstractString) = split(x, r"(?<=\D)(?=\d)|(?<=\d)(?=\D)")
+    #parse to Int
+    numstringtonum(arr::Vector{<:AbstractString}) = [(n = tryparse(Int, e)) !== nothing ? n : e for e in arr]
+    xarr = numstringtonum(splitbynum(x))
+    yarr = numstringtonum(splitbynum(y))
+    for i in 1:min(length(xarr), length(yarr))
+        if typeof(xarr[i]) != typeof(yarr[i])
+            return isa(xarr[i], Int)
+        elseif xarr[i] == yarr[i]
+            continue
+        else
+            return xarr[i] < yarr[i]
+        end
+    end
+    return length(xarr) < length(yarr)
+end
+natural_lt(x::Symbol, y::Symbol) = natural_lt(string(x),string(y))

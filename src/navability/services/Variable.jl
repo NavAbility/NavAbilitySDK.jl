@@ -41,7 +41,12 @@ function addVariable(navAbilityClient::NavAbilityClient, client::Client, variabl
     return @async addPackedVariable(navAbilityClient, client, variable)
 end
 
-function getVariableEvent(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
+function getVariableEvent(
+    navAbilityClient::NavAbilityClient, 
+    client::Client, 
+    label::String;
+    detail::QueryDetail = SKELETON
+)::Dict{String,Any}
     response = navAbilityClient.query(QueryOptions(
         "sdk_get_variable",
         """
@@ -52,7 +57,9 @@ function getVariableEvent(navAbilityClient::NavAbilityClient, client::Client, la
             "label" => label,
             "userId" => client.userId,
             "robotId" => client.robotId,
-            "sessionId" => client.sessionId
+            "sessionId" => client.sessionId,
+            # "fields_summary" => detail === SUMMARY || detail === FULL,
+            # "fields_full" => detail === FULL,
         )
     )) |> fetch
     rootData = JSON.parse(response.Data)
@@ -72,7 +79,7 @@ function getVariableEvent(navAbilityClient::NavAbilityClient, client::Client, la
     return variables[1]
 end
 
-getVariable(navAbilityClient::NavAbilityClient, client::Client, label::String) = @async getVariableEvent(navAbilityClient, client, label)
+getVariable(navAbilityClient::NavAbilityClient, client::Client, label::String; detail::QueryDetail = SKELETON) = @async getVariableEvent(navAbilityClient, client, label; detail)
 
 function getVariablesEvent(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON)::Vector{Dict{String,Any}}
     response = navAbilityClient.query(QueryOptions(
