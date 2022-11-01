@@ -59,13 +59,15 @@ function getDataEntry(
   client::NavAbilityClient,
   context::Client,
   vlbl::AbstractString,
-  regex::Regex;
+  pattern::Union{Regex, UUID};
   lt=isless, 
   count::Base.RefValue{Int}=Ref(0), # return count of how many matches were found
 )
   ble = listDataEntries(client, context, vlbl) |> fetch
   # filter for the specific blob label
-  ble_s = filter(x->!(match(regex,x.label) isa Nothing) , ble)
+  _matchpatt(regex::Regex, de) = match(regex, de.label) isa Nothing
+  _matchpatt(uuid::UUID, de) = uuid != UUID(de.id)
+  ble_s = filter(x->!(_matchpatt(pattern, x)), ble) # match(regex,x.label) isa Nothing
   count[] = length(ble_s)
   if 0 === count[]
     return nothing
@@ -247,7 +249,7 @@ function addDataEntryEvent(
     robotId::AbstractString,
     sessionId::AbstractString,
     variableLabel::AbstractString,
-    dataId::AbstractString,
+    dataId::AbstractString, # TODO must also support ::UUID
     dataLabel::AbstractString,
     mimeType::AbstractString="",
   )
