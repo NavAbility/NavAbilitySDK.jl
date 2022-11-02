@@ -115,7 +115,19 @@ between the variables, e.g. `FullNormal([1;zeros(5)], diagm(0.01*ones(6)))`.
 Default value of Z = `FullNormal(zeros(6), diagm(0.01*ones(6)))`.
 """
 function Pose3Pose3Data(;Z::Distribution = FullNormal(zeros(6), diagm(0.01*ones(6))), kwargs...)::FactorData
-    data = FactorData(;fnc = ZInferenceType(Z), certainhypo = [1], kwargs...)
+    data = FactorData(;fnc = ZInferenceType(Z), certainhypo = [1,2], kwargs...)
+    return data
+end
+
+"""
+$(SIGNATURES)
+Create a partial factor on Rotation only on Pose3->Pose3 with a distribution Z representing the relationship
+between the variables.
+
+Default value of Z = `FullNormal(zeros(3), diagm(0.01*ones(3)))`.
+"""
+function Pose3Pose3RotationData(;Z::Distribution = FullNormal(zeros(3), diagm(0.01*ones(3))), kwargs...)
+    data = FactorData(;fnc = ZInferenceType(Z), certainhypo = [1,2], kwargs...)
     return data
 end
 

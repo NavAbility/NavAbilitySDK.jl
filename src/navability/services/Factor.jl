@@ -99,3 +99,36 @@ end
 function lsf(navAbilityClient::NavAbilityClient, client::Client)
     return listFactors(navAbilityClient,client)
 end
+
+function FactorKey(context::Client, label::String)
+    Dict{String,String}(
+        "userLabel" => context.userId,
+        "robotLabel" => context.robotId,
+        "sessionLabel" => context.sessionId,
+        "factorLabel" => label,
+    )
+end
+
+function deleteFactor(client::NavAbilityClient, context::Client, label::String)
+ 
+    deleteFactorInput = Dict(
+        "id"=>Dict("key"=>FactorKey(context, label))
+    )
+    mo = MutationOptions(
+        "sdk_delete_factor",
+        GQL_DELETEFACTOR,
+        Dict(
+            "factor" => deleteFactorInput
+        )
+    )
+    task = @async begin
+        response = fetch(client.mutate(mo))
+        rootData = JSON.parse(response.Data)
+        if haskey(rootData, "errors")
+            throw("Error: $(rootData["errors"])")
+        end
+        rootData["data"]["deleteFactor"]["context"]["eventId"]
+    end
+
+    return task
+end

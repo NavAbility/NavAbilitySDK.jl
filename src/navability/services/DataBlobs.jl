@@ -12,7 +12,7 @@ Args:
 function createDownloadEvent(
     navAbilityClient::NavAbilityClient, 
     userId::AbstractString, 
-    fileId::AbstractString
+    fileId::UUID
   )
   #
   response = navAbilityClient.mutate(MutationOptions(
@@ -20,7 +20,7 @@ function createDownloadEvent(
       GQL_CREATEDOWNLOAD,
       Dict(
           "userId" => userId,
-          "fileId" => fileId
+          "fileId" => string(fileId)
       )
   )) |> fetch
   rootData = JSON.parse(response.Data)
@@ -42,7 +42,7 @@ createDownload(w...) = @async createDownloadEvent(w...)
 function getDataEvent(
     client::NavAbilityClient, 
     userId::AbstractString, 
-    fileId::AbstractString
+    fileId::UUID
   )
   #
   url = createDownload(client, userId, fileId) |> fetch
@@ -51,8 +51,65 @@ function getDataEvent(
   io
 end
 
-getDataEvent(client::NavAbilityClient, context::Client, w...) = getDataEvent(client, context.userId, w...)
-getData(w...) = @async getDataEvent(w...)
+getDataEvent(client::NavAbilityClient, context::Client, fileId::UUID) = getDataEvent(client, context.userId, fileId)
+getData(client::NavAbilityClient, context::Client, fileId::UUID) = @async getDataEvent(client, context, fileId)
+
+
+function getDataEntry(
+  client::NavAbilityClient,
+  context::Client,
+  vlbl::AbstractString,
+  pattern::Union{Regex, UUID};
+  lt=isless, 
+  count::Base.RefValue{Int}=Ref(0), # return count of how many matches were found
+)
+  ble = listDataEntries(client, context, vlbl) |> fetch
+  # filter for the specific blob label
+  _matchpatt(regex::Regex, de) = match(regex, de.label) isa Nothing
+  _matchpatt(uuid::UUID, de) = uuid != UUID(de.id)
+  ble_s = filter(x->!(_matchpatt(pattern, x)), ble) # match(regex,x.label) isa Nothing
+  count[] = length(ble_s)
+  if 0 === count[]
+    return nothing
+  end
+  lbls = (s->s.label).(ble_s)
+  idx = sortperm(lbls; lt)
+  ble_s[idx]
+end
+getDataEntry(
+  client::NavAbilityClient,
+  context::Client,
+  vlbl::AbstractString,
+  key::AbstractString;
+  kw...
+) = getDataEntry(client, context, vlbl, Regex(key); kw...)
+
+function getData(
+  client::NavAbilityClient, 
+  context::Client, 
+  vlbl::AbstractString, 
+  regex::Regex; 
+  verbose::Bool=true,
+  datalabel::Base.RefValue{String}=Ref(""),
+  kw...
+)
+  bles = getDataEntry(client, context, vlbl, regex; kw...)
+  # skip out if nothing
+  bles isa Nothing ? (return nothing) : nothing
+  ble_ = bles[end] 
+  (verbose && 1 < length(bles)) ? @warn("multiple matches on regex, fetching $(ble_.label), w/ regex: $(regex.pattern), $((s->s.label).(bles))") : nothing
+  datalabel[] = ble_.label
+  # get blob
+  return NVA.getData(client, context, ble_.id)
+end
+getData(
+  client::NavAbilityClient, 
+  context::Client, 
+  vlbl::AbstractString, 
+  key::AbstractString; 
+  kw...
+) = getData(client, context, vlbl, Regex(key); kw...)
+
 
 
 ## =========================================================================
@@ -192,7 +249,7 @@ function addDataEntryEvent(
     robotId::AbstractString,
     sessionId::AbstractString,
     variableLabel::AbstractString,
-    dataId::AbstractString,
+    dataId::AbstractString, # TODO must also support ::UUID
     dataLabel::AbstractString,
     mimeType::AbstractString="",
   )

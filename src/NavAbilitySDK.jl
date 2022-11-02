@@ -4,6 +4,7 @@ const NVA = NavAbilitySDK
 export NVA
 
 # Global imports
+using Diana
 using DocStringExtensions
 using LinearAlgebra
 using JSON
@@ -25,8 +26,11 @@ include("./navability/graphql/Factor.jl")
 include("./navability/graphql/Status.jl")
 include("./navability/graphql/Variable.jl")
 include("./navability/graphql/DataBlobs.jl")
+include("./navability/graphql/Session.jl")
+
 
 include("./navability/graphql/QueriesDeprecated.jl")
+# TODO remove GQL exports, since users can easily just use NVA.QUERY___
 export QUERY_VARIABLE_LABELS
 export QUERY_FILES, QUERY_CALIBRATION
 export MUTATION_ADDVARIABLE, MUTATION_ADDFACTOR, MUTATION_ADDSESSIONDATA
@@ -45,6 +49,7 @@ include("./navability/entities/Variable.jl")
 include("./navability/entities/InferenceTypes.jl")
 include("./navability/entities/Factor.jl")
 include("./navability/entities/Solve.jl")
+include("./navability/entities/Session.jl")
 export NavAbilityClient, NavAbilityWebsocketClient, NavAbilityHttpsClient, QueryOptions, MutationOptions
 export Client, Scope
 export QueryDetail, LABEL, SKELETON, SUMMARY, FULL
@@ -56,6 +61,7 @@ export PriorPose3, Pose3Pose3
 export ScatterAlignPose2Data
 export FactorType, Factor
 export SolveOptions
+export SessionKey, SessionId, ExportSessionInput, ExportSessionOptions
 
 # Services
 include("./navability/services/Variable.jl")
@@ -65,14 +71,20 @@ include("./navability/services/Status.jl")
 include("./navability/services/Utils.jl")
 include("./navability/services/StandardAPI.jl")
 include("./navability/services/DataBlobs.jl")
+include("./navability/services/Session.jl")
 export getVariable, getVariables, listVariables, ls
 export addVariable, addPackedVariable
 export getFactor, getFactors, listFactors, lsf
-export addFactor, addPackedFactor
+export addFactor, addPackedFactor, deleteFactor
+export initVariable
+export listDataEntries
+export getDataEntry, getData
 export solveSession, solveFederated
 export getStatusMessages, getStatusLatest, getStatusesLatest
 export waitForCompletion
+export exportSession, getExportSessionBlobId
 export GraphVizApp, MapVizApp
 
+include("Deprecated.jl")
 
 end

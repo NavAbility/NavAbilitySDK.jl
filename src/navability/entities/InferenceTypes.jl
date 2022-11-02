@@ -29,6 +29,7 @@ end
 
 @nvaZInferenceType PriorPose3
 @nvaZInferenceType Pose3Pose3
+@nvaZInferenceType Pose3Pose3Rotation
 
 
 """

@@ -1,4 +1,20 @@
 
+function Variable(label::AbstractString, type::Union{<:AbstractString, Symbol}, tags::AbstractVector{<:AbstractString} = ["VARIABLE"], timestamp::String = string(now(Dates.UTC))*"Z")::Variable
+    variableType = type isa Symbol ? get(_variableTypeConvert, type, Nothing) : type
+    type == Nothing && error("Variable type '$(type) is not supported")
+
+    solverDataDict = Dict("default" => _getSolverDataDict(variableType, "default"))
+    result = Variable(;
+        label,
+        variableType,
+        # TODO, should not require jsoning, see DFG#867
+        solverDataDict = json(solverDataDict),
+        tags = json(tags),
+        timestamp
+    )
+    return result
+end
+
 function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, variable)::String
     response = navAbilityClient.mutate(MutationOptions(
         "addVariable",
@@ -12,6 +28,7 @@ function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, v
     )) |> fetch
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
+        @error response
         throw("Error: $(rootData["errors"])")
     end
     data = get(rootData,"data",nothing)
@@ -24,7 +41,12 @@ function addVariable(navAbilityClient::NavAbilityClient, client::Client, variabl
     return @async addPackedVariable(navAbilityClient, client, variable)
 end
 
-function getVariableEvent(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
+function getVariableEvent(
+    navAbilityClient::NavAbilityClient, 
+    client::Client, 
+    label::String;
+    detail::QueryDetail = SKELETON
+)::Dict{String,Any}
     response = navAbilityClient.query(QueryOptions(
         "sdk_get_variable",
         """
@@ -35,7 +57,9 @@ function getVariableEvent(navAbilityClient::NavAbilityClient, client::Client, la
             "label" => label,
             "userId" => client.userId,
             "robotId" => client.robotId,
-            "sessionId" => client.sessionId
+            "sessionId" => client.sessionId,
+            # "fields_summary" => detail === SUMMARY || detail === FULL,
+            # "fields_full" => detail === FULL,
         )
     )) |> fetch
     rootData = JSON.parse(response.Data)
@@ -55,7 +79,7 @@ function getVariableEvent(navAbilityClient::NavAbilityClient, client::Client, la
     return variables[1]
 end
 
-getVariable(navAbilityClient::NavAbilityClient, client::Client, label::String) = @async getVariableEvent(navAbilityClient, client, label)
+getVariable(navAbilityClient::NavAbilityClient, client::Client, label::String; detail::QueryDetail = SKELETON) = @async getVariableEvent(navAbilityClient, client, label; detail)
 
 function getVariablesEvent(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON)::Vector{Dict{String,Any}}
     response = navAbilityClient.query(QueryOptions(
@@ -99,3 +123,73 @@ end
 function ls(navAbilityClient::NavAbilityClient, client::Client)
     return listVariables(navAbilityClient,client)
 end
+
+function listFactorsEvent(
+    client::NavAbilityClient, 
+    ::Client, 
+    variableKey::Dict
+)
+    response = client.query(QueryOptions(
+        "sdk_list_variable_neighbors",
+        GQL_LIST_VARIABLE_NEIGHBORS,
+        variableKey
+    )) |> fetch
+    rootData = JSON.parse(response.Data)
+    if haskey(rootData, "errors")
+        @error response
+        throw("Error: $(rootData["errors"])")
+    end
+    data = get(rootData,"data",nothing)
+    if data === nothing return "Error" end
+    # listVarNei = get(data,"users","Error")
+    return (s->s["label"]).(data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["factors"])
+end
+
+function listFactorsEvent(client::NavAbilityClient, context::Client, varLbl::AbstractString)
+    listFactorsEvent(
+        client, 
+        context, 
+        VariableKey(
+            context.userId, 
+            context.robotId, 
+            context.sessionId,
+            varLbl
+        )
+    )
+end
+
+listFactors(client::NavAbilityClient, context::Client, w...; kw...) = @async listFactorsEvent(client, context, w...; kw...)
+
+function initVariableEvent(
+        client::NavAbilityClient, 
+        context::Client, 
+        initVariableInput::Dict,
+    )
+    #
+    mo = MutationOptions(
+        "sdk_init_variable",
+        GQL_INIT_VARIABLE,
+        Dict(
+            "variable" => initVariableInput
+        )
+    )
+    response = client.mutate(mo) |> fetch
+    
+    rootData = JSON.parse(response.Data)
+    if haskey(rootData, "errors")
+        throw("Error: $(rootData["errors"])")
+    end
+    return rootData["data"]["initVariable"]["context"]["eventId"]
+end
+# Dict(
+#     "userId" => context.userId,
+#     "robotId" => context.robotId,
+#     "sessionId" => context.sessionId,
+#     "label" => label,
+#     "variableType" => varType,
+#     "points" => points
+# )
+
+initVariable(w...;kw...) = @async initVariableEvent(w...;kw...)
+
+#

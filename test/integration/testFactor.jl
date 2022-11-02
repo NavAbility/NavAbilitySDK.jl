@@ -7,7 +7,7 @@ function testAddFactor(client, context, factorLabels, factorTypes, factorVariabl
         push!(resultIds, resultId)
     end
 
-    waitForCompletion(client, resultIds, expectedStatuses=["Complete"])
+    waitForCompletion(client, resultIds; expectedStatuses=["Complete"])
     return resultIds
 end
 
@@ -33,6 +33,22 @@ function testGetFactors(client, context, factorLabels, factorTypes)
     end
 end
 
+function testDeleteFactor(client, context, factorLabels)
+
+    resultId = fetch(addFactor(client,context,Factor("x0x1f_oops", "Pose2Pose2", ["x0", "x1"], Pose2Pose2Data())))
+    @test resultId != "Error"
+
+    waitForCompletion(client, [resultId], expectedStatuses=["Complete"])
+    
+    @show resultId = fetch(deleteFactor(client, context, "x0x1f_oops"))
+    
+    @test NVA.waitForCompletion2(client, resultId)
+
+    @test setdiff(factorLabels, fetch( lsf(client, context) )) == []
+
+    return nothing
+end
+
 function runFactorTests(client, context)
     @testset "factor-testset" begin
         @info "Running factor-testset"
@@ -47,5 +63,7 @@ function runFactorTests(client, context)
         @testset "Listing" begin testLsf(client, context, factorLabels, factorTypes) end
         @testset "Getting" begin testGetFactor(client, context, factorLabels, factorTypes) end
         @testset "Getting Lists" begin testGetFactors(client, context, factorLabels, factorTypes) end
+        @testset "Delete" begin testDeleteFactor(client, context, factorLabels) end
+
     end
 end

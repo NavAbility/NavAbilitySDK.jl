@@ -119,3 +119,39 @@ GQL_GETVARIABLESFILTERED = """
       }
     }
   }"""
+
+GQL_INIT_VARIABLE = """
+  mutation sdk_init_variable(
+      \$variable: InitVariableInput!, 
+      \$options: EmptyOptionsInput
+    ) {
+    initVariable(variable: \$variable, options:\$options) {
+      context {
+        eventId
+      }
+      status {
+        state
+        progress
+      }
+    }
+  }"""
+
+GQL_LIST_VARIABLE_NEIGHBORS = """
+  query sdk_list_variable_neighbors (
+    \$userId: ID!, 
+    \$robotId: ID!, 
+    \$sessionId: ID!, 
+    \$variableLabel: ID!
+    ) {
+    users(where:{id: \$userId}) {
+      robots(where:{id: \$robotId}) {
+        sessions(where:{id: \$sessionId}) {
+          variables(where:{label: \$variableLabel}) {
+            factors {
+              label
+            }
+          }
+        }
+      }
+    }
+  }"""
