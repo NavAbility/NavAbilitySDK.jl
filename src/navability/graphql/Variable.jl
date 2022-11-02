@@ -49,6 +49,22 @@ GQL_FRAGMENT_VARIABLES = """
   }
   """
 
+GQL_LISTVARIABLES = """
+  query sdk_list_variables (
+      \$userId: ID!, 
+      \$robotId: ID!, 
+      \$sessionId: ID!) {
+    users(where:{id: \$userId}) {
+      robots(where:{id: \$robotId}) {
+        sessions(where:{id: \$sessionId}) {
+          variables {
+            label
+          }
+        }
+      }
+    }
+  }"""
+
 GQL_GETVARIABLE = """
   query sdk_get_variable(
       \$userId: ID!, 

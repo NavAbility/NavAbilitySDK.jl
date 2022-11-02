@@ -113,15 +113,35 @@ end
 
 getVariables(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON) = @async getVariablesEvent(navAbilityClient, client; detail)
 
-function listVariables(navAbilityClient::NavAbilityClient, client::Client)
-    @async begin
-        variables = getVariables(navAbilityClient,client) |> fetch
-        map(v -> v["label"], variables)
-    end
+
+function listVariablesEvent(
+    client::NavAbilityClient, 
+    context::Client
+)
+    response = client.query(QueryOptions(
+        "sdk_list_variables",
+        GQL_LISTVARIABLES,
+        Dict(
+            "userId" => context.userId,
+            "robotId" => context.robotId,
+            "sessionId" => context.sessionId,
+        )
+    )) |> fetch
+    payload = JSON.parse(response.Data)
+    return (s->s["label"]).(payload["data"]["users"][1]["robots"][1]["sessions"][1]["variables"])
 end
 
-function ls(navAbilityClient::NavAbilityClient, client::Client)
-    return listVariables(navAbilityClient,client)
+function listVariables(client::NavAbilityClient, context::Client)
+    @async listVariablesEvent(client, context)
+    # @async begin
+    #     # FIXME, upgrade to use a direct listVariables API call instead
+    #     variables = getVariables(client,context) |> fetch
+    #     map(v -> v["label"], variables)
+    # end
+end
+
+function ls(client::NavAbilityClient, context::Client)
+    return listVariables(client, context)
 end
 
 function listFactorsEvent(
