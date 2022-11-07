@@ -53,6 +53,7 @@ end
 
 getDataEvent(client::NavAbilityClient, context::Client, fileId::UUID) = getDataEvent(client, context.userId, fileId)
 getData(client::NavAbilityClient, context::Client, fileId::UUID) = @async getDataEvent(client, context, fileId)
+getData(client::NavAbilityClient, userId::AbstractString, fileId::UUID) = @async getDataEvent(client, userId, fileId)
 
 
 function getDataEntry(
