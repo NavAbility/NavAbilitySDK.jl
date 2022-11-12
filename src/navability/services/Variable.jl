@@ -128,7 +128,16 @@ function listVariablesEvent(
         )
     )) |> fetch
     payload = JSON.parse(response.Data)
-    return (s->s["label"]).(payload["data"]["users"][1]["robots"][1]["sessions"][1]["variables"])
+    try 
+        # FIXME, this list can be empty, using try catch as lazy check
+        (s->s["label"]).(payload["data"]["users"][1]["robots"][1]["sessions"][1]["variables"])
+    catch err
+        if err isa BoundsError
+            String[]
+        else
+            throw(err)
+        end
+    end
 end
 
 function listVariables(client::NavAbilityClient, context::Client)
