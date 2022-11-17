@@ -43,7 +43,7 @@ end
 
 function addPackedVariableEvent(client::NavAbilityClient, variable::Dict; options=Dict{String, Any}())::String
     response = client.mutate(MutationOptions(
-        "addVariablePacked",
+        "sdk_add_variable_packed",
         GQL_ADD_VARIABLE_PACKED,
         Dict(
             "variable" => variable,
