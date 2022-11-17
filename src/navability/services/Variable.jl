@@ -41,6 +41,31 @@ function addVariable(navAbilityClient::NavAbilityClient, client::Client, variabl
     return @async addPackedVariable(navAbilityClient, client, variable)
 end
 
+function addPackedVariableEvent(navAbilityClient::NavAbilityClient, client::Client, variable::Dict, options=Dict{String, Any}())::String
+    response = navAbilityClient.mutate(MutationOptions(
+        "addVariablePacked",
+        GQL_ADD_VARIABLE_PACKED,
+        Dict(
+            "variable" => variable,
+            "options" => options
+        )
+    )) |> fetch
+    rootData = JSON.parse(response.Data)
+    if haskey(rootData, "errors")
+        @error response
+        throw("Error: $(rootData["errors"])")
+    end
+    data = get(rootData,"data",nothing)
+    if data === nothing return "Error" end
+    addVariablePacked = get(data,"addVariablePacked","Error")
+    return addVariablePacked
+end
+
+function addVariablePackedNew(navAbilityClient::NavAbilityClient, client::Client, variable::Dict, options::Dict=Dict{String,Any}())
+    return @async addPackedVariableEvent(navAbilityClient, client, variable)
+end
+
+
 function getVariableEvent(
     navAbilityClient::NavAbilityClient, 
     client::Client, 
