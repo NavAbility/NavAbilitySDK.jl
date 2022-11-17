@@ -3,7 +3,7 @@ uuid = "f3e6a059-199c-4ada-8143-fcefb97e6165"
 keywords = ["navability", "navigation", "slam", "sdk", "robotics", "robots"]
 desc = "NavAbility SDK: Access NavAbility Cloud factor graph features. Note that this SDK and the related API are still in development. Please let us know if you have any issues at info@navability.io."
 authors = ["NavAbility <info@navability.io>"]
-version = "0.4.8"
+version = "0.4.9"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"

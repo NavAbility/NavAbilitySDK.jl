@@ -10,10 +10,10 @@ Args:
   fileId (String): The unique file identifier of the data blob.
 """
 function createDownloadEvent(
-    navAbilityClient::NavAbilityClient, 
-    userId::AbstractString, 
-    fileId::UUID
-  )
+  navAbilityClient::NavAbilityClient, 
+  userId::AbstractString, 
+  fileId::UUID
+)
   #
   response = navAbilityClient.mutate(MutationOptions(
       "sdk_url_createdownload",
@@ -40,10 +40,10 @@ createDownload(w...) = @async createDownloadEvent(w...)
 
 
 function getDataEvent(
-    client::NavAbilityClient, 
-    userId::AbstractString, 
-    fileId::UUID
-  )
+  client::NavAbilityClient, 
+  userId::AbstractString, 
+  fileId::UUID
+)
   #
   url = createDownload(client, userId, fileId) |> fetch
   io = PipeBuffer()
@@ -53,6 +53,7 @@ end
 
 getDataEvent(client::NavAbilityClient, context::Client, fileId::UUID) = getDataEvent(client, context.userId, fileId)
 getData(client::NavAbilityClient, context::Client, fileId::UUID) = @async getDataEvent(client, context, fileId)
+getData(client::NavAbilityClient, userId::AbstractString, fileId::UUID) = @async getDataEvent(client, userId, fileId)
 
 
 function getDataEntry(
@@ -128,15 +129,15 @@ Args:
   parts (Int): Split upload into multiple blob parts, FIXME currently only supports parts=1.
 """
 function createUploadEvent(
-    navAbilityClient::NavAbilityClient, 
-    filename::AbstractString, 
-    filesize::Int,
-    parts::Int=1
-  )
+  navAbilityClient::NavAbilityClient, 
+  filename::AbstractString, 
+  filesize::Int,
+  parts::Int=1
+)
   #
   response = navAbilityClient.mutate(MutationOptions(
     "sdk_url_createupload",
-    GQL_CREATEUPLOAD,
+    GQL_CREATE_UPLOAD,
     Dict(
       "filename" => filename,
       "filesize" => filesize,
@@ -161,11 +162,11 @@ createUpload(w...) = @async createUploadEvent(w...)
 
 
 function completeUploadSingleEvent(
-    navAbilityClient::NavAbilityClient, 
-    fileId::AbstractString, 
-    uploadId::AbstractString,
-    eTag::AbstractString,
-  )
+  navAbilityClient::NavAbilityClient, 
+  fileId::AbstractString, 
+  uploadId::AbstractString,
+  eTag::AbstractString,
+)
   response = navAbilityClient.mutate(MutationOptions(
     "completeUpload",
     GQL_COMPLETEUPLOAD_SINGLE,
@@ -192,10 +193,10 @@ completeUploadSingle(w...) = @async completeUploadSingleEvent(w...)
 
 
 function addDataEvent(
-    client::NavAbilityClient, 
-    blobname::AbstractString, 
-    blob::AbstractVector{UInt8}
-  )
+  client::NavAbilityClient, 
+  blobname::AbstractString, 
+  blob::AbstractVector{UInt8}
+)
   #
   io = IOBuffer(blob)
   
@@ -244,15 +245,15 @@ addData(w...) = @async addDataEvent(w...)
 
 
 function addDataEntryEvent(
-    navAbilityClient::NavAbilityClient, 
-    userId::AbstractString,
-    robotId::AbstractString,
-    sessionId::AbstractString,
-    variableLabel::AbstractString,
-    dataId::AbstractString, # TODO must also support ::UUID
-    dataLabel::AbstractString,
-    mimeType::AbstractString="",
-  )
+  navAbilityClient::NavAbilityClient, 
+  userId::AbstractString,
+  robotId::AbstractString,
+  sessionId::AbstractString,
+  variableLabel::AbstractString,
+  dataId::AbstractString, # TODO must also support ::UUID
+  dataLabel::AbstractString,
+  mimeType::AbstractString="",
+)
   response = navAbilityClient.mutate(MutationOptions(
     "sdk_adddataentry",
     GQL_ADDDATAENTRY,
@@ -292,12 +293,12 @@ addDataEntry(w...) = @async addDataEntryEvent(w...)
 
 
 function listDataEntriesEvent(
-    navAbilityClient::NavAbilityClient, 
-    userId::AbstractString,
-    robotId::AbstractString,
-    sessionId::AbstractString,
-    variableLabel::AbstractString
-  )
+  navAbilityClient::NavAbilityClient, 
+  userId::AbstractString,
+  robotId::AbstractString,
+  sessionId::AbstractString,
+  variableLabel::AbstractString
+)
   #
   response = navAbilityClient.mutate(MutationOptions(
     "sdk_listdataentries",
