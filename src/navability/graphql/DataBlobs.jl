@@ -10,7 +10,7 @@ mutation sdk_url_createdownload (\$userId: String!, \$fileId: ID!) {
 """
 
 
-GQL_CREATEUPLOAD = """
+GQL_CREATE_UPLOAD = """
 mutation sdk_url_createupload(\$filename: String!, \$filesize: Int!, \$parts: Int!) {
   createUpload(
     file: {
