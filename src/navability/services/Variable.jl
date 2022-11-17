@@ -41,8 +41,8 @@ function addVariable(navAbilityClient::NavAbilityClient, client::Client, variabl
     return @async addPackedVariable(navAbilityClient, client, variable)
 end
 
-function addPackedVariableEvent(navAbilityClient::NavAbilityClient, client::Client, variable::Dict, options=Dict{String, Any}())::String
-    response = navAbilityClient.mutate(MutationOptions(
+function addPackedVariableEvent(client::NavAbilityClient, variable::Dict; options=Dict{String, Any}())::String
+    response = client.mutate(MutationOptions(
         "addVariablePacked",
         GQL_ADD_VARIABLE_PACKED,
         Dict(
@@ -61,8 +61,8 @@ function addPackedVariableEvent(navAbilityClient::NavAbilityClient, client::Clie
     return addVariablePacked
 end
 
-function addVariablePackedNew(navAbilityClient::NavAbilityClient, client::Client, variable::Dict, options::Dict=Dict{String,Any}())
-    return @async addPackedVariableEvent(navAbilityClient, client, variable)
+function addVariablePackedNew(client::NavAbilityClient, variable::Dict; options::Dict=Dict{String,Any}())
+    return @async addPackedVariableEvent(client, variable; options)
 end
 
 
