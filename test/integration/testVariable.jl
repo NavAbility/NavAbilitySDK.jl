@@ -14,6 +14,18 @@ function testAddVariable(client, context, variableLabels, variableTypes, variabl
     return resultIds
 end
 
+function testUpdateVariable(client, context, variableLabels, variableTypes, variableTypeStrings)
+    for i in 1:length(variableLabels)
+        actualVariable = getVariable(client,context,variableLabels[i]) |> fetch
+        push!(actualVariable["tags"], "TEST")
+        eventId = updatePackedVariable(client, context, actualVariable) |> fetch
+        NVA.waitForCompletion(client, [eventId]; maxSeconds=180, expectedStatuses=["Complete"] )
+
+        actualVariable = getVariable(client,context,variableLabels[i]) |> fetch
+        @test "TEST" in actualVariable["tags"]
+    end
+end
+
 function testLs(client, context, variableLabels, variableTypes, variableTypeStrings)
     @test length( setdiff(variableLabels, fetch( ls(client, context) )) ) == 0
 end
@@ -45,6 +57,8 @@ function runVariableTests(client, context)
         variableTypeStrings = ["RoME.Pose2","RoME.Pose2", "RoME.Point2", "IncrementalInference.Position{1}"]
     
         @testset "Adding" begin testAddVariable(client, context, variableLabels, variableTypes, variableTypeStrings); end
+        @testset "Updating" begin testUpdateVariable(client, context, variableLabels, variableTypes, variableTypeStrings); end
+
         @testset "Listing" begin testLs(client, context, variableLabels, variableTypes, variableTypeStrings); end
         @testset "Getting" begin testGetVariable(client, context, variableLabels, variableTypes, variableTypeStrings); end
         @testset "Getting Lists" begin testGetVariables(client, context, variableLabels, variableTypes, variableTypeStrings); end 
