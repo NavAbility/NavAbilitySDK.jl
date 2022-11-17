@@ -15,32 +15,6 @@ function Variable(label::AbstractString, type::Union{<:AbstractString, Symbol}, 
     return result
 end
 
-function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, variable)::String
-    response = navAbilityClient.mutate(MutationOptions(
-        "addVariable",
-        MUTATION_ADDVARIABLE,
-        Dict(
-            "variable" => Dict(
-                "client" => client,
-                "packedData" => json(variable)
-            )
-        )
-    )) |> fetch
-    rootData = JSON.parse(response.Data)
-    if haskey(rootData, "errors")
-        @error response
-        throw("Error: $(rootData["errors"])")
-    end
-    data = get(rootData,"data",nothing)
-    if data === nothing return "Error" end
-    addVariable = get(data,"addVariable","Error")
-    return addVariable
-end
-
-function addVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Variable)
-    return @async addPackedVariable(navAbilityClient, client, variable)
-end
-
 function addPackedVariableEvent(navAbilityClient::NavAbilityClient, client::Client, variable::Dict; options=Dict{String, Any}())::String
     data = Dict(
         "variablePackedInput" => Dict(
@@ -67,14 +41,39 @@ function addPackedVariableEvent(navAbilityClient::NavAbilityClient, client::Clie
     return data["addVariablePacked"]["context"]["eventId"]
 end
 
-function addPackedVariableNew(navAbilityClient::NavAbilityClient, client::Client, variable::Dict; options::Dict=Dict{String,Any}("force" => false))
+function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Dict; options::Dict=Dict{String,Any}("force" => false))
     return @async addPackedVariableEvent(navAbilityClient, client, variable; options)
 end
 
-function updatePackedVariableNew(navAbilityClient::NavAbilityClient, client::Client, variable::Dict; options::Dict=Dict{String,Any}("force" => true))
+function updatePackedVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Dict; options::Dict=Dict{String,Any}("force" => true))
     return @async addPackedVariableEvent(navAbilityClient, client, variable; options)
 end
 
+function addPackedVariableOld(navAbilityClient::NavAbilityClient, client::Client, variable)::String
+    response = navAbilityClient.mutate(MutationOptions(
+        "addVariable",
+        MUTATION_ADDVARIABLE,
+        Dict(
+            "variable" => Dict(
+                "client" => client,
+                "packedData" => json(variable)
+            )
+        )
+    )) |> fetch
+    rootData = JSON.parse(response.Data)
+    if haskey(rootData, "errors")
+        @error response
+        throw("Error: $(rootData["errors"])")
+    end
+    data = get(rootData,"data",nothing)
+    if data === nothing return "Error" end
+    addVariable = get(data,"addVariable","Error")
+    return addVariable
+end
+
+function addVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Variable)
+    return @async addPackedVariable(navAbilityClient, client, variable)
+end
 
 function getVariableEvent(
     navAbilityClient::NavAbilityClient, 
