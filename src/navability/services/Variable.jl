@@ -72,7 +72,13 @@ function addPackedVariableOld(navAbilityClient::NavAbilityClient, client::Client
 end
 
 function addVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Variable)
-    return @async addPackedVariable(navAbilityClient, client, variable)
+    # TODO: Use new
+    # return @async addPackedVariable(navAbilityClient, client, json(variable))
+    return @async addPackedVariableOld(navAbilityClient, client, variable)
+end
+
+function updateVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Variable)
+    return @async updatePackedVariable(navAbilityClient, client, json(variable))
 end
 
 function getVariableEvent(
