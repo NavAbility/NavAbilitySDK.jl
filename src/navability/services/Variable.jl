@@ -41,15 +41,22 @@ function addVariable(navAbilityClient::NavAbilityClient, client::Client, variabl
     return @async addPackedVariable(navAbilityClient, client, variable)
 end
 
-function addPackedVariableEvent(client::NavAbilityClient, variable::Dict; options=Dict{String, Any}())::String
-    response = client.mutate(MutationOptions(
+function addPackedVariableEvent(navAbilityClient::NavAbilityClient, client::Client, variable::Dict; options=Dict{String, Any}())::String
+    data = Dict(
+        "variablePackedInput" => Dict(
+            "session" => Dict(
+                "key" => client
+            ),
+            "packedData" => base64encode(json(variable))
+        ),
+        "options" => options
+    )
+    response = navAbilityClient.mutate(MutationOptions(
         "sdk_add_variable_packed",
         GQL_ADD_VARIABLE_PACKED,
-        Dict(
-            "variable" => variable,
-            "options" => options
-        )
+        data
     )) |> fetch
+
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
         @error response
@@ -57,12 +64,15 @@ function addPackedVariableEvent(client::NavAbilityClient, variable::Dict; option
     end
     data = get(rootData,"data",nothing)
     if data === nothing return "Error" end
-    addVariablePacked = get(data,"addVariablePacked","Error")
-    return addVariablePacked
+    return data["addVariablePacked"]["context"]["eventId"]
 end
 
-function addVariablePackedNew(client::NavAbilityClient, variable::Dict; options::Dict=Dict{String,Any}())
-    return @async addPackedVariableEvent(client, variable; options)
+function addPackedVariableNew(navAbilityClient::NavAbilityClient, client::Client, variable::Dict; options::Dict=Dict{String,Any}("force" => false))
+    return @async addPackedVariableEvent(navAbilityClient, client, variable; options)
+end
+
+function updatePackedVariableNew(navAbilityClient::NavAbilityClient, client::Client, variable::Dict; options::Dict=Dict{String,Any}("force" => true))
+    return @async addPackedVariableEvent(navAbilityClient, client, variable; options)
 end
 
 

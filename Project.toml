@@ -6,6 +6,7 @@ authors = ["NavAbility <info@navability.io>"]
 version = "0.4.9"
 
 [deps]
+Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 Diana = "070d9d8b-17a7-5814-83fa-42438ba5c6e0"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"

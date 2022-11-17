@@ -138,10 +138,10 @@ GQL_GETVARIABLESFILTERED = """
 
 GQL_ADD_VARIABLE_PACKED = """
   mutation sdk_add_variable_packed(
-      \$variable: AddVariablePackedInput!, 
+      \$variablePackedInput: AddVariablePackedInput!, 
       \$options: AddVariablePackedOptionsInput
     ) {
-    addVariablePacked(variable: \$variable, options:\$options) {
+    addVariablePacked(variable: \$variablePackedInput, options:\$options) {
       context {
         eventId
       }  
