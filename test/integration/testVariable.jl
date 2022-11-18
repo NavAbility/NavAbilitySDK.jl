@@ -18,7 +18,7 @@ function testUpdateVariable(client, context, variableLabels, variableTypes, vari
     for i in 1:length(variableLabels)
         actualVariable = getVariable(client,context,variableLabels[i]) |> fetch
         push!(actualVariable["tags"], "TEST")
-        eventId = updatePackedVariable(client, context, actualVariable) |> fetch
+        eventId = updateVariablePacked(client, context, actualVariable) |> fetch
         NVA.waitForCompletion(client, [eventId]; maxSeconds=180, expectedStatuses=["Complete"] )
 
         actualVariable = getVariable(client,context,variableLabels[i]) |> fetch

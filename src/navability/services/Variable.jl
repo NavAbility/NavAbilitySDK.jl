@@ -41,11 +41,12 @@ function addPackedVariableEvent(navAbilityClient::NavAbilityClient, client::Clie
     return data["addVariablePacked"]["context"]["eventId"]
 end
 
-function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Dict; options::Dict=Dict{String,Any}("force" => false))
+
+function addVariablePacked(navAbilityClient::NavAbilityClient, client::Client, variable::Dict; options::Dict=Dict{String,Any}("force" => false))
     return @async addPackedVariableEvent(navAbilityClient, client, variable; options)
 end
 
-function updatePackedVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Dict; options::Dict=Dict{String,Any}("force" => true))
+function updateVariablePacked(navAbilityClient::NavAbilityClient, client::Client, variable::Dict; options::Dict=Dict{String,Any}("force" => true))
     return @async addPackedVariableEvent(navAbilityClient, client, variable; options)
 end
 
