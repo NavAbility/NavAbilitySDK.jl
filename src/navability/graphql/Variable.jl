@@ -136,6 +136,22 @@ GQL_GETVARIABLESFILTERED = """
     }
   }"""
 
+GQL_ADD_VARIABLE_PACKED = """
+  mutation sdk_add_variable_packed(
+      \$variablePackedInput: AddVariablePackedInput!, 
+      \$options: AddVariablePackedOptionsInput
+    ) {
+    addVariablePacked(variable: \$variablePackedInput, options:\$options) {
+      context {
+        eventId
+      }  
+      status {
+        state
+        progress
+      }
+    }
+  }"""
+
 GQL_INIT_VARIABLE = """
   mutation sdk_init_variable(
       \$variable: InitVariableInput!, 
