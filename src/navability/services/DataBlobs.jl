@@ -63,12 +63,14 @@ function getDataEntry(
   pattern::Union{Regex, UUID};
   lt=isless, 
   count::Base.RefValue{Int}=Ref(0), # return count of how many matches were found
+  skiplist::AbstractVector{Symbol}=Symbol[]
 )
   ble = listDataEntries(client, context, vlbl) |> fetch
   # filter for the specific blob label
   _matchpatt(regex::Regex, de) = match(regex, de.label) isa Nothing
   _matchpatt(uuid::UUID, de) = uuid != UUID(de.id)
   ble_s = filter(x->!(_matchpatt(pattern, x)), ble) # match(regex,x.label) isa Nothing
+  filter!(s-> !(s.label in skiplist), ble_s)
   count[] = length(ble_s)
   if 0 === count[]
     return nothing
