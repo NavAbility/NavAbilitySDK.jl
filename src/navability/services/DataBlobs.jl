@@ -344,4 +344,46 @@ listDataEntriesEvent(client::NavAbilityClient,
 listDataEntries(w...) = @async listDataEntriesEvent(w...)
 
 
+
+"""
+    incrDataLabelSuffix
+
+If the blob label `thisisme` already exists, then this function will return the name `thisisme_1`.
+If the blob label `thisisme_1` already exists, then this function will return the name `thisisme_2`.
+
+DO NOT EXPORT, Duplicate functionality from DistributedFactorGraphs.jl.
+"""
+function incrDataLabelSuffix(
+  client::NVA.NavAbilityClient, 
+  context::NVA.Client, 
+  vla, 
+  bllb::AbstractString; 
+  datalabel=Ref("")
+)
+  re_aH = NVA.getData(client, context, string(vla), Regex(bllb); datalabel) |> fetch
+  # append latest count
+  count, hasund, len = if re_aH isa Nothing
+    1, string(bllb)[end] == '_', 0
+  else
+    datalabel[] = string(bllb)
+    @show dlb = match(r"\d*", reverse(datalabel[]))
+    # too freakin complicated, but there it is -- add an underscore before the suffix number if not already there
+    if occursin(Regex(dlb.match*"_"), reverse(datalabel[]))
+      # already suffix e.g. `_1`
+      parse(Int, dlb.match |> reverse)+1, true, length(dlb.match)
+    else
+      # does not yet follow suffix pattern, maybe something like `blobname_x23`
+      1, datalabel[][end] == '_', 0
+    end
+  end
+  # the piece from old label without the suffix count number
+  bllb = datalabel[][1:(end-len)]
+  if !hasund || bllb[end] != '_'
+      bllb *= "_"
+  end
+  bllb *= string(count)
+  bllb
+end
+
+
 ##
