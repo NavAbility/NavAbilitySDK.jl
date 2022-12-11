@@ -20,6 +20,15 @@ function NavAbilityWebsocketClient( apiUrl::String="wss://api.navability.io/grap
     throw("Not implemented")
 end
 
+"""
+    $SIGNATURES
+
+Main interactions with API for queries and mutations go through here.
+
+DevNotes
+- TODO TBD, rather use upstream retry logic instead, 
+  - see https://github.com/JuliaWeb/HTTP.jl/pull/974/files
+"""
 function NavAbilityHttpsClient(
         apiUrl::String = "https://api.navability.io";
         auth_token::String = "",
