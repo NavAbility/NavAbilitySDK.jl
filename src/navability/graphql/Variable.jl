@@ -27,6 +27,16 @@ GQL_FRAGMENT_VARIABLES = """
     vecval
     _version  
   }
+  fragment dataEntry_fields on DataEntry {
+    label
+    id
+    blobstore
+    hash
+    origin
+    description
+    mimeType
+    # createdTimestamp
+  }  
   fragment variable_skeleton_fields on Variable {
     label
     tags
@@ -35,6 +45,9 @@ GQL_FRAGMENT_VARIABLES = """
     timestamp
     ppes {
       ...ppe_fields
+    }
+    dataEntry: data {
+    ...dataEntry_fields
     }
     variableType
     _version
