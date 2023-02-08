@@ -202,8 +202,9 @@ function addDataEvent(
   #
   io = IOBuffer(blob)
   
-  filesize = io.size
-  np = 1
+  filesize = length(blob)
+  # TODO: Use about a 50M file part here.
+  np = 1 # TODO: ceil(filesize / 50e6)
   # create the upload url destination
   d = NVA.createUploadEvent(client, blobname, filesize, np)
   
@@ -224,9 +225,7 @@ function addDataEvent(
   ]
   #
 
-  # fid = open(filepath,"r")
-  resp = HTTP.put(url, headers, io)
-  # close(fid)
+  resp = HTTP.put(url, headers, blob)
 
   # Extract eTag
   eTag = match(r"[a-zA-Z0-9]+",resp["eTag"]).match
@@ -342,6 +341,41 @@ listDataEntriesEvent(client::NavAbilityClient,
 #
 
 listDataEntries(w...) = @async listDataEntriesEvent(w...)
+
+## 
+
+function listDataBlobsEvent(
+  navAbilityClient::NavAbilityClient, 
+)
+  #
+  response = navAbilityClient.query(QueryOptions(
+    "sdk_listdatablobs",
+    GQL_LISTDATABLOBS,
+    Dict()
+  )) |> fetch
+  rootData = JSON.parse(response.Data)
+  if haskey(rootData, "errors")
+    throw("Error: $(rootData["errors"])")
+  end
+  data = get(rootData,"data",nothing)
+  if data === nothing return "Error" end
+
+  listdata = data["files"]
+  ret = []
+  for d in listdata
+    tupk = Tuple(Symbol.(keys(d)))
+    nt = NamedTuple{tupk}( values(d) )
+    push!(ret,
+      nt
+    )
+  end
+
+  return ret
+end
+
+#
+
+listDataBlobs(w...) = @async listDataBlobsEvent(w...)
 
 
 
