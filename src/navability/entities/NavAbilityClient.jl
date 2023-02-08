@@ -20,6 +20,15 @@ function NavAbilityWebsocketClient( apiUrl::String="wss://api.navability.io/grap
     throw("Not implemented")
 end
 
+"""
+    $SIGNATURES
+
+Main interactions with API for queries and mutations go through here.
+
+DevNotes
+- TODO TBD, rather use upstream retry logic instead, 
+  - see https://github.com/JuliaWeb/HTTP.jl/pull/974/files
+"""
 function NavAbilityHttpsClient(
         apiUrl::String = "https://api.navability.io";
         auth_token::String = "",
@@ -55,8 +64,8 @@ function NavAbilityHttpsClient(
                     return dianaClient.Query(options.query, operationName=options.name, vars=options.variables)
                 catch err
                     if attempts < 3
-                        @warn "[Test Client] WARN Client saw an exception. Retrying!" exception=(err, catch_backtrace())
-                        sleep(2)
+                        @warn "[Test Client] WARN Client saw an exception. Retrying! Query=$(options.query)" exception=(err, catch_backtrace())
+                        sleep(rand()) 
                         attempts += 1
                     else
                         rethrow()
@@ -75,8 +84,8 @@ function NavAbilityHttpsClient(
                     return dianaClient.Query(options.mutation, operationName=options.name, vars=options.variables)
                 catch err
                     if attempts < 3
-                        @warn "[Test Client] WARN Client saw an exception. Retrying!" exception=(err, catch_backtrace())
-                        sleep(2)
+                        @warn "[Test Client] WARN Client saw an exception. Retrying! Query=$(options.mutation)" exception=(err, catch_backtrace())
+                        sleep(rand())
                         attempts += 1
                     else
                         rethrow()

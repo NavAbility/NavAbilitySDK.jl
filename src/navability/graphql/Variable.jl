@@ -27,6 +27,16 @@ GQL_FRAGMENT_VARIABLES = """
     vecval
     _version  
   }
+  fragment dataEntry_fields on DataEntry {
+    label
+    id
+    blobstore
+    hash
+    origin
+    description
+    mimeType
+    # createdTimestamp
+  }  
   fragment variable_skeleton_fields on Variable {
     label
     tags
@@ -35,6 +45,9 @@ GQL_FRAGMENT_VARIABLES = """
     timestamp
     ppes {
       ...ppe_fields
+    }
+    dataEntry: data {
+    ...dataEntry_fields
     }
     variableType
     _version
@@ -132,6 +145,22 @@ GQL_GETVARIABLESFILTERED = """
             ...variable_full_fields @include(if: \$fields_full)
           }
         }
+      }
+    }
+  }"""
+
+GQL_ADD_VARIABLE_PACKED = """
+  mutation sdk_add_variable_packed(
+      \$variablePackedInput: AddVariablePackedInput!, 
+      \$options: AddVariablePackedOptionsInput
+    ) {
+    addVariablePacked(variable: \$variablePackedInput, options:\$options) {
+      context {
+        eventId
+      }  
+      status {
+        state
+        progress
       }
     }
   }"""

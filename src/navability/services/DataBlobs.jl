@@ -63,12 +63,14 @@ function getDataEntry(
   pattern::Union{Regex, UUID};
   lt=isless, 
   count::Base.RefValue{Int}=Ref(0), # return count of how many matches were found
+  skiplist=Symbol[]
 )
   ble = listDataEntries(client, context, vlbl) |> fetch
   # filter for the specific blob label
   _matchpatt(regex::Regex, de) = match(regex, de.label) isa Nothing
   _matchpatt(uuid::UUID, de) = uuid != UUID(de.id)
   ble_s = filter(x->!(_matchpatt(pattern, x)), ble) # match(regex,x.label) isa Nothing
+  filter!(s-> !(s.label in Symbol.(skiplist)), ble_s)
   count[] = length(ble_s)
   if 0 === count[]
     return nothing
@@ -200,8 +202,9 @@ function addDataEvent(
   #
   io = IOBuffer(blob)
   
-  filesize = io.size
-  np = 1
+  filesize = length(blob)
+  # TODO: Use about a 50M file part here.
+  np = 1 # TODO: ceil(filesize / 50e6)
   # create the upload url destination
   d = NVA.createUploadEvent(client, blobname, filesize, np)
   
@@ -222,9 +225,7 @@ function addDataEvent(
   ]
   #
 
-  # fid = open(filepath,"r")
-  resp = HTTP.put(url, headers, io)
-  # close(fid)
+  resp = HTTP.put(url, headers, blob)
 
   # Extract eTag
   eTag = match(r"[a-zA-Z0-9]+",resp["eTag"]).match
@@ -340,6 +341,83 @@ listDataEntriesEvent(client::NavAbilityClient,
 #
 
 listDataEntries(w...) = @async listDataEntriesEvent(w...)
+
+## 
+
+function listDataBlobsEvent(
+  navAbilityClient::NavAbilityClient, 
+)
+  #
+  response = navAbilityClient.query(QueryOptions(
+    "sdk_listdatablobs",
+    GQL_LISTDATABLOBS,
+    Dict()
+  )) |> fetch
+  rootData = JSON.parse(response.Data)
+  if haskey(rootData, "errors")
+    throw("Error: $(rootData["errors"])")
+  end
+  data = get(rootData,"data",nothing)
+  if data === nothing return "Error" end
+
+  listdata = data["files"]
+  ret = []
+  for d in listdata
+    tupk = Tuple(Symbol.(keys(d)))
+    nt = NamedTuple{tupk}( values(d) )
+    push!(ret,
+      nt
+    )
+  end
+
+  return ret
+end
+
+#
+
+listDataBlobs(w...) = @async listDataBlobsEvent(w...)
+
+
+
+"""
+    incrDataLabelSuffix
+
+If the blob label `thisisme` already exists, then this function will return the name `thisisme_1`.
+If the blob label `thisisme_1` already exists, then this function will return the name `thisisme_2`.
+
+DO NOT EXPORT, Duplicate functionality from DistributedFactorGraphs.jl.
+"""
+function incrDataLabelSuffix(
+  client::NVA.NavAbilityClient, 
+  context::NVA.Client, 
+  vla, 
+  bllb::AbstractString; 
+  datalabel=Ref("")
+)
+  re_aH = NVA.getData(client, context, string(vla), Regex(bllb); datalabel) |> fetch
+  # append latest count
+  count, hasund, len = if re_aH isa Nothing
+    1, string(bllb)[end] == '_', 0
+  else
+    datalabel[] = string(bllb)
+    @show dlb = match(r"\d*", reverse(datalabel[]))
+    # too freakin complicated, but there it is -- add an underscore before the suffix number if not already there
+    if occursin(Regex(dlb.match*"_"), reverse(datalabel[]))
+      # already suffix e.g. `_1`
+      parse(Int, dlb.match |> reverse)+1, true, length(dlb.match)
+    else
+      # does not yet follow suffix pattern, maybe something like `blobname_x23`
+      1, datalabel[][end] == '_', 0
+    end
+  end
+  # the piece from old label without the suffix count number
+  bllb = datalabel[][1:(end-len)]
+  if !hasund || bllb[end] != '_'
+      bllb *= "_"
+  end
+  bllb *= string(count)
+  bllb
+end
 
 
 ##

@@ -15,7 +15,42 @@ function Variable(label::AbstractString, type::Union{<:AbstractString, Symbol}, 
     return result
 end
 
-function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, variable)::String
+function addPackedVariableEvent(navAbilityClient::NavAbilityClient, client::Client, variable::Dict; options=Dict{String, Any}())::String
+    data = Dict(
+        "variablePackedInput" => Dict(
+            "session" => Dict(
+                "key" => client
+            ),
+            "packedData" => base64encode(json(variable))
+        ),
+        "options" => options
+    )
+    response = navAbilityClient.mutate(MutationOptions(
+        "sdk_add_variable_packed",
+        GQL_ADD_VARIABLE_PACKED,
+        data
+    )) |> fetch
+
+    rootData = JSON.parse(response.Data)
+    if haskey(rootData, "errors")
+        @error response
+        throw("Error: $(rootData["errors"])")
+    end
+    data = get(rootData,"data",nothing)
+    if data === nothing return "Error" end
+    return data["addVariablePacked"]["context"]["eventId"]
+end
+
+
+function addVariablePacked(navAbilityClient::NavAbilityClient, client::Client, variable::Dict; options::Dict=Dict{String,Any}("force" => false))
+    return @async addPackedVariableEvent(navAbilityClient, client, variable; options)
+end
+
+function updateVariablePacked(navAbilityClient::NavAbilityClient, client::Client, variable::Dict; options::Dict=Dict{String,Any}("force" => true))
+    return @async addPackedVariableEvent(navAbilityClient, client, variable; options)
+end
+
+function addPackedVariableOld(navAbilityClient::NavAbilityClient, client::Client, variable)::String
     response = navAbilityClient.mutate(MutationOptions(
         "addVariable",
         MUTATION_ADDVARIABLE,
@@ -38,7 +73,13 @@ function addPackedVariable(navAbilityClient::NavAbilityClient, client::Client, v
 end
 
 function addVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Variable)
-    return @async addPackedVariable(navAbilityClient, client, variable)
+    # TODO: Use new
+    # return @async addPackedVariable(navAbilityClient, client, json(variable))
+    return @async addPackedVariableOld(navAbilityClient, client, variable)
+end
+
+function updateVariable(navAbilityClient::NavAbilityClient, client::Client, variable::Variable)
+    return @async updatePackedVariable(navAbilityClient, client, json(variable))
 end
 
 function getVariableEvent(
