@@ -96,3 +96,13 @@ query sdk_listdataentries(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$var
   }
 }
 """
+
+GQL_LISTDATABLOBS = """
+query sdk_listdatablobs {
+  files {
+    id
+    filename
+    filesize
+  }
+}
+"""
