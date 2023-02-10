@@ -276,7 +276,7 @@ function addBlobEntryEvent(
   data = get(rootData,"data",nothing)
   if data === nothing return "Error" end
   addentryresp = get(data,"addBlobEntry","Error")
-  return addentryresp["context"]
+  return addentryresp["context"]["eventId"]
 end
 
 addBlobEntryEvent(client::NavAbilityClient, 
