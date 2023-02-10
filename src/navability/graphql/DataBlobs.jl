@@ -76,13 +76,13 @@ mutation sdk_addblobentry(
   \$robotId: String!
   \$sessionId: String!
   \$variableLabel: String!
-  \$dataId: UUID!
+  \$blobId: UUID!
   \$dataLabel: String!
   \$mimeType: String
 ) {
   addBlobEntry(
     blob: {
-      id: \$dataId
+      id: \$blobId
       label: \$dataLabel
       size: 5939
       mimeType: \$mimeType
