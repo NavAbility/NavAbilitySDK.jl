@@ -1,14 +1,9 @@
-```@meta
-CurrentModule = NavAbilitySDK
-```
+# NavAbilitySDK
 
-# SDK function Index
+Welcome to the NavAbilitySDK documentation.  Various NavAbilitySDKs exist for different programming languages.  This particular documentation set is for the Julia language package, however, there is strong consistency between the SDKs for various languages.  All the SDKs make standard, authenticated requests to the NavAbility servers, thereby enforcing consistency of operations.
 
-Documentation for [NavAbilitySDK](https://github.com/NavAbility/NavAbilitySDK.jl).
+Convenient links to other language NavAbilitySDKs:
+- [NavAbilitySDK.py](https://github.com/NavAbility/NavAbilitySDK.py)
+- [NavAbilitySDK.js](https://github.com/NavAbility/NavAbilitySDK.js)
 
-```@index
-```
-
-```@autodocs
-Modules = [NavAbilitySDK]
-```
+Next, see the [Getting Started](@ref getting_started) page.
