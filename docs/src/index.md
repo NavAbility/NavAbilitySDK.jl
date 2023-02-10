@@ -2,7 +2,7 @@
 CurrentModule = NavAbilitySDK
 ```
 
-# NavAbilitySDK
+# SDK function Index
 
 Documentation for [NavAbilitySDK](https://github.com/NavAbility/NavAbilitySDK.jl).
 
