@@ -70,6 +70,50 @@ mutation sdk_adddataentry(\$userId: ResourceId!, \$robotId: ResourceId!, \$sessi
 }
 """
 
+GQL_ADDBLOBENTRY = """
+mutation sdk_addblobentry(
+  \$userId: String!
+  \$robotId: String!
+  \$sessionId: String!
+  \$variableLabel: String!
+  \$dataId: UUID!
+  \$dataLabel: String!
+  \$mimeType: String
+) {
+  addBlobEntry(
+    blob: {
+      id: \$dataId
+      label: \$dataLabel
+      size: 5939
+      mimeType: \$mimeType
+      blobstore: NAVABILITY
+    }
+    options: {
+      links: [
+        {
+          key: {
+            user: { userLabel: \$userId }
+            variable: {
+              userId: \$userId
+              robotId: \$robotId
+              sessionId: \$sessionId
+              variableLabel: \$variableLabel
+            }
+          }
+        }
+      ]
+    }
+  ) {
+    context {
+      eventId
+    } 
+    status {
+      state
+      progress
+    }
+  }
+}
+"""
 
 GQL_LISTDATAENTRIES = """
 query sdk_listdataentries(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$variableLabel: ID!) {

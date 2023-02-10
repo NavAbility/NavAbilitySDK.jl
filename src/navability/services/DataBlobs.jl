@@ -244,8 +244,9 @@ addData(w...) = @async addDataEvent(w...)
 
 ##
 
+@deprecate addDataEntryEvent(args...;kwargs...) addBlobEntryEvent(args...;kwargs...)
 
-function addDataEntryEvent(
+function addBlobEntryEvent(
   navAbilityClient::NavAbilityClient, 
   userId::AbstractString,
   robotId::AbstractString,
@@ -256,8 +257,8 @@ function addDataEntryEvent(
   mimeType::AbstractString="",
 )
   response = navAbilityClient.mutate(MutationOptions(
-    "sdk_adddataentry",
-    GQL_ADDDATAENTRY,
+    "sdk_addblobentry",
+    GQL_ADDBLOBENTRY,
     Dict(
       "userId" => userId,
       "robotId" => robotId,
@@ -274,20 +275,20 @@ function addDataEntryEvent(
   end
   data = get(rootData,"data",nothing)
   if data === nothing return "Error" end
-  addentryresp = get(data,"addDataEntry","Error")
-  return addentryresp
+  addentryresp = get(data,"addBlobEntry","Error")
+  return addentryresp["context"]
 end
 
-addDataEntryEvent(client::NavAbilityClient, 
+addBlobEntryEvent(client::NavAbilityClient, 
                   context::Client, 
-                  w...) = addDataEntryEvent(client, 
+                  w...) = addBlobEntryEvent(client, 
                                             context.userId, 
                                             context.robotId, 
                                             context.sessionId, 
                                             w...)
 #
 
-addDataEntry(w...) = @async addDataEntryEvent(w...)
+addBlobEntry(w...) = @async addBlobEntryEvent(w...)
 
 
 ##
