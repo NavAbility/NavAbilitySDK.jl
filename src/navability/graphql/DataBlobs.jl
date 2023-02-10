@@ -78,13 +78,14 @@ mutation sdk_addblobentry(
   \$variableLabel: String!
   \$blobId: UUID!
   \$dataLabel: String!
+  \$blobSize: Int!
   \$mimeType: String
 ) {
   addBlobEntry(
     blob: {
       id: \$blobId
       label: \$dataLabel
-      size: 5939
+      size: \$blobSize
       mimeType: \$mimeType
       blobstore: NAVABILITY
     }

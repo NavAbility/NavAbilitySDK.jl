@@ -252,8 +252,9 @@ function addBlobEntryEvent(
   robotId::AbstractString,
   sessionId::AbstractString,
   variableLabel::AbstractString,
-  dataId::AbstractString, # TODO must also support ::UUID
+  blobId::AbstractString, # TODO must also support ::UUID
   dataLabel::AbstractString,
+  blobSize::Int,
   mimeType::AbstractString="",
 )
   response = navAbilityClient.mutate(MutationOptions(
@@ -264,8 +265,9 @@ function addBlobEntryEvent(
       "robotId" => robotId,
       "sessionId" => sessionId,
       "variableLabel" => variableLabel,
-      "dataId" => dataId,
+      "blobId" => blobId,
       "dataLabel" => dataLabel,
+      "blobSize" => blobSize,
       "mimeType" => mimeType,
     )
   )) |> fetch
