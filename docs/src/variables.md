@@ -79,7 +79,7 @@ xyr = v0["ppes"][2]["suggested"]
 ```
 
 !!! warning
-    At time of writing these numerical values represent the solution stored in coordinates.  In the future, these values are expected to stored directly as on-manifold point representations.  The internal solver computations are already all on-manifold.  For [more information on manifold points, tangent vectors, and coordinates is described here](https://juliarobotics.org/Caesar.jl/latest/concepts/using_manifolds/).
+    At time of writing these numerical values represent the solution stored in coordinates.  In the future, these values are expected to stored directly as on-manifold point representations.  The internal solver computations are already all on-manifold.  For more information, see [the on-manifold points, tangent vectors, and coordinates description presented here](https://juliarobotics.org/Caesar.jl/latest/concepts/using_manifolds/).
 
 ## SDK Supported Variables
 
