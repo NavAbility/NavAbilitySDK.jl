@@ -28,7 +28,7 @@ varLbls = fetch(listVariables(client, context))
 
 The fetch call is used to wait on the underlying asynchronous call.
 
-#### Data `BlobEntry=>Blob`
+## Data `BlobEntry=>Blob`
 
 Additional data attached to variables exist in a few different ways.  The primary method for storing additional large data blobs with a variable, is to look at the `BlobEntry`s associated with a particular variable.  For example:
 ```julia
@@ -43,16 +43,16 @@ blob = getBlob(client, context, de.blobId)
 Data blobs are provided in binary format (i.e. `::Vector{UInt8}`).
 
 !!! note
-    All `blobId`s are unique across the entire distributed system, and are immutable.
+    All `blobId`s are unique across the entire distributed system and are immutable.
 
-### Numerical Solution
+## Numerical Solution
 
 The main purpose of using a factor graph is not only as data index but also to deeply connect with the mapping and localization problem.  Variables in the factor graph represent the states to be estimated from the relevant measurement data.  The numerical values for each variable are computed by any number of solver operations.  The numerical results are primarily stored in a variables `solverData` field, such that either parametric or non-parametric inference results can be used:
 ```julia
 v0 = getVariable(client, context, "x0")
 ```
 
-#### Understanding `solveKey`s
+### Understanding `solveKey`s
 
 Since various numerical solutions may exists for the same factor graph, we introduce the idea of a `solveKey`.  Different numerical values for different `solveKey`s can exists for any number of reasons.  Using the example from above, we might find:
 ```julia
@@ -69,13 +69,15 @@ Each of these `solverData`s are unique identified via the `solveKey`.  The `grap
 The numerical values can be obtained from the `solverData` via:
 ```julia
 v0["solverData"][3]["vecval"]
+# [-0.001, 0.002, 0.001]
 ```
 
-#### Understanding `PPE`s
+### Understanding `PPE`s
 
 To better bridge the gap between non-Gaussian and Gaussian solutions, variables also store a convenience numerical solution called the parametric point estimate (`PPE`) for each of the `solveKey`s.  While various forms of `PPE`s can exists---such as mean, max, modes, etc.---a common `suggested` field exists for basic usage.  For example, the suggested parametric equivalent solution from the nonparametric solver (`default`) can be obtained by:
 ```julia
 xyr = v0["ppes"][2]["suggested"]
+# [-0.00, 0.00, 0.00]
 ```
 
 !!! warning
