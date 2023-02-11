@@ -16,7 +16,7 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "Getting Started" => "start.md",
-        "Variables" => "example.md",
+        "Variables" => "variables.md",
         "Factors" => "factors.md",
         "Build a Graph" => "buildgraph.md",
         "Index" => "summary.md",
