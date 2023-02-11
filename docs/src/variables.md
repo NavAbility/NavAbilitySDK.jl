@@ -32,12 +32,14 @@ The fetch call is used to wait on the underlying asynchronous call.
 
 Additional data attached to variables exist in a few different ways.  The primary method for storing additional large data blobs with a variable, is to look at the `BlobEntry`s associated with a particular variable.  For example:
 ```julia
-de = listDataEntries(client, context, "x0") |> fetch
+de = listBlobEntries(client, context, "x0") |> fetch
+de .|> s->s.blobLabel
+# e.g. ["Camera0", "user_calibration", etc.]
 ```
 
-Data blobs can be fetched via:
+Data blobs can be fetched via, e.g. using the unique `blobId` of the first `dataEntry` on this variable:
 ```julia
-blob = getBlob(client, context, de.blobId)
+blob = getBlob(client, context, de[1].blobId)
 ```
 
 Data blobs are provided in binary format (i.e. `::Vector{UInt8}`).
