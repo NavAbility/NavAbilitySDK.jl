@@ -28,3 +28,18 @@ The NavAbilitySDK can be installed as a usual Julia package:
 ```julia
 import Pkg; Pkg.add("NavAbilitySDK")
 ```
+
+## Loading NavAbilitySDK
+
+Loading the SDK module:
+```julia
+using NavAbilitySDK
+```
+
+Alternatively, you can also avoid populating the namespace via import:
+```julia
+import NavAbilitySDK as NvaSDK
+```
+
+!!! note
+    The NavAbility and [Caesar.jl](https://juliarobotics.org/Caesar.jl/latest/) design promote distributed factor graph workflows for both edge and cloud usage.  The NavAbilitySDK is part of a larger architecture where both client and server side computations are used.  The rest of this page illustrates usage against the server side data and computations.  Reach out to NavAbility via Slack [![](https://img.shields.io/badge/Invite-Slack-green.svg?style=popout)](https://join.slack.com/t/caesarjl/shared_invite/zt-ucs06bwg-y2tEbddwX1vR18MASnOLsw) or <info@navability.io> for more help.
