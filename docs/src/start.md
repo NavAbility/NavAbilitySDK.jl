@@ -2,11 +2,11 @@
 
 NavAbility fundamentally organizes mapping, localization, and perception data (a.k.a. navigation data) by means of a visual graphical model known as factor graphs.  See the related documentation on [Graph Concepts](https://juliarobotics.org/Caesar.jl/latest/concepts/concepts/) for more information about what factor graphs.
 
-## Free [`guest@navabilty.io`] access
+## Free [`guest@navability.io`] access
 
 A free tier access to NavAbility servers is provided through the user `guest@navability.io`.  To learn more about using the guest user, consider trying the [NavAbilty Tutorials](https://app.navability.io/get-started/tutorials).
 
-## Privacy and [Auth Token](@id auth_token)
+## [Privacy and Auth Token](@id auth_token)
 
 A user specific authentication token is needed whether you are just accessing an existing graph, modifying, adding data, or building a whole new graph directly through the SDK.  At present, the only way to obtain a temporary authentication token is through the [NavAbility App on the "Connect" page](https://app.navability.io/edge/connect) (or from the App, use the burger menu top left to access the Connect page).  A user login to NavAbility is needed before an auth token can be provided.  Auth tokens last for 24 hours, and should be kept private to each session or usage.  Do not store or share the token with others.  See below for getting a login if you do not already have one.
 
@@ -22,3 +22,9 @@ You can login via the [NavAbility App](https://app.navability.io/get-started/int
 </a>
 ```
 
+## Installing
+
+The NavAbilitySDK can be installed as a usual Julia package:
+```julia
+import Pkg; Pkg.add("NavAbilitySDK")
+```
