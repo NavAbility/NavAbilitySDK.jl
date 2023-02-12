@@ -12,7 +12,7 @@ Args:
 function createDownloadEvent(
   navAbilityClient::NavAbilityClient, 
   userId::AbstractString, 
-  fileId::UUID
+  blobId::UUID
 )
   #
   response = navAbilityClient.mutate(MutationOptions(
@@ -20,7 +20,7 @@ function createDownloadEvent(
       GQL_CREATEDOWNLOAD,
       Dict(
           "userId" => userId,
-          "fileId" => string(fileId)
+          "fileId" => string(blobId)
       )
   )) |> fetch
   rootData = JSON.parse(response.Data)
@@ -38,25 +38,40 @@ createDownload(w...) = @async createDownloadEvent(w...)
 
 ##
 
+@deprecate getBlobEvent(w...;kw...) getBlobEvent(w...;kw...)
+@deprecate getData(w...;kw...) getBlob(w...;kw...)
 
-function getDataEvent(
+function getBlobEvent(
   client::NavAbilityClient, 
   userId::AbstractString, 
-  fileId::UUID
+  blobId::UUID
 )
   #
-  url = createDownload(client, userId, fileId) |> fetch
+  url = createDownload(client, userId, blobId) |> fetch
   io = PipeBuffer()
   Downloads.download(url, io)
   io
 end
 
-getDataEvent(client::NavAbilityClient, context::Client, fileId::UUID) = getDataEvent(client, context.userId, fileId)
-getData(client::NavAbilityClient, context::Client, fileId::UUID) = @async getDataEvent(client, context, fileId)
-getData(client::NavAbilityClient, userId::AbstractString, fileId::UUID) = @async getDataEvent(client, userId, fileId)
+getBlobEvent(client::NavAbilityClient, context::Client, blobId::UUID) = getBlobEvent(client, context.userId, blobId)
 
 
-function getDataEntry(
+"""
+    $SIGNATURES
+Get the data blob as defined by a unique `blobId::UUID` identifier.
+
+Returns: Task containing the blob
+
+DevNotes
+- TODO standardize return type as `::Vector{UInt8}` (not an IOBuffer/PipeBuffer)
+
+See also: [`listBlobEntries`](@ref)
+"""
+getBlob(client::NavAbilityClient, context::Client, blobId::UUID) = @async getBlobEvent(client, context, blobId)
+getBlob(client::NavAbilityClient, userId::AbstractString, blobId::UUID) = @async getBlobEvent(client, userId, blobId)
+
+
+function getBlobEntry(
   client::NavAbilityClient,
   context::Client,
   vlbl::AbstractString,
@@ -65,7 +80,7 @@ function getDataEntry(
   count::Base.RefValue{Int}=Ref(0), # return count of how many matches were found
   skiplist=Symbol[]
 )
-  ble = listDataEntries(client, context, vlbl) |> fetch
+  ble = listBlobEntries(client, context, vlbl) |> fetch
   # filter for the specific blob label
   _matchpatt(regex::Regex, de) = match(regex, de.label) isa Nothing
   _matchpatt(uuid::UUID, de) = uuid != UUID(de.id)
@@ -79,15 +94,15 @@ function getDataEntry(
   idx = sortperm(lbls; lt)
   ble_s[idx]
 end
-getDataEntry(
+getBlobEntry(
   client::NavAbilityClient,
   context::Client,
   vlbl::AbstractString,
   key::AbstractString;
   kw...
-) = getDataEntry(client, context, vlbl, Regex(key); kw...)
+) = getBlobEntry(client, context, vlbl, Regex(key); kw...)
 
-function getData(
+function getBlob(
   client::NavAbilityClient, 
   context::Client, 
   vlbl::AbstractString, 
@@ -96,22 +111,22 @@ function getData(
   datalabel::Base.RefValue{String}=Ref(""),
   kw...
 )
-  bles = getDataEntry(client, context, vlbl, regex; kw...)
+  bles = getBlobEntry(client, context, vlbl, regex; kw...)
   # skip out if nothing
   bles isa Nothing ? (return nothing) : nothing
   ble_ = bles[end] 
   (verbose && 1 < length(bles)) ? @warn("multiple matches on regex, fetching $(ble_.label), w/ regex: $(regex.pattern), $((s->s.label).(bles))") : nothing
   datalabel[] = ble_.label
   # get blob
-  return NVA.getData(client, context, ble_.id)
+  return NVA.getBlob(client, context, ble_.id)
 end
-getData(
+getBlob(
   client::NavAbilityClient, 
   context::Client, 
   vlbl::AbstractString, 
   key::AbstractString; 
   kw...
-) = getData(client, context, vlbl, Regex(key); kw...)
+) = getBlob(client, context, vlbl, Regex(key); kw...)
 
 
 
@@ -165,7 +180,7 @@ createUpload(w...) = @async createUploadEvent(w...)
 
 function completeUploadSingleEvent(
   navAbilityClient::NavAbilityClient, 
-  fileId::AbstractString, 
+  blobId::AbstractString, 
   uploadId::AbstractString,
   eTag::AbstractString,
 )
@@ -173,7 +188,7 @@ function completeUploadSingleEvent(
     "completeUpload",
     GQL_COMPLETEUPLOAD_SINGLE,
     Dict(
-      "fileId" => fileId,
+      "fileId" => blobId,
       "uploadId" => uploadId, 
       "eTag" => eTag
     )
@@ -292,8 +307,10 @@ addDataEntry(w...) = @async addDataEntryEvent(w...)
 
 ##
 
+@deprecate listDataEntriesEvent(w...;kw...) listBlobEntriesEvent(w...;kw...)
 
-function listDataEntriesEvent(
+
+function listBlobEntriesEvent(
   navAbilityClient::NavAbilityClient, 
   userId::AbstractString,
   robotId::AbstractString,
@@ -331,20 +348,34 @@ function listDataEntriesEvent(
   return ret
 end
 
-listDataEntriesEvent(client::NavAbilityClient, 
+listBlobEntriesEvent(client::NavAbilityClient, 
                       context::Client, 
-                      w...) = listDataEntriesEvent(client, 
+                      w...) = listBlobEntriesEvent(client, 
                                                     context.userId, 
                                                     context.robotId, 
                                                     context.sessionId, 
                                                     w...)
 #
 
-listDataEntries(w...) = @async listDataEntriesEvent(w...)
+
+"""
+    $(SIGNATURES)
+List the blob entries associated with a particular variable.
+
+Input: `client, context, varLbl`
+
+Returns: Task containing a list of `BlobEntry`s
+"""
+listBlobEntries(w...) = @async listBlobEntriesEvent(w...)
+listBlobs(w...) = @async listBlobsEvent(w...)
+
+@deprecate listDataBlobsEvent(w...;kw...) listBlobsEvent(w...;kw...)
+@deprecate listDataBlobs(w...;kw...) listBlobs(w...;kw...)
+
 
 ## 
 
-function listDataBlobsEvent(
+function listBlobsEvent(
   navAbilityClient::NavAbilityClient, 
 )
   #
@@ -375,8 +406,6 @@ end
 
 #
 
-listDataBlobs(w...) = @async listDataBlobsEvent(w...)
-
 
 
 """
@@ -394,7 +423,7 @@ function incrDataLabelSuffix(
   bllb::AbstractString; 
   datalabel=Ref("")
 )
-  re_aH = NVA.getData(client, context, string(vla), Regex(bllb); datalabel) |> fetch
+  re_aH = NVA.getBlob(client, context, string(vla), Regex(bllb); datalabel) |> fetch
   # append latest count
   count, hasund, len = if re_aH isa Nothing
     1, string(bllb)[end] == '_', 0
