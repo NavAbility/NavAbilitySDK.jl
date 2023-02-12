@@ -30,3 +30,13 @@ Many more probability types are natively supported by the solver and yet directl
 - Most common parametric probability models.
 
 Reach out to NavAbility if you seek earlier SDK support for these or other more advanced probability features.
+
+### Probability Model Index
+
+```@docs
+NvaSDK.Normal
+NvaSDK.FullNormal
+NvaSDK.Uniform
+NvaSDK.Rayleigh
+NvaSDK.MixtureData
+```
