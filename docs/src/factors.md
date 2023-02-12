@@ -79,6 +79,8 @@ The list of currently supported factors in the SDK are:
 !!! note
     Many more factor types are already supported by the solver, see [additional docs here](https://juliarobotics.org/Caesar.jl/latest/concepts/available_varfacs/).  Reach out to NavAbility for help or support in bringing more variable types to eh SDK sooner, or for help in building more factor types that may not yet exist in either libraries.
 
+## Factor Index
+
 <!-- Prior
 LinearRelative
 Point2Point2Range
@@ -89,8 +91,15 @@ Pose3Pose3
 Pose2Point2BearingRange
 -->
 ```@docs
-ZInferenceType
-Pose2Pose2Data
-ScatterAlignPose2
-Pose2AprilTag4Corners
+NvaSDK.ZInferenceType
+NvaSDK.InferenceType
+NvaSDK.PriorData
+NvaSDK.LinearRelativeData
+NvaSDK.PriorPoint2Data
+NvaSDK.PriorPose2Data
+NvaSDK.Pose2Pose2Data
+NvaSDK.PriorPose3Data
+NvaSDK.Pose3Pose3Data
+NvaSDK.ScatterAlignPose2
+NvaSDK.Pose2AprilTag4Corners
 ```
