@@ -22,6 +22,9 @@ export diagm, norm
 # UUIDs pass through exports
 export uuid4
 
+
+DFG_VERSION = "0.18.10";
+
 # Graphql
 include("./navability/graphql/Factor.jl")
 include("./navability/graphql/Status.jl")
