@@ -120,6 +120,12 @@ function getVariableEvent(
     return variables[1]
 end
 
+"""
+    $(SIGNATURES)
+Get a Variable from a graph using its label.
+
+Returns: Task with reponse Variable.
+"""
 getVariable(navAbilityClient::NavAbilityClient, client::Client, label::String; detail::QueryDetail = SKELETON) = @async getVariableEvent(navAbilityClient, client, label; detail)
 
 function getVariablesEvent(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON)::Vector{Dict{String,Any}}
@@ -181,6 +187,12 @@ function listVariablesEvent(
     end
 end
 
+"""
+    $(SIGNATURES)
+Get a list of Variable labels in the graph.
+
+Returns: A Task with response `::Vector{String}`.
+"""
 function listVariables(client::NavAbilityClient, context::Client)
     @async listVariablesEvent(client, context)
     # @async begin

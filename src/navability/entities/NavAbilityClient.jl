@@ -23,7 +23,7 @@ end
 """
     $SIGNATURES
 
-Main interactions with API for queries and mutations go through here.
+Object for handling main interactions with API for queries and mutations.
 
 DevNotes
 - TODO TBD, rather use upstream retry logic instead, 

@@ -1,6 +1,9 @@
 using NavAbilitySDK
 using Documenter
 
+const NvaSDK = NavAbilitySDK
+
+
 DocMeta.setdocmeta!(NavAbilitySDK, :DocTestSetup, :(using NavAbilitySDK); recursive=true)
 
 makedocs(;

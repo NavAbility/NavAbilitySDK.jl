@@ -29,6 +29,11 @@ f = getFactor(client, context, flbls[1]) |> fetch
 #   "solvable"              => 1
 ```
 
+```@docs
+listFactors
+getFactor
+```
+
 ## App Graph Visualization
 
 The NavAbilityApp can also visualize a specific factor graph session, and a convenient link generator can be used to simplify the session filtering criteria:
@@ -52,6 +57,10 @@ The NavAbilityApp Graph visualization page can also be found in the hamburger me
 </a>
 ```
 
+```@docs
+GraphVizApp
+```
+
 ## SDK Supported Factors
 
 The list of currently supported factors in the SDK are:
@@ -61,9 +70,29 @@ The list of currently supported factors in the SDK are:
 - `PriorPoint2`
 - `PriorPose2`
 - `Pose2Pose2`
+- `ScatterAlignPose2`
+- `Pose2AprilTag4Corners`
 - `Pose2Point2BearingRange`
 - `PriorPose3`
 - `Pose3Pose3`
 
 !!! note
     Many more factor types are already supported by the solver, see [additional docs here](https://juliarobotics.org/Caesar.jl/latest/concepts/available_varfacs/).  Reach out to NavAbility for help or support in bringing more variable types to eh SDK sooner, or for help in building more factor types that may not yet exist in either libraries.
+
+## Factor Index
+
+```@docs
+NvaSDK.ZInferenceType
+NvaSDK.InferenceType
+NvaSDK.PriorData
+NvaSDK.LinearRelativeData
+NvaSDK.PriorPoint2Data
+NvaSDK.Point2Point2RangeData
+NvaSDK.PriorPose2Data
+NvaSDK.Pose2Pose2Data
+NvaSDK.Pose2Point2BearingRangeData
+NvaSDK.PriorPose3Data
+NvaSDK.Pose3Pose3Data
+NvaSDK.ScatterAlignPose2
+NvaSDK.Pose2AprilTag4Corners
+```

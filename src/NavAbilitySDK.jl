@@ -81,8 +81,8 @@ export addVariable, updateVariable, addVariablePacked, updateVariablePacked, add
 export getFactor, getFactors, listFactors, lsf
 export addFactor, addPackedFactor, deleteFactor
 export initVariable
-export listDataEntries
-export getDataEntry, getData
+export listBlobEntries
+export getBlobEntry, getBlob
 export solveSession, solveFederated
 export getStatusMessages, getStatusLatest, getStatusesLatest
 export waitForCompletion

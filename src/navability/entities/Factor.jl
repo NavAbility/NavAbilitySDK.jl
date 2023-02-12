@@ -1,5 +1,7 @@
 using Dates
 
+DFG_VERSION = "0.18.10";
+
 @enum FactorType begin
     PRIORPOSE2
     POSE2POSE2

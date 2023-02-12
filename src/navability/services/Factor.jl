@@ -55,6 +55,12 @@ function _getFactorEvent(navAbilityClient::NavAbilityClient, client::Client, lab
     return factors[1]
 end
 
+"""
+    $(SIGNATURES)
+Get a Factor from a graph context using its label.
+
+Return: Task containing the Factor.
+"""
 getFactor(navAbilityClient::NavAbilityClient, client::Client, label::String) = @async _getFactorEvent(navAbilityClient, client, label)
 
 function getFactorsEvent(navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON)::Vector{Dict{String,Any}}
@@ -89,6 +95,10 @@ end
 
 getFactors( navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON) = @async getFactorsEvent(navAbilityClient, client; detail )
 
+"""
+    $(SIGNATURES)
+Get a list of the Factors as labels in the graph.
+"""
 function listFactors(navAbilityClient::NavAbilityClient, client::Client)
     @async begin
         factors = getFactors(navAbilityClient,client) |> fetch
