@@ -2,11 +2,13 @@
 
 ## Inspect an Existing Graph
 
-Most use cases will involve retrieving information from a factor graph session already available on the server.
-
+Most use cases will involve retrieving information from a factor graph session already available on the server.  With auth [auth token](@ref auth_token), setup the connections to API server:
 ```julia
+# copy the auth token from the NavAbility App
+auth_token = "r3ft ... eo7_"
+
 # also create a client connection
-client = NavAbilityHttpsClient()
+client = NavAbilityHttpsClient(;auth_token)
 
 # create a client context user, robot, session
 context = Client(
@@ -18,6 +20,11 @@ context = Client(
 )
 ```
 
+```@docs
+NavAbilityHttpsClient
+Client
+```
+
 ### Variables
 
 Variables represent state variables of interest such as vehicle or landmark positions, sensor calibration parameters, and more. Variables are likely hidden values that are not directly observed, but we want to estimate them from observed data.  Let's start by listing all the variables in the session:
@@ -27,6 +34,10 @@ varLbls = fetch(listVariables(client, context))
 ```
 
 The fetch call is used to wait on the underlying asynchronous call.
+
+```@docs
+listVariables
+```
 
 ## Data `BlobEntry=>Blob`
 
@@ -45,17 +56,28 @@ blob = getBlob(client, context, de[1]["blobId"]; checkhash=false)
 
 Data blobs are provided in binary format (i.e. `::Vector{UInt8}`).  A blob can be associated via any number of `BlobEntry`s across multiple graph nodes, sessions, or robots.  `BlobEntry` also stores a hash value to ensure data consistency which must correspond to teh stored hash upon retrieval.  The check can be skipped as indicated by the option in the function call above.
 
+See [Tutorial 5 from ICRA 2022 for a more indepth example of working with data blobs](https://app.navability.io/get-started/tutorials/icra-5-marineexample).
+
 !!! note
     A blob is owned by a `user` and only accessible by other users if allowed via approved roles or permissions.
 
 !!! note
     All `blobId`s are unique across the entire distributed system and are immutable.
 
+```@docs
+listBlobEntries
+getBlob
+```
+
 ## Numerical Solution
 
 The main purpose of using a factor graph is not only as data index but also to deeply connect with the mapping and localization problem.  Variables in the factor graph represent the states to be estimated from the relevant measurement data.  The numerical values for each variable are computed by any number of solver operations.  The numerical results are primarily stored in a variables `solverData` field, such that either parametric or non-parametric inference results can be used:
 ```julia
 v0 = getVariable(client, context, "x0")
+```
+
+```@docs
+getVariable
 ```
 
 ### Understanding `solveKey`s

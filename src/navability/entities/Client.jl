@@ -7,7 +7,7 @@ Users can have multiple robots and robots can have multiple sessions.
 So this indicates a unique session.
 
 DevNotes
-- Rename to [`SessionKey`](@ref)
+- TODO, rename possibly, `SessionKey`
 """
 Base.@kwdef struct Client
     userId::String
