@@ -81,23 +81,16 @@ The list of currently supported factors in the SDK are:
 
 ## Factor Index
 
-<!-- Prior
-LinearRelative
-Point2Point2Range
-PriorPoint2
-PriorPose2
-PriorPose3
-Pose3Pose3
-Pose2Point2BearingRange
--->
 ```@docs
 NvaSDK.ZInferenceType
 NvaSDK.InferenceType
 NvaSDK.PriorData
 NvaSDK.LinearRelativeData
 NvaSDK.PriorPoint2Data
+NvaSDK.Point2Point2RangeData
 NvaSDK.PriorPose2Data
 NvaSDK.Pose2Pose2Data
+NvaSDK.Pose2Point2BearingRangeData
 NvaSDK.PriorPose3Data
 NvaSDK.Pose3Pose3Data
 NvaSDK.ScatterAlignPose2
