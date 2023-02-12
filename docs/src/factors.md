@@ -57,6 +57,8 @@ The NavAbilityApp Graph visualization page can also be found in the hamburger me
 The list of currently supported factors in the SDK are:
 - `Prior`, for 1D Euclidean only.
 - `LinearRelative`, for Euclidean only.
+- `Point2Point2Range`
+- `PriorPoint2`
 - `PriorPose2`
 - `Pose2Pose2`
 - `Pose2Point2BearingRange`

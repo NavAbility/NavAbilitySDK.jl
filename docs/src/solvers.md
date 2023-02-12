@@ -1,0 +1,3 @@
+# Graph Solvers
+
+NavAbility provides both **parametric** and **nonparametric** (i.e. non-Gaussian / multi-modal) factor graph solving solutions.  Please reach out via email <info@navability.io> or Slack [![](https://img.shields.io/badge/Invite-Slack-green.svg?style=popout)](https://join.slack.com/t/caesarjl/shared_invite/zt-ucs06bwg-y2tEbddwX1vR18MASnOLsw) if you would like to learn more about these features.

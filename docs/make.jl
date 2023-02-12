@@ -19,6 +19,7 @@ makedocs(;
         "Variables" => "variables.md",
         "Factors" => "factors.md",
         "Build a Graph" => "buildgraph.md",
+        "Graph Solvers" => "solvers.md",
         "Index" => "summary.md",
     ],
 )
