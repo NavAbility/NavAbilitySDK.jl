@@ -1,6 +1,13 @@
 using NavAbilitySDK
 using Documenter
 
+import NavAbilitySDK: ScatterAlignPose2, Pose2AprilTag4Corners
+import NavAbilitySDK: ZInferenceType
+# Prior, PriorPose2, LinearRelative, Point2Point2Range, PriorPose2, PriorPoint2
+
+const NvaSDK = NavAbilitySDK
+
+
 DocMeta.setdocmeta!(NavAbilitySDK, :DocTestSetup, :(using NavAbilitySDK); recursive=true)
 
 makedocs(;

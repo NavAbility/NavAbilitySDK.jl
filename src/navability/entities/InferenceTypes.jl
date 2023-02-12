@@ -8,6 +8,12 @@ functions inside of factors.
 """
 abstract type InferenceType end
 
+
+"""
+    $SIGNATURES
+
+Macro to autogenerate factor type definitions.  Used for common types such as `Prior, PriorPose2, Pose3Pose3, etc.`
+"""
 macro nvaZInferenceType(inferencetype)
   return esc(quote
       Base.@__doc__ struct $inferencetype <: NVA.InferenceType 
@@ -71,6 +77,15 @@ end
 
 const Pose2AprilTag4CornersInferenceType = Pose2AprilTag4Corners
 
+"""
+    $SIGNATURES
+
+Alignment factor between point cloud populations, using either
+- a continuous density function cost: `ApproxManifoldProducts.mmd`, or
+- a conventional iterative closest point (ICP) algorithm (when `.sample_count < 0`).
+
+This factor can support very large density clouds, with `sample_count` subsampling for individual alignments.
+"""
 Base.@kwdef struct ScatterAlignPose2 <: InferenceType
   """ This SDK only supports MKD clouds at this time. Note CJL also supports HeatmapGridDensity, TODO """
   cloud1::ManifoldKernelDensity
