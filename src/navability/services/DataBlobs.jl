@@ -245,6 +245,7 @@ addData(w...) = @async addDataEvent(w...)
 ##
 
 @deprecate addDataEntryEvent(args...;kwargs...) addBlobEntryEvent(args...;kwargs...)
+@deprecate addDataEntry(w...;kw...) addBlobEntry(w...;kw...)
 
 function addBlobEntryEvent(
   navAbilityClient::NavAbilityClient, 
