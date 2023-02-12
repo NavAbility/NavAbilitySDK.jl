@@ -12,7 +12,7 @@ Args:
 function createDownloadEvent(
   navAbilityClient::NavAbilityClient, 
   userId::AbstractString, 
-  fileId::UUID
+  blobId::UUID
 )
   #
   response = navAbilityClient.mutate(MutationOptions(
@@ -20,7 +20,7 @@ function createDownloadEvent(
       GQL_CREATEDOWNLOAD,
       Dict(
           "userId" => userId,
-          "fileId" => string(fileId)
+          "fileId" => string(blobId)
       )
   )) |> fetch
   rootData = JSON.parse(response.Data)
@@ -44,16 +44,16 @@ createDownload(w...) = @async createDownloadEvent(w...)
 function getBlobEvent(
   client::NavAbilityClient, 
   userId::AbstractString, 
-  fileId::UUID
+  blobId::UUID
 )
   #
-  url = createDownload(client, userId, fileId) |> fetch
+  url = createDownload(client, userId, blobId) |> fetch
   io = PipeBuffer()
   Downloads.download(url, io)
   io
 end
 
-getBlobEvent(client::NavAbilityClient, context::Client, fileId::UUID) = getBlobEvent(client, context.userId, fileId)
+getBlobEvent(client::NavAbilityClient, context::Client, blobId::UUID) = getBlobEvent(client, context.userId, blobId)
 
 
 """
@@ -180,7 +180,7 @@ createUpload(w...) = @async createUploadEvent(w...)
 
 function completeUploadSingleEvent(
   navAbilityClient::NavAbilityClient, 
-  fileId::AbstractString, 
+  blobId::AbstractString, 
   uploadId::AbstractString,
   eTag::AbstractString,
 )
@@ -188,7 +188,7 @@ function completeUploadSingleEvent(
     "completeUpload",
     GQL_COMPLETEUPLOAD_SINGLE,
     Dict(
-      "fileId" => fileId,
+      "fileId" => blobId,
       "uploadId" => uploadId, 
       "eTag" => eTag
     )
