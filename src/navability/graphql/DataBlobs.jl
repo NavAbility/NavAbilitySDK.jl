@@ -11,7 +11,7 @@ mutation sdk_url_createdownload (\$userId: String!, \$fileId: ID!) {
 
 
 GQL_CREATE_UPLOAD = """
-mutation sdk_url_createupload(\$filename: String!, \$filesize: Int!, \$parts: Int!) {
+mutation sdk_url_createupload(\$filename: String!, \$filesize: BigInt!, \$parts: Int!) {
   createUpload(
     file: {
       filename: \$filename,
