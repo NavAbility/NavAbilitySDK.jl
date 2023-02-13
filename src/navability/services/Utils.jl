@@ -47,17 +47,33 @@ function waitForCompletion(
     waitForCompletion(navAbilityClient, rids; kw...)
 end
 
+"""
+$(SIGNATURES)
+Wait for the requests to complete, poll until done (new eventing version).
+
+DevNotes:
+- This version will in future replace the predecessor [`waitForCompletion`](@ref).
+- Convert to JSON3.jl
+
+Args:
+    requestIds (List[str]): The request IDs that should be polled.
+    maxSeconds (int, optional): Maximum wait time. Defaults to 60.
+    expectedStatus (str, optional): Expected status message per request.
+        Defaults to "Complete".
+"""
 function waitForCompletion2(client, eventId; maxSeconds=60, totalRequired=1, completeRequired=1)
     elapsedInSeconds = 0
     incrementInSeconds = 5
     while elapsedInSeconds < maxSeconds
-      get_event_response = client.query(QueryOptions(
-        "sdk_events_by_id",
-        GQL_GET_EVENTS_BY_ID,
-        Dict(
-          "eventId" => eventId
-        )
-        )) |> fetch
+        get_event_response = client.query(
+            QueryOptions(
+                "sdk_events_by_id",
+                GQL_GET_EVENTS_BY_ID,
+                Dict(
+                    "eventId" => eventId
+                )
+            )
+        ) |> fetch
         payload = JSON.parse(get_event_response.Data)
         events = payload["data"]["test"]
         completeEvents = filter(event -> event["status"]["state"] == "Complete", events)

@@ -154,3 +154,8 @@ push!(
 # let's wait to make sure all the new additions are ready
 waitForCompletion(client, resultIds; expectedStatuses=["Complete"])
 ```
+
+```@docs
+waitForCompletion
+NvaSDK.waitForCompletion2
+```
