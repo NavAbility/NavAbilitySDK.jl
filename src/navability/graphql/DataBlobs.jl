@@ -11,7 +11,7 @@ mutation sdk_url_createdownload (\$userId: String!, \$fileId: ID!) {
 
 
 GQL_CREATE_UPLOAD = """
-mutation sdk_url_createupload(\$filename: String!, \$filesize: Int!, \$parts: Int!) {
+mutation sdk_url_createupload(\$filename: String!, \$filesize: BigInt!, \$parts: Int!) {
   createUpload(
     file: {
       filename: \$filename,
@@ -70,6 +70,51 @@ mutation sdk_adddataentry(\$userId: ResourceId!, \$robotId: ResourceId!, \$sessi
 }
 """
 
+GQL_ADDBLOBENTRY = """
+mutation sdk_addblobentry(
+  \$userId: String!
+  \$robotId: String!
+  \$sessionId: String!
+  \$variableLabel: String!
+  \$blobId: UUID!
+  \$dataLabel: String!
+  \$blobSize: Int!
+  \$mimeType: String
+) {
+  addBlobEntry(
+    blob: {
+      id: \$blobId
+      label: \$dataLabel
+      size: \$blobSize
+      mimeType: \$mimeType
+      blobstore: NAVABILITY
+    }
+    options: {
+      links: [
+        {
+          key: {
+            user: { userLabel: \$userId }
+            variable: {
+              userId: \$userId
+              robotId: \$robotId
+              sessionId: \$sessionId
+              variableLabel: \$variableLabel
+            }
+          }
+        }
+      ]
+    }
+  ) {
+    context {
+      eventId
+    } 
+    status {
+      state
+      progress
+    }
+  }
+}
+"""
 
 GQL_LISTDATAENTRIES = """
 query sdk_listdataentries(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$variableLabel: ID!) {
