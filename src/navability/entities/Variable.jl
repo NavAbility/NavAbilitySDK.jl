@@ -31,7 +31,8 @@ Base.@kwdef struct Variable
     solverDataDict::String
     smallData::String      = "{}"
     solvable::Int          = 1
-    tags::String
+    """ TODO, DFG v0.19+ change to ::Vector{String} """
+    tags::String 
     timestamp::String      = string(now(Dates.UTC))*"Z" # string(now(TimeZones.localzone()))
     _version::String       = DFG_VERSION
 end
