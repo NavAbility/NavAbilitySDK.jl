@@ -3,6 +3,7 @@
 ## Remove below before v0.6
 ## =========================
 
+@deprecate getDataEntry(w...;kw...) getBlobEntry(w...;kw...)
 @deprecate getBlobEvent(w...;kw...) getBlobEvent(w...;kw...)
 @deprecate getData(w...;kw...) getBlob(w...;kw...)
 
