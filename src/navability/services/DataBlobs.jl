@@ -38,8 +38,6 @@ createDownload(w...) = @async createDownloadEvent(w...)
 
 ##
 
-@deprecate getBlobEvent(w...;kw...) getBlobEvent(w...;kw...)
-@deprecate getData(w...;kw...) getBlob(w...;kw...)
 
 function getBlobEvent(
   client::NavAbilityClient, 
@@ -259,8 +257,6 @@ addData(w...) = @async addDataEvent(w...)
 
 ##
 
-@deprecate addDataEntryEvent(args...;kwargs...) addBlobEntryEvent(args...;kwargs...)
-@deprecate addDataEntry(w...;kw...) addBlobEntry(w...;kw...)
 
 function addBlobEntryEvent(
   navAbilityClient::NavAbilityClient, 
@@ -311,7 +307,6 @@ addBlobEntry(w...) = @async addBlobEntryEvent(w...)
 
 ##
 
-@deprecate listDataEntriesEvent(w...;kw...) listBlobEntriesEvent(w...;kw...)
 
 
 function listBlobEntriesEvent(
@@ -372,9 +367,6 @@ Returns: Task containing a list of `BlobEntry`s
 """
 listBlobEntries(w...) = @async listBlobEntriesEvent(w...)
 listBlobs(w...) = @async listBlobsEvent(w...)
-
-@deprecate listDataBlobsEvent(w...;kw...) listBlobsEvent(w...;kw...)
-@deprecate listDataBlobs(w...;kw...) listBlobs(w...;kw...)
 
 
 ## 

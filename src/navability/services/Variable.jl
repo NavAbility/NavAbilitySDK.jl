@@ -1,5 +1,11 @@
 
-function Variable(label::AbstractString, type::Union{<:AbstractString, Symbol}, tags::AbstractVector{<:AbstractString} = ["VARIABLE"], timestamp::String = string(now(Dates.UTC))*"Z"; kwargs...)::Variable
+function Variable(
+    label::AbstractString, 
+    type::Union{<:AbstractString, Symbol}, 
+    tags::AbstractVector{<:AbstractString} = ["VARIABLE"], 
+    timestamp::String = string(now(Dates.UTC))*"Z"; 
+    kwargs...
+)::Variable
     variableType = type isa Symbol ? get(_variableTypeConvert, type, Nothing) : type
     type == Nothing && error("Variable type '$(type) is not supported")
 
@@ -7,7 +13,7 @@ function Variable(label::AbstractString, type::Union{<:AbstractString, Symbol}, 
     result = Variable(;
         label,
         variableType,
-        # TODO, should not require jsoning, see DFG#867
+        # TODO, should not require jsoning, see DFG#867, dropped in DFG v0.19+
         solverDataDict = json(solverDataDict),
         tags = json(tags),
         timestamp,

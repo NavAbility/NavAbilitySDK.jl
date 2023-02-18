@@ -15,7 +15,7 @@ A user specific authentication token is needed whether you are just accessing an
 You can login via the [NavAbility App](https://app.navability.io/get-started/introduction/) by clicking on the account menu top right.  please do reach out if you have any questions via Slack [![](https://img.shields.io/badge/Invite-Slack-green.svg?style=popout)](https://join.slack.com/t/caesarjl/shared_invite/zt-ucs06bwg-y2tEbddwX1vR18MASnOLsw), emailing us at <info@navability.io>, or [filing specific issues against the SDK](https://github.com/NavAbility/NavAbilitySDK.jl/issues).
 
 ```@raw html
-<a href="https://app.navability.io/get-started/introduction/">
+<a href="https://app.navability.io/edge/connect">
 <p align="center">
 <img src="https://user-images.githubusercontent.com/6412556/218193635-2325bbd1-f82c-4391-8959-8f54b2acdc0a.png" width="240" border="0" />
 </p>
