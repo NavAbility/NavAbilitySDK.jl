@@ -48,7 +48,7 @@ function getBlobEvent(
   url = createDownload(client, userId, blobId) |> fetch
   io = PipeBuffer()
   Downloads.download(url, io)
-  io
+  io |> take!
 end
 
 getBlobEvent(client::NavAbilityClient, context::Client, blobId::UUID) = getBlobEvent(client, context.userId, blobId)
