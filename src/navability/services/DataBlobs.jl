@@ -28,7 +28,7 @@ function createDownloadEvent(
       throw("Error: $(rootData["errors"])")
   end
   data = get(rootData,"data",nothing)
-  if data === nothing return "Error" end
+  if data === nothing || !haskey(data, "url") throw(KeyError("Cannot create download for $userId, requesting $blobId.\n$rootData")) end
   urlMsg = get(data,"url","Error")
   # TODO: What about marshalling?
   return urlMsg
@@ -48,7 +48,7 @@ function getBlobEvent(
   url = createDownload(client, userId, blobId) |> fetch
   io = PipeBuffer()
   Downloads.download(url, io)
-  io
+  io |> take!
 end
 
 getBlobEvent(client::NavAbilityClient, context::Client, blobId::UUID) = getBlobEvent(client, context.userId, blobId)
