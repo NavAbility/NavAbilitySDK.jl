@@ -207,7 +207,7 @@ completeUploadSingle(w...) = @async completeUploadSingleEvent(w...)
 ##
 
 
-function addDataEvent(
+function addBlobEvent(
   client::NavAbilityClient, 
   blobname::AbstractString, 
   blob::AbstractVector{UInt8}
@@ -223,7 +223,7 @@ function addDataEvent(
   
   url = d["parts"][1]["url"]
   uploadId = d["uploadId"]
-  fileId = d["file"]["id"]
+  blobId = d["file"]["id"]
   
   # custom header for pushing the file up
   headers = [
@@ -244,15 +244,15 @@ function addDataEvent(
   eTag = match(r"[a-zA-Z0-9]+",resp["eTag"]).match
 
   # close out the upload
-  res = NVA.completeUploadSingleEvent(client, fileId, uploadId, eTag)
+  res = NVA.completeUploadSingleEvent(client, blobId, uploadId, eTag)
 
   res == "Accepted" ? nothing : @error("Unable to upload blob, $res")
 
-  fileId
+  blobId
 end
 
 
-addData(w...) = @async addDataEvent(w...)
+addBlob(w...) = @async addBlobEvent(w...)
 
 
 ##

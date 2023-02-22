@@ -83,6 +83,7 @@ export addFactor, addPackedFactor, deleteFactor
 export initVariable
 export listBlobEntries
 export getBlobEntry, getBlob
+export addBlobEntry, addBlob
 export solveSession, solveFederated
 export getStatusMessages, getStatusLatest, getStatusesLatest
 export waitForCompletion
