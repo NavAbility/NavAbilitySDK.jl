@@ -53,6 +53,9 @@ function NavAbilityHttpsClient(
             auth_token
         end
         dianaClient.serverAuth("Bearer "*tok)
+    else
+        # Diana puts in a blank bearer token by default apparently, so completely remove it.
+        dianaClient.serverAuth("")
     end
 
     function query(options::QueryOptions)
