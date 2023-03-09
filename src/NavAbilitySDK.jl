@@ -77,9 +77,9 @@ include("./navability/services/StandardAPI.jl")
 include("./navability/services/DataBlobs.jl")
 include("./navability/services/Session.jl")
 export getVariable, getVariables, listVariables, ls
-export addVariable, updateVariable, addVariablePacked, updateVariablePacked, addPackedVariable, addPackedVariableOld
+export addVariable, updateVariable, addVariablePacked, updateVariablePacked
 export getFactor, getFactors, listFactors, lsf
-export addFactor, addPackedFactor, deleteFactor
+export addFactor, addFactorPacked, deleteFactor
 export initVariable
 export listBlobEntries
 export getBlobEntry, getBlob

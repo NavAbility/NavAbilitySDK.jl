@@ -1,12 +1,36 @@
 GQL_FRAGMENT_FACTORS = """
+fragment blobEntry_fields on BlobEntry {
+  id
+  blobId
+  originId
+  label
+  description
+  hash
+  mimeType
+  blobstore
+  origin
+  metadata
+  timestamp
+  _type
+  _version
+  createdTimestamp
+  lastUpdatedTimestamp
+}  
 fragment factor_skeleton_fields on Factor {
+  id
   label
   tags
   _variableOrderSymbols
 }
 fragment factor_summary_fields on Factor {
   timestamp
+  nstime
   _version
+  blobEntries {
+    ...blobEntry_fields
+  }
+  createdTimestamp
+  lastUpdatedTimestamp
 }
 fragment factor_full_fields on Factor {
   fnctype
@@ -88,6 +112,22 @@ query sdk_get_factors(
   }
 }
 """
+
+GQL_ADD_FACTOR_PACKED = """
+  mutation sdk_add_factor_packed(
+      \$factorPackedInput: AddFactorPackedInput!, 
+      \$options: AddFactorPackedOptionsInput
+    ) {
+    addFactorPacked(factor: \$factorPackedInput, options:\$options) {
+      context {
+        eventId
+      }  
+      status {
+        state
+        progress
+      }
+    }
+  }"""
 
 GQL_DELETEFACTOR = """
   mutation sdk_delete_factor(

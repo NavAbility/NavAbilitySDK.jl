@@ -1,27 +1,37 @@
 
-function addPackedFactor(navAbilityClient::NavAbilityClient, client::Client, factor)::String
+function addFactorPackedEvent(navAbilityClient::NavAbilityClient, client::Client, factor::Dict; options=Dict{String, Any}())::String
+    data = Dict(
+        "factorPackedInput" => Dict(
+            "session" => Dict(
+                "key" => client
+            ),
+            "packedData" => base64encode(json(factor))
+        ),
+        "options" => options
+    )
     response = navAbilityClient.mutate(MutationOptions(
-        "addFactor",
-        MUTATION_ADDFACTOR,
-        Dict(
-            "factor" => Dict(
-                "client" => client,
-                "packedData" => json(factor)
-            )
-        )
+        "sdk_add_factor_packed",
+        GQL_ADD_FACTOR_PACKED,
+        data
     )) |> fetch
+
     rootData = JSON.parse(response.Data)
     if haskey(rootData, "errors")
+        @error response
         throw("Error: $(rootData["errors"])")
     end
     data = get(rootData,"data",nothing)
     if data === nothing return "Error" end
-    addFactor = get(data,"addFactor","Error")
-    return addFactor
+    return data["addFactorPacked"]["context"]["eventId"]
 end
 
-function addFactor(navAbilityClient::NavAbilityClient, client::Client, factor::Factor)
-    return @async addPackedFactor(navAbilityClient, client, factor)
+function addFactorPacked(navAbilityClient::NavAbilityClient, client::Client, factor::Dict; options::Dict=Dict{String,Any}("force" => false))
+    return @async addFactorPackedEvent(navAbilityClient, client, factor; options)
+end
+
+function addFactor(navAbilityClient::NavAbilityClient, client::Client, factor::Variable)
+    @warn "This function signature will change during 0.6, please use addFactorPacked."
+    return @async addVariablePackedEvent(navAbilityClient, client, factor; options)
 end
 
 function _getFactorEvent(navAbilityClient::NavAbilityClient, client::Client, label::String)::Dict{String,Any}
