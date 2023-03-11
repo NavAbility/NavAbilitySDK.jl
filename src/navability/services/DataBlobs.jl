@@ -209,7 +209,7 @@ completeUploadSingle(w...) = @async completeUploadSingleEvent(w...)
 
 function addBlobEvent(
   client::NavAbilityClient, 
-  blobname::AbstractString, 
+  blobLabel::AbstractString, 
   blob::AbstractVector{UInt8}
 )
   #
@@ -219,7 +219,7 @@ function addBlobEvent(
   # TODO: Use about a 50M file part here.
   np = 1 # TODO: ceil(filesize / 50e6)
   # create the upload url destination
-  d = NVA.createUploadEvent(client, blobname, filesize, np)
+  d = NVA.createUploadEvent(client, blobLabel, filesize, np)
   
   url = d["parts"][1]["url"]
   uploadId = d["uploadId"]
