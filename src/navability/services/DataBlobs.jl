@@ -78,6 +78,7 @@ function getBlobEntry(
   count::Base.RefValue{Int}=Ref(0), # return count of how many matches were found
   skiplist=Symbol[]
 )
+  # TODO list should return Vector{Symbol} not full BlobEntries
   ble = listBlobEntries(client, context, vlbl) |> fetch
   # filter for the specific blob label
   _matchpatt(regex::Regex, de) = match(regex, de.label) isa Nothing
@@ -209,7 +210,7 @@ completeUploadSingle(w...) = @async completeUploadSingleEvent(w...)
 
 function addBlobEvent(
   client::NavAbilityClient, 
-  blobname::AbstractString, 
+  blobLabel::AbstractString, 
   blob::AbstractVector{UInt8}
 )
   #
@@ -219,7 +220,7 @@ function addBlobEvent(
   # TODO: Use about a 50M file part here.
   np = 1 # TODO: ceil(filesize / 50e6)
   # create the upload url destination
-  d = NVA.createUploadEvent(client, blobname, filesize, np)
+  d = NVA.createUploadEvent(client, blobLabel, filesize, np)
   
   url = d["parts"][1]["url"]
   uploadId = d["uploadId"]
@@ -335,6 +336,7 @@ function listBlobEntriesEvent(
   if data === nothing return "Error" end
 
   listdata = data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["data"]
+  # FIXME, unmarshal with JSON3 instead
   ret = []
   for d in listdata
     tupk = Tuple(Symbol.(keys(d)))
