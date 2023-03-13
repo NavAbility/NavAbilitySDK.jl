@@ -117,7 +117,7 @@ function getBlob(
   (verbose && 1 < length(bles)) ? @warn("multiple matches on regex, fetching $(ble_.label), w/ regex: $(regex.pattern), $((s->s.label).(bles))") : nothing
   datalabel[] = ble_.label
   # get blob
-  return NVA.getBlob(client, context, ble_.id)
+  return NvaSDK.getBlob(client, context, ble_.id)
 end
 getBlob(
   client::NavAbilityClient, 
@@ -214,13 +214,13 @@ function addBlobEvent(
   blob::AbstractVector{UInt8}
 )
   #
-  io = IOBuffer(blob)
+  # io = IOBuffer(blob)
   
   filesize = length(blob)
   # TODO: Use about a 50M file part here.
   np = 1 # TODO: ceil(filesize / 50e6)
   # create the upload url destination
-  d = NVA.createUploadEvent(client, blobLabel, filesize, np)
+  d = NvaSDK.createUploadEvent(client, blobLabel, filesize, np)
   
   url = d["parts"][1]["url"]
   uploadId = d["uploadId"]
@@ -245,13 +245,19 @@ function addBlobEvent(
   eTag = match(r"[a-zA-Z0-9]+",resp["eTag"]).match
 
   # close out the upload
-  res = NVA.completeUploadSingleEvent(client, blobId, uploadId, eTag)
+  res = NvaSDK.completeUploadSingleEvent(client, blobId, uploadId, eTag)
 
   res == "Accepted" ? nothing : @error("Unable to upload blob, $res")
 
   blobId
 end
 
+# convenience
+addBlobEvent(
+  client::NavAbilityClient, 
+  blobLabel::Symbol, 
+  blob::AbstractVector{UInt8}
+) = addBlobEvent(client, string(blobLabel), blob)
 
 addBlob(w...) = @async addBlobEvent(w...)
 
@@ -415,13 +421,13 @@ If the blob label `thisisme_1` already exists, then this function will return th
 DO NOT EXPORT, Duplicate functionality from DistributedFactorGraphs.jl.
 """
 function incrDataLabelSuffix(
-  client::NVA.NavAbilityClient, 
-  context::NVA.Client, 
+  client::NvaSDK.NavAbilityClient, 
+  context::NvaSDK.Client, 
   vla, 
   bllb::AbstractString; 
   datalabel=Ref("")
 )
-  re_aH = NVA.getBlob(client, context, string(vla), Regex(bllb); datalabel) |> fetch
+  re_aH = NvaSDK.getBlob(client, context, string(vla), Regex(bllb); datalabel) |> fetch
   # append latest count
   count, hasund, len = if re_aH isa Nothing
     1, string(bllb)[end] == '_', 0

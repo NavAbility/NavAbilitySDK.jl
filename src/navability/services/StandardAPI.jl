@@ -27,7 +27,7 @@
 Add a variable to the NavAbility Platform service
 Example
 ```julia
-addVariable(client, context, "x0", NVA.Pose2)
+addVariable(client, context, "x0", NvaSDK.Pose2)
 ```
 """
 function addVariable(client,
