@@ -214,7 +214,7 @@ function addBlobEvent(
   blob::AbstractVector{UInt8}
 )
   #
-  io = IOBuffer(blob)
+  # io = IOBuffer(blob)
   
   filesize = length(blob)
   # TODO: Use about a 50M file part here.
@@ -252,6 +252,12 @@ function addBlobEvent(
   blobId
 end
 
+# convenience
+addBlobEvent(
+  client::NavAbilityClient, 
+  blobLabel::Symbol, 
+  blob::AbstractVector{UInt8}
+) = addBlobEvent(client, string(blobLabel), blob)
 
 addBlob(w...) = @async addBlobEvent(w...)
 
