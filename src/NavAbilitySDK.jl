@@ -33,7 +33,6 @@ include("./navability/graphql/DataBlobs.jl")
 include("./navability/graphql/Session.jl")
 
 
-include("./navability/graphql/QueriesDeprecated.jl")
 # TODO remove GQL exports, since users can easily just use NVA.QUERY___
 export QUERY_VARIABLE_LABELS
 export QUERY_FILES, QUERY_CALIBRATION
