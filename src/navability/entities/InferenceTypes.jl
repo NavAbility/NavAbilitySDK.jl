@@ -16,7 +16,7 @@ Macro to autogenerate factor type definitions.  Used for common types such as `P
 """
 macro nvaZInferenceType(inferencetype)
   return esc(quote
-      Base.@__doc__ struct $inferencetype <: NVA.InferenceType 
+      Base.@__doc__ struct $inferencetype <: NvaSDK.InferenceType 
           Z::Distribution
       end
       $inferencetype(;Z) = $inferencetype(Z)

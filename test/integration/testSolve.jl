@@ -15,8 +15,8 @@ function testSolveSession(client, context, variableLabels; maxSeconds=180)
     @info "solveSession" resultId
     GraphVizApp(context)
     # Wait for them to be done before proceeding.
-    # NVA.waitForCompletion2(client, resultId; maxSeconds)
-    NVA.waitForCompletion(client, [resultId;]; maxSeconds, expectedStatuses=["Complete"])
+    # NvaSDK.waitForCompletion2(client, resultId; maxSeconds)
+    NvaSDK.waitForCompletion(client, [resultId;]; maxSeconds, expectedStatuses=["Complete"])
 
     # Get PPE's are there for the connected variables.
     # TODO - complete the factor graph.

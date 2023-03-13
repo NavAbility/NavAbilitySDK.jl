@@ -1,7 +1,7 @@
 module NavAbilitySDK
 
-const NVA = NavAbilitySDK
-export NVA
+# const NVA = NavAbilitySDK
+# export NVA
 
 # Global imports
 using Diana
