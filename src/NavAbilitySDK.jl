@@ -1,6 +1,6 @@
 module NavAbilitySDK
 
-# const NVA = NavAbilitySDK
+const NvaSDK = NavAbilitySDK
 # export NVA
 
 # Global imports
