@@ -133,7 +133,11 @@ query sdk_listdataentries(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$var
           data {
             id
             label
+            description
+            blobstore
+            hash
             mimeType
+            origin
           }
         }
       }

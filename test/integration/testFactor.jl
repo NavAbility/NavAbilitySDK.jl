@@ -42,7 +42,7 @@ function testDeleteFactor(client, context, factorLabels)
     
     @show resultId = fetch(deleteFactor(client, context, "x0x1f_oops"))
     
-    @test NVA.waitForCompletion2(client, resultId)
+    @test NvaSDK.waitForCompletion2(client, resultId)
 
     @test setdiff(factorLabels, fetch( lsf(client, context) )) == []
 
