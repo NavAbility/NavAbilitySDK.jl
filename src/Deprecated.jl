@@ -4,7 +4,7 @@
 ## =========================
 
 @deprecate getDataEntry(w...;kw...) getBlobEntry(w...;kw...)
-@deprecate getBlobEvent(w...;kw...) getBlobEvent(w...;kw...)
+@deprecate getDataEvent(w...;kw...) getBlobEvent(w...;kw...)
 @deprecate getData(client::NavAbilityClient, context::Client, fileId::AbstractString) getData(client, context, UUID(fileId))
 @deprecate getData(w...;kw...) getBlob(w...;kw...)
 
