@@ -46,23 +46,23 @@ append!(
      addVariable(client, context3D, "x1", :Pose3)]
 )
 
-NVA.waitForCompletion(client, resultIds; maxSeconds=180, expectedStatuses=["Complete"] )
+NvaSDK.waitForCompletion(client, resultIds; maxSeconds=180, expectedStatuses=["Complete"] )
 
 resultIds = Task[]
 append!(
     resultIds,
-    [addFactor(client, context3D, ["x0"], NVA.PriorPose3(Z=NVA.FullNormal([0.,1.,0,0,0,0], diagm([0.1,0.1,0.1,0.01,0.01,0.01].^2)))),
-     addFactor(client, context3D, [:x0,:x1], NVA.Pose3Pose3Rotation(Z=NVA.FullNormal([0.1,0.,0], diagm([0.01,0.01,0.01].^2))))]
+    [addFactor(client, context3D, ["x0"], NvaSDK.PriorPose3(Z=NvaSDK.FullNormal([0.,1.,0,0,0,0], diagm([0.1,0.1,0.1,0.01,0.01,0.01].^2)))),
+     addFactor(client, context3D, [:x0,:x1], NvaSDK.Pose3Pose3Rotation(Z=NvaSDK.FullNormal([0.1,0.,0], diagm([0.01,0.01,0.01].^2))))]
 )
 
 
-NVA.waitForCompletion(client, resultIds; maxSeconds=180, expectedStatuses=["Complete"] )
+NvaSDK.waitForCompletion(client, resultIds; maxSeconds=180, expectedStatuses=["Complete"] )
 
-flabels = fetch(NVA.listFactors(client, context3D))
-fac = fetch(NVA.getFactor(client, context3D, "x0x1f_4e37"))
+flabels = fetch(NvaSDK.listFactors(client, context3D))
+fac = fetch(NvaSDK.getFactor(client, context3D, "x0x1f_4e37"))
 
-# r = fetch(NVA.solveSession(client, context3D))
-# s = fetch(NVA.getStatusesLatest(client, [r]))
-# v = fetch(NVA.getVariable(client, context3D, "x1"))
+# r = fetch(NvaSDK.solveSession(client, context3D))
+# s = fetch(NvaSDK.getStatusesLatest(client, [r]))
+# v = fetch(NvaSDK.getVariable(client, context3D, "x1"))
 
 end

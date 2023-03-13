@@ -8,8 +8,8 @@ function testAddVariable(client, context, variableLabels, variableTypes, variabl
     end
 
     # Wait for them to be done before proceeding.
-    # NVA.waitForCompletion2(client, resultIds; maxSeconds=180) # expectedStatuses=["Complete"]
-    NVA.waitForCompletion(client, resultIds; maxSeconds=180, expectedStatuses=["Complete"] )
+    # NvaSDK.waitForCompletion2(client, resultIds; maxSeconds=180) # expectedStatuses=["Complete"]
+    NvaSDK.waitForCompletion(client, resultIds; maxSeconds=180, expectedStatuses=["Complete"] )
 
     return resultIds
 end
@@ -19,7 +19,7 @@ function testUpdateVariable(client, context, variableLabels, variableTypes, vari
         actualVariable = getVariable(client,context,variableLabels[i]) |> fetch
         push!(actualVariable["tags"], "TEST")
         eventId = updateVariablePacked(client, context, actualVariable) |> fetch
-        NVA.waitForCompletion(client, [eventId]; maxSeconds=180, expectedStatuses=["Complete"] )
+        NvaSDK.waitForCompletion(client, [eventId]; maxSeconds=180, expectedStatuses=["Complete"] )
 
         actualVariable = getVariable(client,context,variableLabels[i]) |> fetch
         @test "TEST" in actualVariable["tags"]

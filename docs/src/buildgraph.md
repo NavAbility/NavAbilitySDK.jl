@@ -40,7 +40,7 @@ push!(
   resultIds, 
   addFactor(
     client, context, ["x0"], 
-    NVA.PriorPose2(;
+    NvaSDK.PriorPose2(;
       Z=FullNormal(
         [0.0, 0.0, 0.0], 
         diagm([0.05, 0.05, 0.01].^2)
@@ -77,7 +77,7 @@ push!(resultIds,
 push!(
   resultIds, 
   addFactor(client, context, ["x0","x1"],
-    NVA.Pose2Pose2(;
+    NvaSDK.Pose2Pose2(;
       Z=FullNormal(
         [1.0, 0.0, pi/2], 
         diagm([0.1, 0.1, 0.01].^2)
@@ -106,26 +106,26 @@ end
 # add landmark observation measurement and
 push!(resultIds, 
   addFactor(client, context, ["x0","l1"], 
-    NVA.Pose2Point2BearingRange(Normal(0, 0.03), Normal(0.5, 0.1))))    
+    NvaSDK.Pose2Point2BearingRange(Normal(0, 0.03), Normal(0.5, 0.1))))    
   
 # odometry measurements between poses
 push!(resultIds, 
   addFactor(client, context, ["x1","x2"], 
-    NVA.Pose2Pose2(
+    NvaSDK.Pose2Pose2(
       FullNormal(
        [1.0, 0.0, pi/2], 
        diagm([0.1, 0.1, 0.01].^2)))))
 
 push!(resultIds, 
   addFactor(client, context, ["x2","x3"], 
-    NVA.Pose2Pose2(
+    NvaSDK.Pose2Pose2(
       FullNormal(
        [1.0, 0.0, pi/2], 
        diagm([0.1, 0.1, 0.01].^2)))))
 
 push!(resultIds, 
   addFactor(client, context, ["x3","x4"], 
-    NVA.Pose2Pose2(
+    NvaSDK.Pose2Pose2(
       FullNormal(
         [1.0, 0.0, pi/2], 
         diagm([0.1, 0.1, 0.01].^2)))))
@@ -145,7 +145,7 @@ push!(
   addFactor(
     client, context, 
     ["x4","l1"], 
-    NVA.Pose2Point2BearingRange(
+    NvaSDK.Pose2Point2BearingRange(
       Normal(0, 0.03), 
       Normal(0.5, 0.1))
   )

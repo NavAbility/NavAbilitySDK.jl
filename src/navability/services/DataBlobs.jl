@@ -78,6 +78,7 @@ function getBlobEntry(
   count::Base.RefValue{Int}=Ref(0), # return count of how many matches were found
   skiplist=Symbol[]
 )
+  # TODO list should return Vector{Symbol} not full BlobEntries
   ble = listBlobEntries(client, context, vlbl) |> fetch
   # filter for the specific blob label
   _matchpatt(regex::Regex, de) = match(regex, de.label) isa Nothing
@@ -116,7 +117,7 @@ function getBlob(
   (verbose && 1 < length(bles)) ? @warn("multiple matches on regex, fetching $(ble_.label), w/ regex: $(regex.pattern), $((s->s.label).(bles))") : nothing
   datalabel[] = ble_.label
   # get blob
-  return NVA.getBlob(client, context, ble_.id)
+  return NvaSDK.getBlob(client, context, ble_.id)
 end
 getBlob(
   client::NavAbilityClient, 
@@ -207,23 +208,23 @@ completeUploadSingle(w...) = @async completeUploadSingleEvent(w...)
 ##
 
 
-function addDataEvent(
+function addBlobEvent(
   client::NavAbilityClient, 
-  blobname::AbstractString, 
+  blobLabel::AbstractString, 
   blob::AbstractVector{UInt8}
 )
   #
-  io = IOBuffer(blob)
+  # io = IOBuffer(blob)
   
   filesize = length(blob)
   # TODO: Use about a 50M file part here.
   np = 1 # TODO: ceil(filesize / 50e6)
   # create the upload url destination
-  d = NVA.createUploadEvent(client, blobname, filesize, np)
+  d = NvaSDK.createUploadEvent(client, blobLabel, filesize, np)
   
   url = d["parts"][1]["url"]
   uploadId = d["uploadId"]
-  fileId = d["file"]["id"]
+  blobId = d["file"]["id"]
   
   # custom header for pushing the file up
   headers = [
@@ -244,15 +245,21 @@ function addDataEvent(
   eTag = match(r"[a-zA-Z0-9]+",resp["eTag"]).match
 
   # close out the upload
-  res = NVA.completeUploadSingleEvent(client, fileId, uploadId, eTag)
+  res = NvaSDK.completeUploadSingleEvent(client, blobId, uploadId, eTag)
 
   res == "Accepted" ? nothing : @error("Unable to upload blob, $res")
 
-  fileId
+  blobId
 end
 
+# convenience
+addBlobEvent(
+  client::NavAbilityClient, 
+  blobLabel::Symbol, 
+  blob::AbstractVector{UInt8}
+) = addBlobEvent(client, string(blobLabel), blob)
 
-addData(w...) = @async addDataEvent(w...)
+addBlob(w...) = @async addBlobEvent(w...)
 
 
 ##
@@ -335,6 +342,7 @@ function listBlobEntriesEvent(
   if data === nothing return "Error" end
 
   listdata = data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["data"]
+  # FIXME, unmarshal with JSON3 instead
   ret = []
   for d in listdata
     tupk = Tuple(Symbol.(keys(d)))
@@ -413,13 +421,13 @@ If the blob label `thisisme_1` already exists, then this function will return th
 DO NOT EXPORT, Duplicate functionality from DistributedFactorGraphs.jl.
 """
 function incrDataLabelSuffix(
-  client::NVA.NavAbilityClient, 
-  context::NVA.Client, 
+  client::NvaSDK.NavAbilityClient, 
+  context::NvaSDK.Client, 
   vla, 
   bllb::AbstractString; 
   datalabel=Ref("")
 )
-  re_aH = NVA.getBlob(client, context, string(vla), Regex(bllb); datalabel) |> fetch
+  re_aH = NvaSDK.getBlob(client, context, string(vla), Regex(bllb); datalabel) |> fetch
   # append latest count
   count, hasund, len = if re_aH isa Nothing
     1, string(bllb)[end] == '_', 0

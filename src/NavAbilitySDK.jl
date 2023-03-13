@@ -1,7 +1,7 @@
 module NavAbilitySDK
 
-const NVA = NavAbilitySDK
-export NVA
+const NvaSDK = NavAbilitySDK
+# export NVA
 
 # Global imports
 using Diana
@@ -83,6 +83,7 @@ export addFactor, addPackedFactor, deleteFactor
 export initVariable
 export listBlobEntries
 export getBlobEntry, getBlob
+export addBlobEntry, addBlob
 export solveSession, solveFederated
 export getStatusMessages, getStatusLatest, getStatusesLatest
 export waitForCompletion
