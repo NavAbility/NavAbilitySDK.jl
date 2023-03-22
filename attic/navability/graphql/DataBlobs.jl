@@ -59,7 +59,7 @@ mutation sdk_adddataentry(\$userId: ResourceId!, \$robotId: ResourceId!, \$sessi
         robotId: \$robotId,
         sessionId: \$sessionId
       },
-      blobStoreEntry: {
+      blobEntry: {
         id: \$dataId,
         label: \$dataLabel
         mimetype: \$mimeType
