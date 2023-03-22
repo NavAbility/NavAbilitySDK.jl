@@ -43,7 +43,7 @@ Base.@kwdef struct PPECreateInput
 end
 
 function StructTypes.omitempties(::Type{PPECreateInput})
-    return (:suggested_cartesian, :max_cartesian, :mean_cartesian)
+    return (:suggested_cartesian, :max_cartesian, :mean_cartesian, :variable)
 end
 
 Base.@kwdef struct SolverDataCreateInput
@@ -75,6 +75,8 @@ Base.@kwdef struct SolverDataCreateInput
 
     variable::Any # TODO SolverDataVariableFieldInput
 end
+
+StructTypes.omitempties(::Type{SolverDataCreateInput}) = (:variable,)
 
 Base.@kwdef struct BlobEntryCreateInput
     blobId::UUID

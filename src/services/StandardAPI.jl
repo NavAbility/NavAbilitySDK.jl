@@ -14,17 +14,16 @@ function addVariable!(
     tags::Vector{Symbol} = Symbol[],
     timestamp::ZonedDateTime = now(localzone()),
     solvable::Int = 1,
-    nstime::Int64 = 0,
+    nanosecondtime::Int64 = 0,
     smalldata::Dict{Symbol, DFG.SmallDataTypes} = Dict{Symbol, DFG.SmallDataTypes}(),
-    id = nothing,
 )
     union!(tags, [:VARIABLE])
 
     pacvar = PackedVariable(;
-        id,
+        id = nothing,
         label = Symbol(label),
         variableType = string(variableType),
-        nstime,
+        nstime = nanosecondtime,
         solvable,
         tags,
         metadata = base64encode(JSON3.write(smalldata)),

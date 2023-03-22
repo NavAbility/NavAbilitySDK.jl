@@ -126,7 +126,4 @@ function addSessionBlobEntries!(fgclient::DFGClient, entries::Vector{DFG.BlobEnt
 end
 
 #TODO
-# addUserBlobEntries!
-# addRobotBlobEntries!
-# addSessionBlobEntries!
 # addFactorBlobEntries!

@@ -131,14 +131,7 @@ end
 
 function addVariable!(fgclient::DFGClient, v::PackedVariable)
     client = fgclient.client
-
-    #NOTE this is not a full add packed variable as we can't add satelites in one call
-    #TODO add solver data
-    #TODO add blob Entries
-    #TODO add ppes
-    # error if field is not supported yet
-    any([!isempty(v.ppes), !isempty(v.blobEntries), !isempty(v.solverData)]) &&
-        error("PackedVariable fields [ppes,blobEntries,solverData] are not supported yet")
+    variableLabel = v.label
 
     # copy from a packed variable
     label = string(v.label)
@@ -151,6 +144,61 @@ function addVariable!(fgclient::DFGClient, v::PackedVariable)
 
     session = createConnect(fgclient.session.id)
 
+    if isempty(v.blobEntries)
+        blobEntries = nothing
+    else
+        blobEntryNodes = map(v.blobEntries) do entry
+            Dict(
+                "node"=>
+                BlobEntryCreateInput(;
+                    userLabel = fgclient.user.label,
+                    robotLabel = fgclient.robot.label,
+                    sessionLabel = fgclient.session.label,
+                    variableLabel = string(variableLabel),
+                    (key => getproperty(entry, key) for key in propertynames(entry))...,
+                    blobId = isnothing(entry.blobId) ? entry.originId : entry.blobId,
+                ),
+            )
+        end
+        blobEntries = Dict("create" => blobEntryNodes)
+    end
+
+    if isempty(v.solverData)
+        solverData = nothing
+    else
+        solverDataNodes = map(v.solverData) do sd
+            Dict(
+                "node" => SolverDataCreateInput(;
+                    userLabel = fgclient.user.label,
+                    robotLabel = fgclient.robot.label,
+                    sessionLabel = fgclient.session.label,
+                    variableLabel = string(variableLabel),
+                    variable = nothing,
+                    (key => getproperty(sd, key) for key in propertynames(sd))...,
+                ),
+            )
+        end
+        solverData = Dict("create" => solverDataNodes)
+    end
+
+    if isempty(v.ppes)
+        ppes = nothing
+    else
+        ppeNodes = map(v.ppes) do ppe
+            Dict(
+                "node" => PPECreateInput(;
+                    userLabel = fgclient.user.label,
+                    robotLabel = fgclient.robot.label,
+                    sessionLabel = fgclient.session.label,
+                    variableLabel = string(variableLabel),
+                    variable = nothing,
+                    (key => getproperty(ppe, key) for key in propertynames(ppe))...,
+                ),
+            )
+        end
+        ppes = Dict("create" => ppeNodes)
+    end
+
     addvar = VariableCreateInput(;
         label,
         variableType,
@@ -160,12 +208,17 @@ function addVariable!(fgclient::DFGClient, v::PackedVariable)
         metadata,
         timestamp,
         session,
+        blobEntries,
+        solverData,
+        ppes,
         userLabel = fgclient.user.label,
         robotLabel = fgclient.robot.label,
         sessionLabel = fgclient.session.label,
     )
 
     variables = Dict("variablesToCreate" => [addvar])
+
+    # return JSON3.write(Dict("query" => GQL_ADD_VARIABLES, "variables" => variables))
 
     response = GQL.execute(
         client,
