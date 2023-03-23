@@ -176,6 +176,22 @@ query sdk_get_variables_filtered(
 }
 """
 
+GQL_DELETE_VARIABLE = GQL.gql"""
+mutation deleteVariables($variableId: ID!, $variableLabel: String!) {
+  deleteVariables(
+    where: { id: $variableId }
+    delete: {
+      ppes: { where: { node: { variableLabel: $variableLabel } } }
+      solverData: { where: { node: { variableLabel: $variableLabel } } }
+      blobEntries: { where: { node: { variableLabel: $variableLabel } } }
+    }
+  ) {
+    nodesDeleted
+    relationshipsDeleted
+  }
+}
+"""
+
 # TODO 
 
 # GQL_LIST_VARIABLE_NEIGHBORS = """
@@ -214,12 +230,3 @@ query sdk_get_variables_filtered(
 # }
 # """
 
-# GQL_DELETE_VARIABLE = """
-# mutation sdk_delete_variables(\$where: VariableWhere) {
-#   deleteVariables(
-#     where: \$where
-#   ) {
-#     nodesDeleted
-#   }
-# }
-# """

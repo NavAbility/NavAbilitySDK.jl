@@ -88,7 +88,8 @@ function PPEUpdateInputDict(ppe::MeanMaxPPE)
 end
 
 function updatePPE!(fgclient::DFGClient, ppe::MeanMaxPPE)
-    isnothing(ppe.id) && error("Field id is needed for update, please use add, #TODO fallback to add")
+    isnothing(ppe.id) &&
+        error("Field id is needed for update, please use add, #TODO fallback to add")
 
     request = Dict((key => getproperty(ppe, key) for key in propertynames(ppe))...)
     # Make request
@@ -103,6 +104,19 @@ function updatePPE!(fgclient::DFGClient, ppe::MeanMaxPPE)
     numUpdated = length(response.data["updatePpes"].ppes)
     numUpdated != 1 && error("Expected to update one PPE but updated $(numUpdated)")
     return response.data["updatePpes"].ppes[1]
+end
+
+function deletePPE!(fgclient::DFGClient, ppe::DFG.MeanMaxPPE)
+    variables = Dict("id" => ppe.id)
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_DELETE_PPE;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response
 end
 
 function listPPEs(fgclient::DFGClient, variableId::UUID)
@@ -231,7 +245,8 @@ function addVariableSolverData!(
 end
 
 function updateVariableSolverData!(fgclient::DFGClient, vnd::DFG.PackedVariableNodeData)
-    isnothing(vnd.id) && error("Field id is needed for update, please use add, #TODO fallback to add")
+    isnothing(vnd.id) &&
+        error("Field id is needed for update, please use add, #TODO fallback to add")
 
     request = Dict((key => getproperty(vnd, key) for key in propertynames(vnd))...)
     # Make request
@@ -246,6 +261,19 @@ function updateVariableSolverData!(fgclient::DFGClient, vnd::DFG.PackedVariableN
     numUpdated = length(response.data["updateSolverData"].solverData)
     numUpdated != 1 && error("Expected to update one SolverData but updated $(numUpdated)")
     return response.data["updateSolverData"].solverData[1]
+end
+
+function deleteVariableSolverData!(fgclient::DFGClient, vnd::DFG.PackedVariableNodeData)
+    variables = Dict("id" => vnd.id)
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_DELETE_SOLVERDATA;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response
 end
 
 function listVariableSolverData(fgclient::DFGClient, variableId::UUID)
@@ -516,4 +544,18 @@ function getVariablesSkeleton(fgclient::DFGClient)#, label::Symbol)
 
     jstr = JSON3.write(response.data["users"][1]["robots"][1]["sessions"][1]["variables"])
     return JSON3.read(jstr, Vector{DFG.SkeletonDFGVariable})
+end
+
+# delete variable and its satelites (by variable label)
+function deleteVariable!(fgclient::DFGClient, variable::PackedVariable)
+    variables = Dict("variableId" => variable.id, "variableLabel" => variable.label)
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_DELETE_VARIABLE;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response
 end

@@ -121,15 +121,13 @@ mutation updateSolverData(\$id: ID!, \$solverData: SolverDataUpdateInput!) {
 }
 """
 
-# GQL_DELETE_SOLVERDATA = """
-# mutation deleteSolverData(\$uniqueKey: String!) {
-#   deleteSolverData(
-#     where: {uniqueKey: \$uniqueKey}
-#   ) {
-#     nodesDeleted
-#   }
-# }
-# """
+GQL_DELETE_SOLVERDATA = GQL.gql"""
+mutation deleteSolverData($id: ID!) {
+  deleteSolverData(where: { id: $id }) {
+    nodesDeleted
+  }
+}
+"""
 
 # GQL_DELETE_SOLVERDATA_FOR_SESSION = """
 # mutation deleteSolverDataForSession(\$sessionId: ID!, \$solveKey: ID!) {

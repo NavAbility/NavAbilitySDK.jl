@@ -105,6 +105,20 @@ query listBlobEntries(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$variabl
 }
 """
 
+GQL_LIST_SESSION_BLOBENTRIES = GQL.gql"""
+query listSessionBlobEntries($userId: ID!, $robotId: ID!, $sessionId: ID!) {
+  users(where: { id: $userId }) {
+    robots(where: { id: $robotId }) {
+      sessions(where: { id: $sessionId }) {
+        blobEntries {
+          label
+        }
+      }
+    }
+  }
+}
+"""
+
 # GQL_UPDATE_BLOBENTRY = """
 # $(GQL_FRAGMENT_BLOBENTRY)
 # mutation updateBlobEntry(\$blobEntry: BlobEntryUpdateInput!, \$uniqueKey: String!) {

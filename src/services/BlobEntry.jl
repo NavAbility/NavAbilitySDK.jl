@@ -50,7 +50,7 @@ function getBlobEntries(fgclient::DFGClient, variableId::UUID)
 end
 
 function addBlobEntry!(fgclient::DFGClient, variableLabel::Symbol, entry::DFG.BlobEntry)
-    return addBlobEntries!(fgclient, variableLabel, [entry])
+    return addBlobEntries!(fgclient, variableLabel, [entry])[1]
 end
 
 function addBlobEntries!(
@@ -111,7 +111,9 @@ function listBlobEntries(fgclient::DFGClient, variableId::UUID)
         variables,
         throw_on_execution_error = true,
     )
-    return last.(response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["blobEntries"])
+    return last.(
+        response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["blobEntries"]
+    )
 end
 
 # =========================================================================================
@@ -174,6 +176,37 @@ function addRobotBlobEntries!(fgclient::DFGClient, entries::Vector{DFG.BlobEntry
 end
 function addSessionBlobEntries!(fgclient::DFGClient, entries::Vector{DFG.BlobEntry})
     return addNodeBlobEntries!(fgclient, fgclient.session.id, entries, SESSION)
+end
+
+function listSessionBlobEntries(fgclient::DFGClient)
+    variables = Dict(
+        "userId" => fgclient.user.id,
+        "robotId" => fgclient.robot.id,
+        "sessionId" => fgclient.session.id,
+    )
+
+    T = Vector{
+        Dict{
+            String,
+            Vector{
+                Dict{
+                    String,
+                    Vector{Dict{String, Vector{NamedTuple{(:label,), Tuple{Symbol}}}}},
+                },
+            },
+        },
+    }
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_LIST_SESSION_BLOBENTRIES,
+        T;
+        variables,
+        throw_on_execution_error = true,
+    )
+    return last.(
+        response.data["users"][1]["robots"][1]["sessions"][1]["blobEntries"]
+    )
 end
 
 #TODO

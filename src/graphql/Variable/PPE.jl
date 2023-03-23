@@ -109,15 +109,13 @@ mutation updatePPE(\$id: ID!, \$ppe: PPEUpdateInput!) {
 }
 """
 
-# GQL_DELETE_PPE = """
-# mutation deletePPE(\$uniqueKey: String!) {
-#   deletePpes(
-#     where: {uniqueKey: \$uniqueKey}
-#   ) {
-#     nodesDeleted
-#   }
-# }
-# """
+GQL_DELETE_PPE = GQL.gql"""
+mutation deletePPE($id: ID!) {
+  deletePpes(where: { id: $id }) {
+    nodesDeleted
+  }
+}
+"""
 
 # GQL_DELETE_PPE_FOR_SESSION = """
 # mutation deletePPEForSession(\$sessionId: ID!, \$solveKey: ID!) {
