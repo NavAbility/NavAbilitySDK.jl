@@ -1,9 +1,24 @@
+# type builder for JSON3 deserialization of chain of 
+# user[] - robot[] - session[] - variable - T[]
+function user_robot_session_variable_T(T)
+    Vector{
+        Dict{
+            String,
+            Vector{Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{T}}}}}}},
+        },
+    }
+end
 
 function createConnect(id::UUID)
     return Dict("connect" => Dict("where" => Dict("node" => Dict("id" => string(id)))))
 end
 
-function createVariableConnect(userLabel::String, robotLabel::String, sessionLabel::String, label::Symbol)
+function createVariableConnect(
+    userLabel::String,
+    robotLabel::String,
+    sessionLabel::String,
+    label::Symbol,
+)
     return Dict(
         "connect" => Dict(
             "where" => Dict(

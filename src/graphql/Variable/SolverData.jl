@@ -31,13 +31,35 @@ query get_solver_data(
   \$robotId: ID!
   \$sessionId: ID!
   \$variableId: ID!
-  \$solveKey: String!
+  \$solveKey: ID!
 ) {
   users(where: { id: \$userId }) {
     robots(where: { id: \$robotId }) {
       sessions(where: { id: \$sessionId }) {
         variables(where: { id: \$variableId }) {
-          solverData(where: { solveKey_MATCHES: \$solveKey }) {
+          solverData(where: { solveKey: \$solveKey }) {
+            ...solverdata_fields
+          }
+        }
+      }
+    }
+  }
+}
+"""
+
+GQL_GET_SOLVERDATA_ALL = """
+$(GQL_FRAGMENT_SOLVERDATA)
+query get_solver_data_all(
+  \$userId: ID!
+  \$robotId: ID!
+  \$sessionId: ID!
+  \$variableId: ID!
+) {
+  users(where: { id: \$userId }) {
+    robots(where: { id: \$robotId }) {
+      sessions(where: { id: \$sessionId }) {
+        variables(where: { id: \$variableId }) {
+          solverData {
             ...solverdata_fields
           }
         }
@@ -61,19 +83,43 @@ mutation addSolverData(\$solverData: [SolverDataCreateInput!]!) {
 }
 """
 
-# GQL_UPDATE_SOLVERDATA = """
-# $(GQL_FRAGMENT_SOLVERDATA)
-# mutation updateSolverData(\$solverData: SolverDataUpdateInput!, \$uniqueKey: String!) {
-#   updateSolverData(
-#     update: \$solverData
-#     where: {uniqueKey: \$uniqueKey}
-#   ) {
-#     solverData {
-#       ...solverdata_fields
-#     }
-#   }
-# }
-# """
+GQL_LIST_SOLVERDATA = """
+query listBlobSolverData(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$variableId: ID!) {
+  users (
+    where: {id: \$userId}
+  ) {
+    robots (
+      where: {id: \$robotId}
+    ) {
+      sessions (
+        where: {id: \$sessionId}
+      ) {
+        variables (
+          where: {id: \$variableId}
+        ) {
+          solverData {
+            solveKey
+          }
+        }
+      }
+    }
+  }
+}
+"""
+
+GQL_UPDATE_SOLVERDATA = """
+$(GQL_FRAGMENT_SOLVERDATA)
+mutation updateSolverData(\$id: ID!, \$solverData: SolverDataUpdateInput!) {
+  updateSolverData(
+    update: \$solverData
+    where: {id: \$id}
+  ) {
+    solverData {
+      ...solverdata_fields
+    }
+  }
+}
+"""
 
 # GQL_DELETE_SOLVERDATA = """
 # mutation deleteSolverData(\$uniqueKey: String!) {

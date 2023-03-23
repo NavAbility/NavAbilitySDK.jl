@@ -20,7 +20,6 @@ mutation sdk_url_createupload(\$filename: String!, \$filesize: BigInt!, \$parts:
 }
 """
 
-
 GQL_COMPLETEUPLOAD_SINGLE = """
 mutation completeUpload(\$fileId: ID!, \$uploadId: ID!, \$eTag: String) {
   completeUpload (
@@ -37,7 +36,6 @@ mutation completeUpload(\$fileId: ID!, \$uploadId: ID!, \$eTag: String) {
   )
 }
 """
-
 
 GQL_LISTBLOBS = """
 query listBlobs {

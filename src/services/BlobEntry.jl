@@ -13,13 +13,44 @@ function getBlobEntry(fgclient::DFGClient, variableId::UUID, label::Symbol)
         "blobLabel" => string(label),
     )
 
-    response =
-        GQL.execute(client, GQL_GET_BLOBENTRY; variables, throw_on_execution_error = true)
+    T = user_robot_session_variable_T(DFG.BlobEntry)
 
-    jstr = JSON3.write(
-        response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["blobEntries"][1],
+    response = GQL.execute(
+        client,
+        GQL_GET_BLOBENTRY,
+        T;
+        variables,
+        throw_on_execution_error = true,
     )
-    return JSON3.read(jstr, DFG.BlobEntry)
+
+    return response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["blobEntries"][1]
+end
+
+function getBlobEntries(fgclient::DFGClient, variableId::UUID)
+    client = fgclient.client
+
+    variables = Dict(
+        "userId" => fgclient.user.id,
+        "robotId" => fgclient.robot.id,
+        "sessionId" => fgclient.session.id,
+        "variableId" => variableId,
+    )
+
+    T = user_robot_session_variable_T(DFG.BlobEntry)
+
+    response = GQL.execute(
+        client,
+        GQL_GET_BLOBENTRIES,
+        T;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["blobEntries"]
+end
+
+function addBlobEntry!(fgclient::DFGClient, variableLabel::Symbol, entry::DFG.BlobEntry)
+    return addBlobEntries!(fgclient, variableLabel, [entry])
 end
 
 function addBlobEntries!(
@@ -63,8 +94,28 @@ end
 # another way would be like this:
 # GQL.mutate(client, "addBlobEntries", Dict("input"=>input), NVA.BlobEntryResponse; output_fields=#TODO, verbose=2)
 
+function listBlobEntries(fgclient::DFGClient, variableId::UUID)
+    variables = Dict(
+        "userId" => fgclient.user.id,
+        "robotId" => fgclient.robot.id,
+        "sessionId" => fgclient.session.id,
+        "variableId" => variableId,
+    )
+
+    T = user_robot_session_variable_T(NamedTuple{(:label,), Tuple{Symbol}})
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_LIST_BLOBENTRIES,
+        T;
+        variables,
+        throw_on_execution_error = true,
+    )
+    return last.(response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["blobEntries"])
+end
+
 # =========================================================================================
-# BlobEntry CRUD
+# BlobEntry CRUD on other nodes
 # =========================================================================================
 
 @enum BlobEntryNodeTypes USER ROBOT SESSION VARIABLE FACTOR

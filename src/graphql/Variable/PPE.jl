@@ -20,13 +20,35 @@ query get_ppe(
   \$robotId: ID!
   \$sessionId: ID!
   \$variableId: ID!
-  \$solveKey: String!
+  \$solveKey: ID!
 ) {
   users(where: { id: \$userId }) {
     robots(where: { id: \$robotId }) {
       sessions(where: { id: \$sessionId }) {
         variables(where: { id: \$variableId }) {
-          ppes(where: { solveKey_MATCHES: \$solveKey }) {
+          ppes(where: { solveKey: \$solveKey }) {
+            ...ppe_fields
+          }
+        }
+      }
+    }
+  }
+}
+"""
+
+GQL_GET_PPES = """
+$(GQL_FRAGMENT_PPES)
+query get_ppes(
+  \$userId: ID!
+  \$robotId: ID!
+  \$sessionId: ID!
+  \$variableId: ID!
+) {
+  users(where: { id: \$userId }) {
+    robots(where: { id: \$robotId }) {
+      sessions(where: { id: \$sessionId }) {
+        variables(where: { id: \$variableId }) {
+          ppes {
             ...ppe_fields
           }
         }
@@ -49,19 +71,43 @@ mutation addPpes(\$ppes: [PPECreateInput!]!) {
 }
 """
 
-# GQL_UPDATE_PPE = """
-# $(GQL_FRAGMENT_PPES)
-# mutation updatePPE(\$ppe: PPEUpdateInput!, \$uniqueKey: String!) {
-#   updatePpes(
-#     update: \$ppe
-#     where: {uniqueKey: \$uniqueKey}
-#   ) {
-#     ppes {
-#       ...ppe_fields
-#     }
-#   }
-# }
-# """
+GQL_LIST_PPES = """
+query listBlobPPEs(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$variableId: ID!) {
+  users (
+    where: {id: \$userId}
+  ) {
+    robots (
+      where: {id: \$robotId}
+    ) {
+      sessions (
+        where: {id: \$sessionId}
+      ) {
+        variables (
+          where: {id: \$variableId}
+        ) {
+          ppes {
+            solveKey
+          }
+        }
+      }
+    }
+  }
+}
+"""
+
+GQL_UPDATE_PPE = """
+$(GQL_FRAGMENT_PPES)
+mutation updatePPE(\$id: ID!, \$ppe: PPEUpdateInput!) {
+  updatePpes(
+    update: \$ppe
+    where: {id: \$id}
+  ) {
+    ppes {
+      ...ppe_fields
+    }
+  }
+}
+"""
 
 # GQL_DELETE_PPE = """
 # mutation deletePPE(\$uniqueKey: String!) {

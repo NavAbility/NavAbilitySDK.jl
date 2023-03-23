@@ -16,6 +16,7 @@ methodstoasync = [
     #get
     :getBlob,
     :getBlobEntry,
+    :getBlobEntries,
     :getFactor,
     :getFactors,
     :getFncTypeName,

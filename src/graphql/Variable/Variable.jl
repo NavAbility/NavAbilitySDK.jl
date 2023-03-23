@@ -54,7 +54,7 @@ query get_variable(
   users(where: { id: \$userId }) {
     robots(where: { id: \$robotId }) {
       sessions(where: { id: \$sessionId }) {
-        variables(where: { label_MATCHES: \$variableLabel }) {
+        variables(where: { label: \$variableLabel }) {
           ...variable_skeleton_fields
           ...variable_summary_fields @include(if: \$fields_summary)
           ...variable_full_fields @include(if: \$fields_full)

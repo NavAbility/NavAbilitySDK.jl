@@ -40,7 +40,7 @@ query get_variable(
   users(where: { id: \$userId }) {
     robots(where: { id: \$robotId }) {
       sessions(where: { id: \$sessionId }) {
-        factors(where: { label_MATCHES: \$factorLabel }) {
+        factors(where: { label: \$factorLabel }) {
           ...factor_skeleton_fields
           ...factor_summary_fields @include(if: \$fields_summary)
           ...factor_full_fields @include(if: \$fields_full)

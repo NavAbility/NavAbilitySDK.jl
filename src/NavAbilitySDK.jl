@@ -49,6 +49,8 @@ include("services/BlobEntry.jl")
 include("services/BlobStore.jl")
 include("services/StandardAPI.jl")
 
+include("services/AsyncCalls.jl")
+
 include("Deprecated.jl")
 
 #exports

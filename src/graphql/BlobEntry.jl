@@ -19,17 +19,17 @@ fragment blobEntry_fields on BlobEntry {
 GQL_GET_BLOBENTRY = """
 $(GQL_FRAGMENT_BLOBENTRY)
 query get_blob_entry(
-  \$userId: String!
-  \$robotId: String!
-  \$sessionId: String!
-  \$variableId: String!
+  \$userId: ID!
+  \$robotId: ID!
+  \$sessionId: ID!
+  \$variableId: ID!
   \$blobLabel: String!
 ) {
-  users(where: { id_MATCHES: \$userId }) {
-    robots(where: { id_MATCHES: \$robotId }) {
-      sessions(where: { id_MATCHES: \$sessionId }) {
-        variables(where: { id_MATCHES: \$variableId }) {
-          blobEntries(where: { label_MATCHES: \$blobLabel }) {
+  users(where: { id: \$userId }) {
+    robots(where: { id: \$robotId }) {
+      sessions(where: { id: \$sessionId }) {
+        variables(where: { id: \$variableId }) {
+          blobEntries(where: { label: \$blobLabel }) {
             ...blobEntry_fields
           }
         }
@@ -38,6 +38,34 @@ query get_blob_entry(
   }
 }
 """
+
+GQL_GET_BLOBENTRIES = """
+$(GQL_FRAGMENT_BLOBENTRY)
+query get_blob_entries(
+  \$userId: ID!
+  \$robotId: ID!
+  \$sessionId: ID!
+  \$variableId: ID!
+) {
+  users(where: { id: \$userId }) {
+    robots(where: { id: \$robotId }) {
+      sessions(where: { id: \$sessionId }) {
+        variables(where: { id: \$variableId }) {
+          blobEntries {
+            ...blobEntry_fields
+          }
+        }
+      }
+    }
+  }
+}
+"""
+
+# label_IN
+# label_MATCHES
+# label_CONTAINS
+# label_STARTS_WITH
+# label_ENDS_WITH
 
 GQL_ADD_BLOBENTRIES = """
 $(GQL_FRAGMENT_BLOBENTRY)

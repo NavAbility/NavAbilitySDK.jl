@@ -13,11 +13,34 @@ function getPPE(fgclient::DFGClient, variableId::UUID, solvekey::Symbol = :defau
         "solveKey" => string(solvekey),
     )
 
-    response = GQL.execute(client, GQL_GET_PPE; variables, throw_on_execution_error = true)
-    jstr = JSON3.write(
-        response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["Ppe"][1],
+    T = user_robot_session_variable_T(DFG.MeanMaxPPE)
+
+    response =
+        GQL.execute(client, GQL_GET_PPE, T; variables, throw_on_execution_error = true)
+
+    return response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["ppes"][1]
+end
+
+function getPPEs(fgclient::DFGClient, variableId::UUID)
+    client = fgclient.client
+
+    variables = Dict(
+        "userId" => fgclient.user.id,
+        "robotId" => fgclient.robot.id,
+        "sessionId" => fgclient.session.id,
+        "variableId" => variableId,
     )
-    return JSON3.read(jstr, DFG.MeanMaxPPE)
+
+    T = user_robot_session_variable_T(DFG.MeanMaxPPE)
+
+    response =
+        GQL.execute(client, GQL_GET_PPES, T; variables, throw_on_execution_error = true)
+
+    return response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["ppes"]
+end
+
+function addPPE!(fgclient::DFGClient, variableLabel::Symbol, ppe::DFG.MeanMaxPPE)
+    addPPEs!(fgclient, variableLabel, [ppe])
 end
 
 function addPPEs!(fgclient::DFGClient, variableLabel::Symbol, ppes::Vector{DFG.MeanMaxPPE})
@@ -56,6 +79,54 @@ function addPPEs!(fgclient::DFGClient, variableLabel::Symbol, ppes::Vector{DFG.M
     return response.data["addPpes"].ppes
 end
 
+function PPEUpdateInputDict(ppe::MeanMaxPPE)
+    #Mutable intermediate serialization object
+    request = JSON3.read(JSON3.write(ppe), Dict{String, Any})
+    delete!(request, "createdTimestamp")
+    delete!(request, "lastUpdatedTimestamp")
+    return request
+end
+
+function updatePPE!(fgclient::DFGClient, ppe::MeanMaxPPE)
+    isnothing(ppe.id) && error("Field id is needed for update, please use add, #TODO fallback to add")
+
+    request = Dict((key => getproperty(ppe, key) for key in propertynames(ppe))...)
+    # Make request
+    response = GQL.execute(
+        fgclient.client,
+        GQL_UPDATE_PPE,
+        PPEResponse;
+        variables = Dict("ppe" => request, "id" => ppe.id),
+        throw_on_execution_error = true,
+    )
+    # Assuming one update, error if not
+    numUpdated = length(response.data["updatePpes"].ppes)
+    numUpdated != 1 && error("Expected to update one PPE but updated $(numUpdated)")
+    return response.data["updatePpes"].ppes[1]
+end
+
+function listPPEs(fgclient::DFGClient, variableId::UUID)
+    variables = Dict(
+        "userId" => fgclient.user.id,
+        "robotId" => fgclient.robot.id,
+        "sessionId" => fgclient.session.id,
+        "variableId" => variableId,
+    )
+
+    T = user_robot_session_variable_T(NamedTuple{(:solveKey,), Tuple{Symbol}})
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_LIST_PPES,
+        T;
+        variables,
+        throw_on_execution_error = true,
+    )
+    return last.(
+        response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["ppes"]
+    )
+end
+
 # =========================================================================================
 # VariableSolverData CRUD
 # =========================================================================================
@@ -75,14 +146,48 @@ function getVariableSolverData(
         "solveKey" => string(solvekey),
     )
 
-    response =
-        GQL.execute(client, GQL_GET_SOLVERDATA; variables, throw_on_execution_error = true)
-    # return response.data["variables"][]
+    T = user_robot_session_variable_T(DFG.PackedVariableNodeData)
 
-    jstr = JSON3.write(
-        response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["solverData"][1],
+    response = GQL.execute(
+        client,
+        GQL_GET_SOLVERDATA,
+        T;
+        variables,
+        throw_on_execution_error = true,
     )
-    return JSON3.read(jstr, DFG.PackedVariableNodeData)
+
+    return response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["solverData"][1]
+end
+
+function getVariableSolverDataAll(fgclient::DFGClient, variableId::UUID)
+    client = fgclient.client
+
+    variables = Dict(
+        "userId" => fgclient.user.id,
+        "robotId" => fgclient.robot.id,
+        "sessionId" => fgclient.session.id,
+        "variableId" => variableId,
+    )
+
+    T = user_robot_session_variable_T(DFG.PackedVariableNodeData)
+
+    response = GQL.execute(
+        client,
+        GQL_GET_SOLVERDATA_ALL,
+        T;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["solverData"]
+end
+
+function addVariableSolverData!(
+    fgclient::DFGClient,
+    variableLabel::Symbol,
+    vnd::DFG.PackedVariableNodeData,
+)
+    addVariableSolverData!(fgclient, variableLabel, [vnd])
 end
 
 function addVariableSolverData!(
@@ -125,6 +230,46 @@ function addVariableSolverData!(
     return response.data["addSolverData"].solverData
 end
 
+function updateVariableSolverData!(fgclient::DFGClient, vnd::DFG.PackedVariableNodeData)
+    isnothing(vnd.id) && error("Field id is needed for update, please use add, #TODO fallback to add")
+
+    request = Dict((key => getproperty(vnd, key) for key in propertynames(vnd))...)
+    # Make request
+    response = GQL.execute(
+        fgclient.client,
+        GQL_UPDATE_SOLVERDATA,
+        SolverDataResponse;
+        variables = Dict("solverData" => request, "id" => vnd.id),
+        throw_on_execution_error = true,
+    )
+    # Assuming one update, error if not
+    numUpdated = length(response.data["updateSolverData"].solverData)
+    numUpdated != 1 && error("Expected to update one SolverData but updated $(numUpdated)")
+    return response.data["updateSolverData"].solverData[1]
+end
+
+function listVariableSolverData(fgclient::DFGClient, variableId::UUID)
+    variables = Dict(
+        "userId" => fgclient.user.id,
+        "robotId" => fgclient.robot.id,
+        "sessionId" => fgclient.session.id,
+        "variableId" => variableId,
+    )
+
+    T = user_robot_session_variable_T(NamedTuple{(:solveKey,), Tuple{Symbol}})
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_LIST_SOLVERDATA,
+        T;
+        variables,
+        throw_on_execution_error = true,
+    )
+    return last.(
+        response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["solverData"]
+    )
+end
+
 # =======================================================================================
 # Variable CRUD
 # =======================================================================================
@@ -149,14 +294,17 @@ function addVariable!(fgclient::DFGClient, v::PackedVariable)
     else
         blobEntryNodes = map(v.blobEntries) do entry
             Dict(
-                "node"=>
-                BlobEntryCreateInput(;
+                "node" => BlobEntryCreateInput(;
                     userLabel = fgclient.user.label,
                     robotLabel = fgclient.robot.label,
                     sessionLabel = fgclient.session.label,
                     variableLabel = string(variableLabel),
                     (key => getproperty(entry, key) for key in propertynames(entry))...,
-                    blobId = isnothing(entry.blobId) ? entry.originId : entry.blobId,
+                    blobId = if isnothing(entry.blobId)
+                        entry.originId
+                    else
+                        entry.blobId
+                    end,
                 ),
             )
         end
