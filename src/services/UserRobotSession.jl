@@ -41,7 +41,7 @@ function Context(
     elseif addSessionIfNotExists
         addSession(client, user, robot, sessionLabel)
     else
-        error("Session '$(sessionLabel)' does not exist")
+        error("Session '$(sessionLabel)' does not exist, use `addSessionIfNotExists=true` to create it automatically.")
     end
 
     return Context(user, robot, session)

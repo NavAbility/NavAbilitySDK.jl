@@ -1,3 +1,9 @@
+#TODO we can also extend the blobstore
+# struct NavAbilityBlobStore <: AbstractBlobStore{Vector{UInt8}}
+#   client::GQL.Client
+#   userLabel::String
+# end
+
 
 """
 $(SIGNATURES)
@@ -5,29 +11,29 @@ Request URLs for data blob download.
 
 Args:
   navAbilityClient (NavAbilityClient): The NavAbility client.
-  userId (String): The userId with access to the data.
+  userLabel (String): The userLabel with access to the data.
   fileId (String): The unique file identifier of the data blob.
 """
-function createDownload(client::GQL.Client, userId::AbstractString, blobId::UUID)
+function createDownload(client::GQL.Client, userLabel::AbstractString, blobId::UUID)
     response = GQL.mutate(
         client,
         "createDownload",
-        Dict("userId" => userId, "fileId" => string(blobId));
+        Dict("userId" => userLabel, "fileId" => string(blobId));
         throw_on_execution_error = true,
     )
-
+    #TODO API is a bit confusing as it is the user label that works here, ie. guest@navability.io
     return response.data["createDownload"]
     # data = get(response,"data",nothing)
-    # if data === nothing || !haskey(data, "url") throw(KeyError("Cannot create download for $userId, requesting $blobId.\n$rootData")) end
+    # if data === nothing || !haskey(data, "url") throw(KeyError("Cannot create download for $userLabel, requesting $blobId.\n$rootData")) end
     # urlMsg = get(data,"url","Error")
     # # TODO: What about marshalling?
     # return urlMsg
 end
 
 ##
-function getBlob(client::GQL.Client, userId::AbstractString, blobId::UUID)
+function getBlob(client::GQL.Client, userLabel::AbstractString, blobId::UUID)
     #
-    url = createDownload(client, userId, blobId)
+    url = createDownload(client, userLabel, blobId)
     io = PipeBuffer()
     Downloads.download(url, io)
     return io |> take!

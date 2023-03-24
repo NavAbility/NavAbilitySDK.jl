@@ -416,14 +416,18 @@ function getVariables(fgclient::DFGClient)
         "fields_full" => true,
     )
 
+    T = Vector{
+        Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{PackedVariable}}}}}},
+    }
+
     response = GQL.execute(
         fgclient.client,
         GQL_GET_VARIABLES,
-        Vector{PackedVariable};
+        T;
         variables,
         throw_on_execution_error = true,
     )
-    return response.data["variables"][]
+    return response.data["users"][1]["robots"][1]["sessions"][1]["variables"]
 end
 
 function listVariables(fgclient::DFGClient)
