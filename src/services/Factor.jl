@@ -98,12 +98,18 @@ function listFactors(fgclient::DFGClient)
         "sessionId" => fgclient.session.id,
     )
 
+
+    T = Vector{
+        Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{NamedTuple{(:label,), Tuple{Symbol}}}}}}}}
+    }
+
     response = GQL.execute(
         fgclient.client,
-        GQL_LISTFACTORS;
+        GQL_LISTFACTORS,
+        T;
         variables,
         throw_on_execution_error = true,
     )
 
-    return Symbol.(response.data["users"][1]["robots"][1]["sessions"][1]["factors"])
+    return last.(response.data["users"][1]["robots"][1]["sessions"][1]["factors"])
 end
