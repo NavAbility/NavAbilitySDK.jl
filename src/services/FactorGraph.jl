@@ -41,7 +41,7 @@ function getNeighbors(fgclient::DFGClient, v::PackedVariable)
     )
 end
 
-function getNeighbors(fgclient::DFGClient, f::PackedFactor)
+function getNeighbors(fgclient::DFGClient, f::DFG.AbstractDFGFactor)
     #TODO fallback to using the label
     isnothing(f.id) && error("No id field in factor")
 

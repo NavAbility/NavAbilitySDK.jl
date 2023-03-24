@@ -1,20 +1,30 @@
 #TODO factor does not have blobs yet
 
-function connectWhere(label::Symbol)
-    return Dict("where" => Dict("node" => Dict("label" => string(label))))
-end
-
-connectWhere(id::UUID) = Dict("where" => Dict("node" => Dict("id" => string(id))))
-
 function addFactor!(
     fgclient::DFGClient,
     pacfac::PackedFactor;
-    variableIds::Vector{<:Union{Symbol, String}} = pacfac._variableOrderSymbols,
+    variableLabels::Vector{<:Union{Symbol, String}} = pacfac._variableOrderSymbols,
 )
     client = fgclient.client
 
     # common field names
     fields = intersect(fieldnames(PackedFactor), fieldnames(FactorCreateInput))
+
+    variables = Dict(
+        "connect" => map(variableLabels) do vlink
+            Dict(
+                "where" => Dict(
+                    "node" => Dict(
+                        # "userLabel" => fgclient.user.label,
+                        # "robotLabel" => fgclient.robot.label,
+                        # "sessionLabel" => fgclient.session.label,
+                        "sessionConnection" => Dict("node" => Dict("id"=>fgclient.session.id)),
+                        "label" => vlink,
+                    )
+                )
+            )
+        end
+    )
 
     addfac = FactorCreateInput(;
         # uniqueKey = string(variableId, ".", vnd.solveKey),
@@ -22,7 +32,7 @@ function addFactor!(
         robotLabel = fgclient.robot.label,
         sessionLabel = fgclient.session.label,
         session = createConnect(fgclient.session.id),
-        variables = Dict("connect" => connectWhere.(variableIds)),
+        variables,
         (key => getproperty(pacfac, key) for key in fields)...,
     )
 
@@ -40,7 +50,6 @@ function addFactor!(
 end
 
 function getFactors(fgclient::DFGClient)
-    
     client = fgclient.client
 
     variables = Dict(
@@ -55,14 +64,9 @@ function getFactors(fgclient::DFGClient)
         Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{PackedFactor}}}}}},
     }
 
-    response = GQL.execute(
-        client,
-        GQL_GET_FACTORS,
-        T;
-        variables,
-        throw_on_execution_error = true
-    )
-    
+    response =
+        GQL.execute(client, GQL_GET_FACTORS, T; variables, throw_on_execution_error = true)
+
     return response.data["users"][1]["robots"][1]["sessions"][1]["factors"]
 end
 
@@ -98,9 +102,16 @@ function listFactors(fgclient::DFGClient)
         "sessionId" => fgclient.session.id,
     )
 
-
     T = Vector{
-        Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{NamedTuple{(:label,), Tuple{Symbol}}}}}}}}
+        Dict{
+            String,
+            Vector{
+                Dict{
+                    String,
+                    Vector{Dict{String, Vector{NamedTuple{(:label,), Tuple{Symbol}}}}},
+                },
+            },
+        },
     }
 
     response = GQL.execute(
@@ -112,4 +123,18 @@ function listFactors(fgclient::DFGClient)
     )
 
     return last.(response.data["users"][1]["robots"][1]["sessions"][1]["factors"])
+end
+
+# delete factor and its satelites (by factor label)
+function deleteFactor!(fgclient::DFGClient, factor::PackedFactor)
+    variables = Dict("factorId" => factor.id, "factorLabel" => factor.label)
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_DELETE_FACTOR;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response
 end

@@ -163,6 +163,20 @@ query listFactorNeighbors(
 }
 """
 
+GQL_DELETE_FACTOR = GQL.gql"""
+mutation deleteFactor($factorId: ID!, $factorLabel: String!) {
+  deleteFactors(
+    where: { id: $factorId }
+    delete: {
+      blobEntries: { where: { node: { factorLabel: $factorLabel } } }
+    }
+  ) {
+    nodesDeleted
+    relationshipsDeleted
+  }
+}
+"""
+
 # GQL_UPDATE_FACTOR = """
 # $(GQL_FRAGMENT_FACTORS)
 # mutation sdk_update_factors(\$where: FactorWhere, \$factorToUpdate: FactorUpdateInput!) {
@@ -179,12 +193,3 @@ query listFactorNeighbors(
 # }
 # """
 
-# GQL_DELETE_FACTOR = """
-# mutation sdk_delete_factors(\$where: FactorWhere) {
-#   deleteFactors(
-#     where: \$where
-#   ) {
-#     nodesDeleted
-#   }
-# }
-# """
