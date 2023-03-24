@@ -40,22 +40,30 @@ function addFactor!(
 end
 
 function getFactors(fgclient::DFGClient)
+    
     client = fgclient.client
 
     variables = Dict(
+        "userId" => fgclient.user.id,
+        "robotId" => fgclient.robot.id,
         "sessionId" => fgclient.session.id,
         "fields_summary" => true,
         "fields_full" => true,
     )
 
+    T = Vector{
+        Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{PackedFactor}}}}}},
+    }
+
     response = GQL.execute(
         client,
-        GQL_GET_Factors,
-        Vector{PackedFactor};
+        GQL_GET_FACTORS,
+        T;
         variables,
-        throw_on_execution_error = true,
+        throw_on_execution_error = true
     )
-    return response.data["factors"][]
+    
+    return response.data["users"][1]["robots"][1]["sessions"][1]["factors"]
 end
 
 function getFactor(fgclient::DFGClient, label::Symbol)

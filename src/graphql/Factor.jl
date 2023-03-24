@@ -86,15 +86,22 @@ query sdk_get_factors_by_label (
 GQL_GET_FACTORS = """
 $(GQL_FRAGMENT_FACTORS)
 query sdk_get_factors(
-    \$sessionId: ID!,
-    \$fields_summary: Boolean! = false, 
-    \$fields_full: Boolean! = false){
-  factors (
-      where: {session: {id: \$sessionId}},
-      options: { sort: [{ label: ASC } ]}) {
-    ...factor_skeleton_fields
-    ...factor_summary_fields @include(if: \$fields_summary)
-    ...factor_full_fields @include(if: \$fields_full)
+  \$userId: ID!
+  \$robotId: ID!
+  \$sessionId: ID!
+  \$fields_summary: Boolean! = true
+  \$fields_full: Boolean! = true
+) {
+  users(where: { id: \$userId }) {
+    robots(where: { id: \$robotId }) {
+      sessions(where: { id: \$sessionId }) {
+        factors {
+          ...factor_skeleton_fields
+          ...factor_summary_fields @include(if: \$fields_summary)
+          ...factor_full_fields @include(if: \$fields_full)
+        }
+      }
+    }
   }
 }
 """
