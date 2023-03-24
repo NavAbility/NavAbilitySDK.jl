@@ -140,6 +140,23 @@ query list_variables(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!) {
 }
 """
 
+GQL_EXISTS_VARIABLE_FACTOR_LABEL = GQL.gql"""
+query($userId: ID!, $robotId: ID!, $sessionId: ID!, $label: String!) {
+  users(where: { id: $userId }) {
+    robots(where: { id: $robotId }) {
+      sessions(where: { id: $sessionId }) {
+        variables(where: { label: $label }) {
+          label
+        }
+        factors(where: { label: $label }) {
+          label
+        }
+      }
+    }
+  }
+}
+"""
+
 ##
 
 #TODO not used yet
