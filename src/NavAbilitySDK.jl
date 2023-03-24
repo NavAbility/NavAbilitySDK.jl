@@ -48,6 +48,7 @@ include("services/Factor.jl")
 include("services/BlobEntry.jl")
 include("services/BlobStore.jl")
 include("services/StandardAPI.jl")
+include("services/FactorGraph.jl")
 
 include("services/AsyncCalls.jl")
 
@@ -67,7 +68,6 @@ include("Deprecated.jl")
 # export SolveOptions
 # export SessionKey, SessionId, ExportSessionInput, ExportSessionOptions
 
-
 # export getVariable, getVariables, listVariables, ls
 # export addVariable, updateVariable, addVariablePacked, updateVariablePacked, addPackedVariable, addPackedVariableOld
 # export getFactor, getFactors, listFactors, lsf
@@ -81,7 +81,5 @@ include("Deprecated.jl")
 # export waitForCompletion
 # export exportSession, getExportSessionBlobId
 # export GraphVizApp, MapVizApp
-
-
 
 end

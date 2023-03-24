@@ -135,6 +135,27 @@ query sdk_list_factors(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!) {
 }
 """
 
+GQL_LIST_FACTOR_NEIGHBORS = GQL.gql"""
+query listFactorNeighbors(
+  $userId: ID!
+  $robotId: ID!
+  $sessionId: ID!
+  $factorId: ID!
+) {
+  users(where: { id: $userId }) {
+    robots(where: { id: $robotId }) {
+      sessions(where: { id: $sessionId }) {
+        factors(where: { id: $factorId }) {
+          variables {
+            label
+          }
+        }
+      }
+    }
+  }
+}
+"""
+
 # GQL_UPDATE_FACTOR = """
 # $(GQL_FRAGMENT_FACTORS)
 # mutation sdk_update_factors(\$where: FactorWhere, \$factorToUpdate: FactorUpdateInput!) {

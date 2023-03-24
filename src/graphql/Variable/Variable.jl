@@ -192,27 +192,29 @@ mutation deleteVariables($variableId: ID!, $variableLabel: String!) {
 }
 """
 
-# TODO 
 
-# GQL_LIST_VARIABLE_NEIGHBORS = """
-#   query sdk_list_variable_neighbors (
-#     \$userLabel: String!, 
-#     \$robotLabel: String!, 
-#     \$sessionLabel: String!, 
-#     \$variableLabel: String!
-#     ) {
-#     users(where:{label: \$userLabel}) {
-#       robots(where:{label: \$robotLabel}) {
-#         sessions(where:{label: \$sessionLabel}) {
-#           variables(where:{label: \$variableLabel}) {
-#             factors {
-#               label
-#             }
-#           }
-#         }
-#       }
-#     }
-#   }"""
+GQL_LIST_VARIABLE_NEIGHBORS = GQL.gql"""
+query listVariableNeighbors(
+  $userId: ID!
+  $robotId: ID!
+  $sessionId: ID!
+  $variableId: ID!
+) {
+  users(where: { id: $userId }) {
+    robots(where: { id: $robotId }) {
+      sessions(where: { id: $sessionId }) {
+        variables(where: { id: $variableId }) {
+          factors {
+            label
+          }
+        }
+      }
+    }
+  }
+}
+"""
+
+# TODO 
 
 # GQL_UPDATE_VARIABLE = """
 # $(GQL_FRAGMENT_VARIABLES)

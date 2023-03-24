@@ -92,7 +92,7 @@ function listFactors(fgclient::DFGClient)
 
     response = GQL.execute(
         fgclient.client,
-        GQL_LIST_FACTORS;
+        GQL_LISTFACTORS;
         variables,
         throw_on_execution_error = true,
     )
