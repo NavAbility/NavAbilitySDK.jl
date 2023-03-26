@@ -1,4 +1,4 @@
-struct DFGClient
+struct DFGClient <: DFG.AbstractDFG{DFG.AbstractParams}
     client::GQL.Client
     user::NamedTuple{(:id, :label), Tuple{UUID, String}}
     robot::NamedTuple{(:id, :label), Tuple{UUID, String}}
@@ -7,6 +7,31 @@ end
 
 #TODO id OR label struct 
 function DFGClient(client::GQL.Client, context::Context)
+    return DFGClient(
+        client,
+        (id = context.user.id, label = context.user.label),
+        (id = context.robot.id, label = context.robot.label),
+        (id = context.session.id, label = context.session.label),
+    )
+end
+
+function DFGClient(
+    client::GQL.Client,
+    userLabel::String,
+    robotLabel::String,
+    sessionLabel::String;
+    addRobotIfNotExists = false,
+    addSessionIfNotExists = false,
+)
+    context = Context(
+        client,
+        userLabel,
+        robotLabel,
+        sessionLabel;
+        addRobotIfNotExists,
+        addSessionIfNotExists,
+    )
+
     return DFGClient(
         client,
         (id = context.user.id, label = context.user.label),

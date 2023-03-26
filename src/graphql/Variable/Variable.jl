@@ -194,13 +194,21 @@ query sdk_get_variables_filtered(
 """
 
 GQL_DELETE_VARIABLE = GQL.gql"""
-mutation deleteVariables($variableId: ID!, $variableLabel: String!) {
+mutation deleteVariables($variableId: ID!) {
   deleteVariables(
     where: { id: $variableId }
     delete: {
-      ppes: { where: { node: { variableLabel: $variableLabel } } }
-      solverData: { where: { node: { variableLabel: $variableLabel } } }
-      blobEntries: { where: { node: { variableLabel: $variableLabel } } }
+      ppes: {
+        where: { node: { variableConnection: { node: { id: $variableId } } } }
+      }
+      solverData: {
+        where: { node: { variableConnection: { node: { id: $variableId } } } }
+      }
+      blobEntries: {
+        where: {
+          node: { variableConnection_ALL: { node: { id: $variableId } } }
+        }
+      }
     }
   ) {
     nodesDeleted

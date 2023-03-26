@@ -1,6 +1,6 @@
 Base.@kwdef struct VariableCreateInput
     label::String
-    nstime::Int64 = 0
+    nstime::String = ""
     variableType::String
     solvable::Int64 = 1
     tags::Vector{String} = ["VARIABLE"]

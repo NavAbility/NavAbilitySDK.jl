@@ -77,7 +77,7 @@ function addBlobEntries!(
             sessionLabel = fgclient.session.label,
             variableLabel = string(variableLabel),
             variable = connect,
-            (key => getproperty(entry, key) for key in propertynames(entry))...,
+            getCommonProperties(BlobEntryCreateInput, entry)...,
         )
     end
 
@@ -154,7 +154,7 @@ function addNodeBlobEntries!(
             sessionLabel,
             variableLabel,
             factorLabel,
-            (key => getproperty(entry, key) for key in propertynames(entry))...,
+            getCommonProperties(BlobEntryCreateInput, entry)...,
         )
     end
 
@@ -204,9 +204,7 @@ function listSessionBlobEntries(fgclient::DFGClient)
         variables,
         throw_on_execution_error = true,
     )
-    return last.(
-        response.data["users"][1]["robots"][1]["sessions"][1]["blobEntries"]
-    )
+    return last.(response.data["users"][1]["robots"][1]["sessions"][1]["blobEntries"])
 end
 
 #TODO

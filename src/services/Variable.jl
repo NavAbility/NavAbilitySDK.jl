@@ -64,7 +64,7 @@ function addPPEs!(fgclient::DFGClient, variableLabel::Symbol, ppes::Vector{DFG.M
             sessionLabel = fgclient.session.label,
             variableLabel = string(variableLabel),
             variable = connect,
-            (key => getproperty(ppe, key) for key in propertynames(ppe))...,
+            getCommonProperties(PPECreateInput, ppe)...,
         )
     end
 
@@ -91,7 +91,7 @@ function updatePPE!(fgclient::DFGClient, ppe::MeanMaxPPE)
     isnothing(ppe.id) &&
         error("Field id is needed for update, please use add, #TODO fallback to add")
 
-    request = Dict((key => getproperty(ppe, key) for key in propertynames(ppe))...)
+    request = Dict(getCommonProperties(PPECreateInput, ppe))
     # Make request
     response = GQL.execute(
         fgclient.client,
@@ -229,7 +229,7 @@ function addVariableSolverData!(
             sessionLabel = fgclient.session.label,
             variableLabel = string(variableLabel),
             variable = connect,
-            (key => getproperty(vnd, key) for key in propertynames(vnd))...,
+            getCommonProperties(SolverDataCreateInput, vnd)...,
         )
     end
 
@@ -248,7 +248,7 @@ function updateVariableSolverData!(fgclient::DFGClient, vnd::DFG.PackedVariableN
     isnothing(vnd.id) &&
         error("Field id is needed for update, please use add, #TODO fallback to add")
 
-    request = Dict((key => getproperty(vnd, key) for key in propertynames(vnd))...)
+    request = Dict(getCommonProperties(PPECreateInput, ppe))
     # Make request
     response = GQL.execute(
         fgclient.client,
@@ -327,7 +327,7 @@ function addVariable!(fgclient::DFGClient, v::PackedVariable)
                     robotLabel = fgclient.robot.label,
                     sessionLabel = fgclient.session.label,
                     variableLabel = string(variableLabel),
-                    (key => getproperty(entry, key) for key in propertynames(entry))...,
+                    getCommonProperties(BlobEntryCreateInput, entry)...,
                     blobId = if isnothing(entry.blobId)
                         entry.originId
                     else
@@ -350,7 +350,7 @@ function addVariable!(fgclient::DFGClient, v::PackedVariable)
                     sessionLabel = fgclient.session.label,
                     variableLabel = string(variableLabel),
                     variable = nothing,
-                    (key => getproperty(sd, key) for key in propertynames(sd))...,
+                    getCommonProperties(SolverDataCreateInput, sd)...,
                 ),
             )
         end
@@ -368,7 +368,7 @@ function addVariable!(fgclient::DFGClient, v::PackedVariable)
                     sessionLabel = fgclient.session.label,
                     variableLabel = string(variableLabel),
                     variable = nothing,
-                    (key => getproperty(ppe, key) for key in propertynames(ppe))...,
+                    getCommonProperties(PPECreateInput, ppe)...,
                 ),
             )
         end
@@ -468,17 +468,18 @@ function getVariable(fgclient::DFGClient, label::Symbol)
         "fields_full" => true,
     )
 
+    T = Vector{
+        Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{PackedVariable}}}}}},
+    }
+
     response = GQL.execute(
         fgclient.client,
-        GQL_GET_VARIABLE;
-        # Vector{PackedVariable};
+        GQL_GET_VARIABLE,
+        T;
         variables,
         throw_on_execution_error = true,
     )
-    # return response.data["variables"][]
-    jstr =
-        JSON3.write(response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1])
-    return JSON3.read(jstr, PackedVariable)
+    return response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]
 end
 
 function getVariableSummary(fgclient::DFGClient, label::Symbol)
@@ -550,9 +551,10 @@ function getVariablesSkeleton(fgclient::DFGClient)#, label::Symbol)
     return JSON3.read(jstr, Vector{DFG.SkeletonDFGVariable})
 end
 
-# delete variable and its satelites (by variable label)
-function deleteVariable!(fgclient::DFGClient, variable::PackedVariable)
-    variables = Dict("variableId" => variable.id, "variableLabel" => variable.label)
+# delete variable and its satelites (by variable id)
+function deleteVariable!(fgclient::DFGClient, variable::DFG.AbstractDFGVariable)
+    isnothing(variable.id) && error("Variable $(variable.label) does not have an id")
+    variables = Dict("variableId" => variable.id)
 
     response = GQL.execute(
         fgclient.client,
@@ -561,5 +563,5 @@ function deleteVariable!(fgclient::DFGClient, variable::PackedVariable)
         throw_on_execution_error = true,
     )
 
-    return response
+    return response.data
 end

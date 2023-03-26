@@ -21,6 +21,40 @@ import DistributedFactorGraphs as DFG
 using DistributedFactorGraphs:
     PackedVariable, PackedVariableNodeData, MeanMaxPPE, BlobEntry, PackedFactor
 
+import DistributedFactorGraphs:
+    getFactor,
+    getFactors,
+    addFactor!,
+    updateFactor!,
+    deleteFactor!,
+    listFactors,
+    getVariable,
+    getVariables,
+    addVariable!,
+    updateVariable!,
+    deleteVariable!,
+    listVariables,
+    listBlobEntries,
+    exists,
+    getNeighbors
+# setSolverParams!,
+# getSolverParams,
+# getAddHistory,
+#getUserData, # TODO should propably rename to MetaData
+#setUserData!, # TODO should propably rename to MetaData
+#getRobotData, # TODO should propably rename to MetaData
+#setRobotData!, # TODO should propably rename to MetaData
+#getSessionData, # TODO should propably rename to MetaData
+#setSessionData!, # TODO should propably rename to MetaData
+# isVariable,
+# isFactor,
+# ls,
+# lsf,
+# isConnected,
+# buildSubgraph,
+# copyGraph!,
+# getBiadjacencyMatrix,
+
 # # LinearAlgebra pass through exports
 # export diagm, norm
 # # UUIDs pass through exports

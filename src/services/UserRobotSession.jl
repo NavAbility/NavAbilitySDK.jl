@@ -41,7 +41,9 @@ function Context(
     elseif addSessionIfNotExists
         addSession(client, user, robot, sessionLabel)
     else
-        error("Session '$(sessionLabel)' does not exist, use `addSessionIfNotExists=true` to create it automatically.")
+        error(
+            "Session '$(sessionLabel)' does not exist, use `addSessionIfNotExists=true` to create it automatically.",
+        )
     end
 
     return Context(user, robot, session)
@@ -51,12 +53,24 @@ function User(client::GQL.Client, userLabel::String)
     variables = Dict("userLabel" => userLabel)
     response = GQL.execute(
         client,
-        NvaSDK.GQL_GET_USER,
+        GQL_GET_USER,
         Vector{NvaSDK.User};
         variables,
         throw_on_execution_error = true,
     )
     return response.data["users"][]
+end
+
+function Robot(client::GQL.Client, userLabel::String, robotLabel::String)
+    variables = Dict("userLabel" => userLabel, "robotLabel" => robotLabel)
+    response = GQL.execute(
+        client,
+        GQL_GET_ROBOT,
+        Vector{NvaSDK.User};
+        variables,
+        throw_on_execution_error = true,
+    )
+    return response.data["users"][].robots[]
 end
 
 function addSession(client::GQL.Client, user::User, robot::Robot, sessionLabel::String)
@@ -146,4 +160,48 @@ function setRobotMeta!(fgclient::DFGClient, smallData::Dict{Symbol, DFG.SmallDat
         base64decode(response.data["updateRobots"]["robots"][1]["metadata"]),
         Dict{Symbol, DFG.SmallDataTypes},
     )
+end
+
+##
+function deleteSession!(robotId::DFGClient)
+    nvars = length(listVariables(fgclient))
+    nvars > 0 && error(
+        "Only empty sessions can be deleted, $(fgclient.session.label) still has $nvars variables.",
+    )
+
+    nfacts = length(listFactors(fgclient))
+    nfacts > 0 && error(
+        "Only empty sessions can be deleted, $(fgclient.session.label) still has $nfacts factors.",
+    )
+
+    variables = Dict("sessionId" => fgclient.session.id)
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_DELETE_SESSION;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response.data
+end
+
+function deleteRobot!(client::GQL.Client, userLabel::String, robotLabel::String)
+    robot = Robot(client, userLabel, robotLabel)
+
+    nsessions = length(robot.sessions)
+    nsessions > 0 && error(
+        "Only empty robots can be deleted, $(robotLabel) still has $nsessions sessions.",
+    )
+
+    variables = Dict("robotId" => robot.id)
+
+    response = GQL.execute(
+        client,
+        GQL_DELETE_ROBOT;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response.data
 end

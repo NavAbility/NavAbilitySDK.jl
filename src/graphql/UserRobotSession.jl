@@ -32,7 +32,7 @@ GQL_GET_USER = """
 $(GQL_FRAGMENT_USER)
 $(GQL_FRAGMENT_ROBOT)
 $(GQL_FRAGMENT_SESSION)
-query getUser(\$userLabel: String!) {
+query getUser(\$userLabel: EmailAddress!) {
   users (where: {label: \$userLabel}) {
     ...user_fields
     robots {
@@ -48,7 +48,7 @@ GQL_GET_USERROBOTSESSION = """
 $(GQL_FRAGMENT_USER)
 $(GQL_FRAGMENT_ROBOT)
 $(GQL_FRAGMENT_SESSION)
-query getURS(\$userLabel: String!, \$robotLabel: String!, \$sessionLabel: String!) {
+query getURS(\$userLabel: EmailAddress!, \$robotLabel: String!, \$sessionLabel: String!) {
   users (where: {label: \$userLabel}) {
     ...user_fields
     robots (where: {label: \$robotLabel}) {
@@ -59,6 +59,23 @@ query getURS(\$userLabel: String!, \$robotLabel: String!, \$sessionLabel: String
     }
   }
 }"""
+
+GQL_GET_ROBOT = """
+$(GQL_FRAGMENT_USER)
+$(GQL_FRAGMENT_ROBOT)
+$(GQL_FRAGMENT_SESSION)
+query getRobot(\$userLabel: EmailAddress!, \$robotLabel: String!) {
+  users(where: { label: \$userLabel }) {
+    ...user_fields
+    robots(where: { label: \$robotLabel }) {
+      ...robot_fields
+      sessions {
+        ...session_fields
+      }
+    }
+  }
+}
+"""
 
 
 GQL_ADD_ROBOT = """
@@ -115,4 +132,40 @@ query sdk_get_sessions(\$robotId:: ID!)
   sessions (where: {robot: {id: \$robotId}}) {
     ...session_fields
   }
+"""
+
+#Only session, force user to delete everthing in session to prevent acedentally deleting everthing?
+GQL_DELETE_SESSION = GQL.gql"""
+mutation deleteSession($sessionId: ID!) {
+  deleteSessions(
+    where: { id: $sessionId }
+    delete: {
+      blobEntries: {
+        where: { node: { sessionConnection_ALL: { node: { id: $sessionId } } } }
+      }
+    }
+  ) {
+    nodesDeleted
+    relationshipsDeleted
+  }
+}
+"""
+
+
+
+#Only robot, force user to delete everthing in robot to prevent acedentally deleting everthing?
+GQL_DELETE_ROBOT = GQL.gql"""
+mutation deleteRobot($robotId: ID!) {
+  deleteRobots(
+    where: { id: $robotId }
+    delete: {
+      blobEntries: {
+        where: { node: { robotConnection_ALL: { node: { id: $robotId } } } }
+      }
+    }
+  ) {
+    nodesDeleted
+    relationshipsDeleted
+  }
+}
 """

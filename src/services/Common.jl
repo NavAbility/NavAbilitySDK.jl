@@ -34,3 +34,7 @@ function createVariableConnect(
     # variable": {"connect": { "where": {"node": {"label": "x0", "robotLabel": "IntegrationRobot", "userLabel": 
 end
 # exists(client, context, label::Symbol) = 
+function getCommonProperties(::Type{T}, from::F) where {T, F}
+    commonfields = intersect(fieldnames(T), fieldnames(F))
+    return (k => getproperty(from, k) for k in commonfields)
+end

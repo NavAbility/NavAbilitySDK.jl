@@ -164,11 +164,15 @@ query listFactorNeighbors(
 """
 
 GQL_DELETE_FACTOR = GQL.gql"""
-mutation deleteFactor($factorId: ID!, $factorLabel: String!) {
+mutation deleteFactor($factorId: ID!) {
   deleteFactors(
     where: { id: $factorId }
     delete: {
-      blobEntries: { where: { node: { factorLabel: $factorLabel } } }
+      blobEntries: {
+        where: {
+          node: { factorConnection_ALL: { node: { id: $factorId } } }
+        }
+      }
     }
   ) {
     nodesDeleted

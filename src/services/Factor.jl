@@ -18,12 +18,14 @@ function addFactor!(
                         # "userLabel" => fgclient.user.label,
                         # "robotLabel" => fgclient.robot.label,
                         # "sessionLabel" => fgclient.session.label,
-                        "sessionConnection" => Dict("node" => Dict("id"=>fgclient.session.id)),
+                        "sessionConnection" => Dict(
+                            "node" => Dict("id" => fgclient.session.id),
+                        ),
                         "label" => vlink,
-                    )
-                )
+                    ),
+                ),
             )
-        end
+        end,
     )
 
     addfac = FactorCreateInput(;
@@ -125,9 +127,11 @@ function listFactors(fgclient::DFGClient)
     return last.(response.data["users"][1]["robots"][1]["sessions"][1]["factors"])
 end
 
-# delete factor and its satelites (by factor label)
-function deleteFactor!(fgclient::DFGClient, factor::PackedFactor)
-    variables = Dict("factorId" => factor.id, "factorLabel" => factor.label)
+# delete factor and its satelites (by factor id)
+function deleteFactor!(fgclient::DFGClient, factor::DFG.AbstractDFGFactor)
+    isnothing(factor.id) && error("Factor $(factor.label) does not have an id")
+
+    variables = Dict("factorId" => factor.id)
 
     response = GQL.execute(
         fgclient.client,
@@ -136,5 +140,5 @@ function deleteFactor!(fgclient::DFGClient, factor::PackedFactor)
         throw_on_execution_error = true,
     )
 
-    return response
+    return response.data
 end
