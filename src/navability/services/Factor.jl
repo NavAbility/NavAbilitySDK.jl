@@ -95,16 +95,54 @@ end
 
 getFactors( navAbilityClient::NavAbilityClient, client::Client; detail::QueryDetail = SKELETON) = @async getFactorsEvent(navAbilityClient, client; detail )
 
+
 """
     $(SIGNATURES)
-Get a list of the Factors as labels in the graph.
+Get a list of all factors labels in the graph.
 """
-function listFactors(navAbilityClient::NavAbilityClient, client::Client)
-    @async begin
-        factors = getFactors(navAbilityClient,client) |> fetch
-        map(v -> v["label"], factors)
+function listFactorsEvent(
+    client::NavAbilityClient, 
+    context::Client
+)
+    response = client.query(QueryOptions(
+        "sdk_list_factors",
+        GQL_LISTFACTORS,
+        Dict(
+            "userId" => context.userId,
+            "robotId" => context.robotId,
+            "sessionId" => context.sessionId,
+        )
+    )) |> fetch
+    payload = JSON.parse(response.Data)
+    try 
+        # FIXME, this list can be empty, using try catch as lazy check
+        (s->s["label"]).(payload["data"]["users"][1]["robots"][1]["sessions"][1]["factors"])
+    catch err
+        if err isa BoundsError
+            String[]
+        else
+            throw(err)
+        end
     end
 end
+
+"""
+    $(SIGNATURES)
+Get a list of Variable labels in the graph.
+
+Returns: A Task with response `::Vector{String}`.
+"""
+function listFactors(client::NavAbilityClient, context::Client)
+    @async listFactorsEvent(client, context)
+end
+
+
+# function listFactors(navAbilityClient::NavAbilityClient, client::Client)
+#     @async begin
+#         factors = getFactors(navAbilityClient,client) |> fetch
+#         map(v -> v["label"], factors)
+#     end
+# end
 
 function lsf(navAbilityClient::NavAbilityClient, client::Client)
     return listFactors(navAbilityClient,client)
