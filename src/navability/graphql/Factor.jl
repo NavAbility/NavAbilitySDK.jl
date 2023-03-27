@@ -15,6 +15,23 @@ fragment factor_full_fields on Factor {
 }
 """
 
+GQL_LISTFACTORS = """
+query sdk_list_factors (
+    \$userId: ID!, 
+    \$robotId: ID!, 
+    \$sessionId: ID!) {
+  users(where:{id: \$userId}) {
+    robots(where:{id: \$robotId}) {
+      sessions(where:{id: \$sessionId}) {
+        factors {
+          label
+        }
+      }
+    }
+  }
+}
+"""
+
 GQL_GETFACTOR = """
 query sdk_get_factor(
     \$userId: ID!, 
