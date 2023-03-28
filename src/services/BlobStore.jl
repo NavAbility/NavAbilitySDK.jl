@@ -1,9 +1,25 @@
 #TODO we can also extend the blobstore
-# struct NavAbilityBlobStore <: AbstractBlobStore{Vector{UInt8}}
-#   client::GQL.Client
-#   userLabel::String
-# end
+struct NavAbilityBlobStore <: DFG.AbstractBlobStore{Vector{UInt8}}
+    client::GQL.Client
+    userLabel::String
+end
 
+function Base.show(io::IO, ::MIME"text/plain", s::NavAbilityBlobStore)
+    summary(io, s)
+    print(io, "\n  ")
+    show(io, MIME("text/plain"), s.client)
+    println(io, "\n  User Name\n    ",s.userLabel)
+end
+
+
+function NavAbilityBlobStore(fgclient::DFGClient) 
+    NavAbilityBlobStore(fgclient.client, fgclient.user.label)
+end
+
+# struct CachedBlobStore{T} <: DFG.AbstractBlobStore{Vector{UInt8}}
+#     localstore::T
+#     remotestore::NavAbilityBlobStore
+# end
 
 """
 $(SIGNATURES)
@@ -26,14 +42,18 @@ function createDownload(client::GQL.Client, userLabel::AbstractString, blobId::U
     # data = get(response,"data",nothing)
     # if data === nothing || !haskey(data, "url") throw(KeyError("Cannot create download for $userLabel, requesting $blobId.\n$rootData")) end
     # urlMsg = get(data,"url","Error")
-    # # TODO: What about marshalling?
-    # return urlMsg
 end
 
 ##
 function getBlob(client::GQL.Client, userLabel::AbstractString, blobId::UUID)
-    #
     url = createDownload(client, userLabel, blobId)
+    io = PipeBuffer()
+    Downloads.download(url, io)
+    return io |> take!
+end
+
+function getBlob(blobstore::NavAbilityBlobStore, blobId::UUID)
+    url = createDownload(blobstore.client, blobstore.userLabel, blobId)
     io = PipeBuffer()
     Downloads.download(url, io)
     return io |> take!

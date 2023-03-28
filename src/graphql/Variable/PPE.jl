@@ -19,13 +19,13 @@ query get_ppe(
   \$userId: ID!
   \$robotId: ID!
   \$sessionId: ID!
-  \$variableId: ID!
+  \$variableLabel: String!
   \$solveKey: ID!
 ) {
   users(where: { id: \$userId }) {
     robots(where: { id: \$robotId }) {
       sessions(where: { id: \$sessionId }) {
-        variables(where: { id: \$variableId }) {
+        variables(where: { label: \$variableLabel }) {
           ppes(where: { solveKey: \$solveKey }) {
             ...ppe_fields
           }
@@ -42,12 +42,12 @@ query get_ppes(
   \$userId: ID!
   \$robotId: ID!
   \$sessionId: ID!
-  \$variableId: ID!
+  \$variableLabel: String!
 ) {
   users(where: { id: \$userId }) {
     robots(where: { id: \$robotId }) {
       sessions(where: { id: \$sessionId }) {
-        variables(where: { id: \$variableId }) {
+        variables(where: { label: \$variableLabel }) {
           ppes {
             ...ppe_fields
           }
@@ -72,7 +72,7 @@ mutation addPpes(\$ppes: [PPECreateInput!]!) {
 """
 
 GQL_LIST_PPES = """
-query listBlobPPEs(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$variableId: ID!) {
+query listBlobPPEs(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$variableLabel: String!) {
   users (
     where: {id: \$userId}
   ) {
@@ -83,7 +83,7 @@ query listBlobPPEs(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$variableId
         where: {id: \$sessionId}
       ) {
         variables (
-          where: {id: \$variableId}
+          where: {label: \$variableLabel}
         ) {
           ppes {
             solveKey

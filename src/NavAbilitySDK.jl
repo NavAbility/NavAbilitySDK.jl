@@ -13,6 +13,7 @@ using Base64
 using StructTypes
 using Downloads
 using HTTP
+using DistributedFactorGraphs.ProgressMeter
 
 import GraphQLClient as GQL
 
@@ -35,6 +36,24 @@ import DistributedFactorGraphs:
     deleteVariable!,
     listVariables,
     listBlobEntries,
+    listPPEs,
+    getPPE,
+    getPPEs,
+    addPPE!,
+    updatePPE!,
+    deletePPE!,
+    getVariableSolverData,
+    addVariableSolverData!,
+    updateVariableSolverData!,
+    deleteVariableSolverData!,
+    getBlobEntry,
+    getBlobEntries,
+    addBlobEntry!,
+    updateBlobEntry!,
+    deleteBlobEntry!,
+    getBlob,
+    addBlob!,
+    deleteBlob!,
     exists,
     getNeighbors
 # setSolverParams!,
@@ -88,6 +107,7 @@ include("services/AsyncCalls.jl")
 
 include("Deprecated.jl")
 
+export NavAbilityClient, DFGClient, NavAbilityBlobStore
 #exports
 # export NavAbilityClient, NavAbilityWebsocketClient, NavAbilityHttpsClient, QueryOptions, MutationOptions
 # export Client, Scope

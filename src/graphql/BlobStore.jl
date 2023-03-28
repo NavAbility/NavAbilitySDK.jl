@@ -36,13 +36,3 @@ mutation completeUpload(\$fileId: ID!, \$uploadId: ID!, \$eTag: String) {
   )
 }
 """
-
-GQL_LISTBLOBS = """
-query listBlobs {
-  files {
-    id
-    filename
-    filesize
-  }
-}
-"""

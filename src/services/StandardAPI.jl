@@ -78,7 +78,7 @@ function addFactor!(
         tags,
         _variableOrderSymbols = xisyms,
         timestamp,
-        nstime=string(nstime),
+        nstime = string(nstime),
         fnctype,
         solvable,
         data = base64encode(JSON3.write(factordata)),

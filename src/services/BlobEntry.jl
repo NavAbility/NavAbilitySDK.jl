@@ -2,14 +2,14 @@
 # BlobEntry CRUD
 # =========================================================================================
 
-function getBlobEntry(fgclient::DFGClient, variableId::UUID, label::Symbol)
+function getBlobEntry(fgclient::DFGClient, variableLabel::Symbol, label::Symbol)
     client = fgclient.client
 
     variables = Dict(
         "userId" => fgclient.user.id,
         "robotId" => fgclient.robot.id,
         "sessionId" => fgclient.session.id,
-        "variableId" => variableId,
+        "variableLabel" => variableLabel,
         "blobLabel" => string(label),
     )
 
@@ -26,14 +26,14 @@ function getBlobEntry(fgclient::DFGClient, variableId::UUID, label::Symbol)
     return response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["blobEntries"][1]
 end
 
-function getBlobEntries(fgclient::DFGClient, variableId::UUID)
+function getBlobEntries(fgclient::DFGClient, variableLabel::Symbol)
     client = fgclient.client
 
     variables = Dict(
         "userId" => fgclient.user.id,
         "robotId" => fgclient.robot.id,
         "sessionId" => fgclient.session.id,
-        "variableId" => variableId,
+        "variableLabel" => variableLabel,
     )
 
     T = user_robot_session_variable_T(DFG.BlobEntry)
@@ -94,12 +94,12 @@ end
 # another way would be like this:
 # GQL.mutate(client, "addBlobEntries", Dict("input"=>input), NVA.BlobEntryResponse; output_fields=#TODO, verbose=2)
 
-function listBlobEntries(fgclient::DFGClient, variableId::UUID)
+function listBlobEntries(fgclient::DFGClient, variableLabel::Symbol)
     variables = Dict(
         "userId" => fgclient.user.id,
         "robotId" => fgclient.robot.id,
         "sessionId" => fgclient.session.id,
-        "variableId" => variableId,
+        "variableLabel" => variableLabel,
     )
 
     T = user_robot_session_variable_T(NamedTuple{(:label,), Tuple{Symbol}})
@@ -119,6 +119,29 @@ end
 # =========================================================================================
 # BlobEntry CRUD on other nodes
 # =========================================================================================
+
+function getSessionBlobEntry(fgclient::DFGClient, label::Symbol)
+    client = fgclient.client
+
+    variables = Dict(
+        "userId" => fgclient.user.id,
+        "robotId" => fgclient.robot.id,
+        "sessionId" => fgclient.session.id,
+        "blobLabel" => string(label),
+    )
+
+    T = Vector{Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{BlobEntry}}}}}}}
+
+    response = GQL.execute(
+        client,
+        GQL_GET_SESSION_BLOBENTRY,
+        T;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response.data["users"][1]["robots"][1]["sessions"][1]["blobEntries"][1]
+end
 
 @enum BlobEntryNodeTypes USER ROBOT SESSION VARIABLE FACTOR
 

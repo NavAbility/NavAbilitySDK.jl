@@ -2,14 +2,14 @@
 # PPE CRUD
 # =========================================================================================
 
-function getPPE(fgclient::DFGClient, variableId::UUID, solvekey::Symbol = :default)
+function getPPE(fgclient::DFGClient, variableLabel::Symbol, solvekey::Symbol = :default)
     client = fgclient.client
 
     variables = Dict(
         "userId" => fgclient.user.id,
         "robotId" => fgclient.robot.id,
         "sessionId" => fgclient.session.id,
-        "variableId" => variableId,
+        "variableLabel" => variableLabel,
         "solveKey" => string(solvekey),
     )
 
@@ -21,14 +21,14 @@ function getPPE(fgclient::DFGClient, variableId::UUID, solvekey::Symbol = :defau
     return response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["ppes"][1]
 end
 
-function getPPEs(fgclient::DFGClient, variableId::UUID)
+function getPPEs(fgclient::DFGClient, variableLabel::Symbol)
     client = fgclient.client
 
     variables = Dict(
         "userId" => fgclient.user.id,
         "robotId" => fgclient.robot.id,
         "sessionId" => fgclient.session.id,
-        "variableId" => variableId,
+        "variableLabel" => variableLabel,
     )
 
     T = user_robot_session_variable_T(DFG.MeanMaxPPE)
@@ -119,12 +119,12 @@ function deletePPE!(fgclient::DFGClient, ppe::DFG.MeanMaxPPE)
     return response
 end
 
-function listPPEs(fgclient::DFGClient, variableId::UUID)
+function listPPEs(fgclient::DFGClient, variableLabel::Symbol)
     variables = Dict(
         "userId" => fgclient.user.id,
         "robotId" => fgclient.robot.id,
         "sessionId" => fgclient.session.id,
-        "variableId" => variableId,
+        "variableLabel" => variableLabel,
     )
 
     T = user_robot_session_variable_T(NamedTuple{(:solveKey,), Tuple{Symbol}})
@@ -147,8 +147,8 @@ end
 
 function getVariableSolverData(
     fgclient::DFGClient,
-    variableId::UUID,
-    solvekey::Symbol = :default,
+    variableLabel::Symbol,
+    solveKey::Symbol = :default,
 )
     client = fgclient.client
 
@@ -156,8 +156,8 @@ function getVariableSolverData(
         "userId" => fgclient.user.id,
         "robotId" => fgclient.robot.id,
         "sessionId" => fgclient.session.id,
-        "variableId" => variableId,
-        "solveKey" => string(solvekey),
+        "variableLabel" => variableLabel,
+        "solveKey" => string(solveKey),
     )
 
     T = user_robot_session_variable_T(DFG.PackedVariableNodeData)
@@ -170,17 +170,20 @@ function getVariableSolverData(
         throw_on_execution_error = true,
     )
 
-    return response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["solverData"][1]
+    solverdata =
+        response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["solverData"]
+    isempty(solverdata) && throw(KeyError(solveKey))
+    return solverdata[]
 end
 
-function getVariableSolverDataAll(fgclient::DFGClient, variableId::UUID)
+function getVariableSolverDataAll(fgclient::DFGClient, variableLabel::Symbol)
     client = fgclient.client
 
     variables = Dict(
         "userId" => fgclient.user.id,
         "robotId" => fgclient.robot.id,
         "sessionId" => fgclient.session.id,
-        "variableId" => variableId,
+        "variableLabel" => variableLabel,
     )
 
     T = user_robot_session_variable_T(DFG.PackedVariableNodeData)
@@ -276,12 +279,12 @@ function deleteVariableSolverData!(fgclient::DFGClient, vnd::DFG.PackedVariableN
     return response
 end
 
-function listVariableSolverData(fgclient::DFGClient, variableId::UUID)
+function listVariableSolverData(fgclient::DFGClient, variableLabel::Symbol)
     variables = Dict(
         "userId" => fgclient.user.id,
         "robotId" => fgclient.robot.id,
         "sessionId" => fgclient.session.id,
-        "variableId" => variableId,
+        "variableLabel" => variableLabel,
     )
 
     T = user_robot_session_variable_T(NamedTuple{(:solveKey,), Tuple{Symbol}})
@@ -302,20 +305,9 @@ end
 # Variable CRUD
 # =======================================================================================
 
-function addVariable!(fgclient::DFGClient, v::PackedVariable)
-    client = fgclient.client
-    variableLabel = v.label
-
+function VariableCreateInput(fgclient::DFGClient, v::PackedVariable)
     # copy from a packed variable
-    label = string(v.label)
-    variableType = v.variableType
-    nstime = v.nstime
-    solvable = v.solvable
-    tags = string.(v.tags)
-    metadata = v.metadata
-    timestamp = string(v.timestamp)
-
-    session = createConnect(fgclient.session.id)
+    variableLabel = v.label
 
     if isempty(v.blobEntries)
         blobEntries = nothing
@@ -375,7 +367,18 @@ function addVariable!(fgclient::DFGClient, v::PackedVariable)
         ppes = Dict("create" => ppeNodes)
     end
 
+    label = string(v.label)
+    variableType = v.variableType
+    nstime = v.nstime
+    solvable = v.solvable
+    tags = string.(v.tags)
+    metadata = v.metadata
+    timestamp = string(v.timestamp)
+
+    session = createConnect(fgclient.session.id)
+
     addvar = VariableCreateInput(;
+        # TODO replace with `getCommonProperties(VariableCreateInput, v)...` when types updated
         label,
         variableType,
         nstime,
@@ -383,6 +386,7 @@ function addVariable!(fgclient::DFGClient, v::PackedVariable)
         tags,
         metadata,
         timestamp,
+        # to here
         session,
         blobEntries,
         solverData,
@@ -391,13 +395,16 @@ function addVariable!(fgclient::DFGClient, v::PackedVariable)
         robotLabel = fgclient.robot.label,
         sessionLabel = fgclient.session.label,
     )
+    return addvar
+end
+
+function addVariable!(fgclient::DFGClient, v::PackedVariable)
+    addvar = VariableCreateInput(fgclient, v)
 
     variables = Dict("variablesToCreate" => [addvar])
 
-    # return JSON3.write(Dict("query" => GQL_ADD_VARIABLES, "variables" => variables))
-
     response = GQL.execute(
-        client,
+        fgclient.client,
         GQL_ADD_VARIABLES,
         VariableResponse;
         variables,
@@ -405,6 +412,34 @@ function addVariable!(fgclient::DFGClient, v::PackedVariable)
     )
 
     return response.data["addVariables"].variables[1]
+end
+
+function addVariables!(fgclient::DFGClient, vars::Vector{PackedVariable})
+    #
+    addvars = VariableCreateInput.(fgclient, vars)
+
+    # Chunk it at around 100 per call
+    chunks = Iterators.partition(addvars, 20)
+    length(chunks) > 1 && @info "Adding variables in $(length(chunks)) batches"
+
+    newVarReturns = PackedVariable[]
+    p = Progress(length(chunks))
+    for c in chunks
+        ProgressMeter.next!(p; showvalues = [("adding","$(c[1].label)...$(c[end].label)")])
+
+        variables = Dict("variablesToCreate" => c)
+
+        response = GQL.execute(
+            fgclient.client,
+            GQL_ADD_VARIABLES,
+            VariableResponse;
+            variables,
+            throw_on_execution_error = true,
+        )
+        append!(newVarReturns, response.data["addVariables"].variables)
+    end
+
+    return newVarReturns
 end
 
 function getVariables(fgclient::DFGClient)
@@ -549,6 +584,39 @@ function getVariablesSkeleton(fgclient::DFGClient)#, label::Symbol)
 
     jstr = JSON3.write(response.data["users"][1]["robots"][1]["sessions"][1]["variables"])
     return JSON3.read(jstr, Vector{DFG.SkeletonDFGVariable})
+end
+
+function getVariablesSummary(fgclient::DFGClient)#, label::Symbol)
+    variables = Dict(
+        "userId" => fgclient.user.id,
+        "robotId" => fgclient.robot.id,
+        "sessionId" => fgclient.session.id,
+        "fields_summary" => true,
+        "fields_full" => false,
+    )
+
+    T = Vector{
+        Dict{
+            String, #users
+            Vector{Dict{
+                String, #robots
+                Vector{Dict{
+                    String, #sessions
+                    Vector{DFG.DFGVariableSummary}, #variables
+                }},
+            }},
+        },
+    }
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_GET_VARIABLES,
+        T;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response.data["users"][1]["robots"][1]["sessions"][1]["variables"]
 end
 
 # delete variable and its satelites (by variable id)

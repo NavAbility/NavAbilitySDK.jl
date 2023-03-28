@@ -5,7 +5,14 @@ struct DFGClient <: DFG.AbstractDFG{DFG.AbstractParams}
     session::NamedTuple{(:id, :label), Tuple{UUID, String}}
 end
 
-#TODO id OR label struct 
+function DFG.getBlobStore(fgclient::DFGClient, store::Symbol=:NAVABILITY)
+    if store == :NAVABILITY
+        NavAbilityBlobStore(fgclient)
+    else
+        error("DFGClient currently only supports the NAVABILITY blob store")
+    end
+end
+
 function DFGClient(client::GQL.Client, context::Context)
     return DFGClient(
         client,

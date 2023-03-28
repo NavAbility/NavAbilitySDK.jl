@@ -7,12 +7,12 @@ using UUIDs
 
 apiUrl = get(ENV, "API_URL", "https://api.d1.navability.io")
 userLabel = get(ENV, "USER_ID", "guest@navability.io")
-robotLabel = get(ENV, "ROBOT_ID", "IntegrationRobot")
-sessionLabel = get(ENV, "SESSION_ID", "TestSession_" * string(uuid4())[1:8])
+robotLabel = get(ENV, "ROBOT_ID", "TestRobot")
+sessionLabel = get(ENV, "SESSION_ID", "TestSession")
 
 @testset "nva-sdk-standard-api-testset" begin
     client = NvaSDK.NavAbilityClient(apiUrl)
-    context = NvaSDK.Context(
+    fgclient = NvaSDK.DFGClient(
         client,
         userLabel,
         robotLabel,
@@ -20,8 +20,6 @@ sessionLabel = get(ENV, "SESSION_ID", "TestSession_" * string(uuid4())[1:8])
         addRobotIfNotExists = true,
         addSessionIfNotExists = true,
     )
-
-    fgclient = NvaSDK.DFGClient(client, context)
 
     NvaSDK.addVariable!(fgclient, "x0", :Pose2)
     NvaSDK.addFactor!(
@@ -93,6 +91,14 @@ sessionLabel = get(ENV, "SESSION_ID", "TestSession_" * string(uuid4())[1:8])
             Z = NvaSDK.FullNormal([1.0; 0.0; 0; zeros(3)], diagm([1.0; 1; 1; ones(3)])),
         ),
     )
+
+    @test length(listVariables(fgclient)) == 9
+    @test length(listFactors(fgclient)) == 10
+
+    #test adding variable that already exists
+    @test_throws NvaSDK.GQL.GraphQLError NvaSDK.addVariable!(fgclient, :x0, :Pose2)
+    
+
 end
 
 

@@ -22,13 +22,13 @@ query get_blob_entry(
   \$userId: ID!
   \$robotId: ID!
   \$sessionId: ID!
-  \$variableId: ID!
+  \$variableLabel: String!
   \$blobLabel: String!
 ) {
   users(where: { id: \$userId }) {
     robots(where: { id: \$robotId }) {
       sessions(where: { id: \$sessionId }) {
-        variables(where: { id: \$variableId }) {
+        variables(where: { label: \$variableLabel }) {
           blobEntries(where: { label: \$blobLabel }) {
             ...blobEntry_fields
           }
@@ -45,12 +45,12 @@ query get_blob_entries(
   \$userId: ID!
   \$robotId: ID!
   \$sessionId: ID!
-  \$variableId: ID!
+  \$variableLabel: String!
 ) {
   users(where: { id: \$userId }) {
     robots(where: { id: \$robotId }) {
       sessions(where: { id: \$sessionId }) {
-        variables(where: { id: \$variableId }) {
+        variables(where: { label: \$variableLabel }) {
           blobEntries {
             ...blobEntry_fields
           }
@@ -82,7 +82,7 @@ mutation addBlobEntries(\$blobEntries: [BlobEntryCreateInput!]!) {
 """
 
 GQL_LIST_BLOBENTRIES = """
-query listBlobEntries(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$variableId: ID!) {
+query listBlobEntries(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$variableLabel: String!) {
   users (
     where: {id: \$userId}
   ) {
@@ -93,7 +93,7 @@ query listBlobEntries(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$variabl
         where: {id: \$sessionId}
       ) {
         variables (
-          where: {id: \$variableId}
+          where: {label: \$variableLabel}
         ) {
           blobEntries {
             label
@@ -112,6 +112,57 @@ query listSessionBlobEntries($userId: ID!, $robotId: ID!, $sessionId: ID!) {
       sessions(where: { id: $sessionId }) {
         blobEntries {
           label
+        }
+      }
+    }
+  }
+}
+"""
+
+GQL_GET_USER_BLOBENTRY = """
+$(GQL_FRAGMENT_BLOBENTRY)
+query getUserBlobEntry(
+  \$userId: ID!
+  \$blobLabel: String!
+) {
+  users(where: { id: \$userId }) {
+    blobEntries(where: { label: \$blobLabel }) {
+      ...blobEntry_fields
+    }
+  }
+}
+"""
+
+GQL_GET_ROBOT_BLOBENTRY = """
+$(GQL_FRAGMENT_BLOBENTRY)
+query getRobotBlobEntry(
+  \$userId: ID!
+  \$robotId: ID!
+  \$blobLabel: String!
+) {
+  users(where: { id: \$userId }) {
+    robots(where: { id: \$robotId }) {
+      blobEntries(where: { label: \$blobLabel }) {
+        ...blobEntry_fields
+      }
+    }
+  }
+}
+"""
+
+GQL_GET_SESSION_BLOBENTRY = """
+$(GQL_FRAGMENT_BLOBENTRY)
+query getSessionBlobEntry(
+  \$userId: ID!
+  \$robotId: ID!
+  \$sessionId: ID!
+  \$blobLabel: String!
+) {
+  users(where: { id: \$userId }) {
+    robots(where: { id: \$robotId }) {
+      sessions(where: { id: \$sessionId }) {
+        blobEntries(where: { label: \$blobLabel }) {
+          ...blobEntry_fields
         }
       }
     }

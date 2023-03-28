@@ -30,13 +30,13 @@ query get_solver_data(
   \$userId: ID!
   \$robotId: ID!
   \$sessionId: ID!
-  \$variableId: ID!
+  \$variableLabel: String!
   \$solveKey: ID!
 ) {
   users(where: { id: \$userId }) {
     robots(where: { id: \$robotId }) {
       sessions(where: { id: \$sessionId }) {
-        variables(where: { id: \$variableId }) {
+        variables(where: { label: \$variableLabel }) {
           solverData(where: { solveKey: \$solveKey }) {
             ...solverdata_fields
           }
@@ -53,12 +53,12 @@ query get_solver_data_all(
   \$userId: ID!
   \$robotId: ID!
   \$sessionId: ID!
-  \$variableId: ID!
+  \$variableLabel: String!
 ) {
   users(where: { id: \$userId }) {
     robots(where: { id: \$robotId }) {
       sessions(where: { id: \$sessionId }) {
-        variables(where: { id: \$variableId }) {
+        variables(where: { label: \$variableLabel }) {
           solverData {
             ...solverdata_fields
           }
@@ -84,7 +84,7 @@ mutation addSolverData(\$solverData: [SolverDataCreateInput!]!) {
 """
 
 GQL_LIST_SOLVERDATA = """
-query listBlobSolverData(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$variableId: ID!) {
+query listBlobSolverData(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$variableLabel: String!) {
   users (
     where: {id: \$userId}
   ) {
@@ -95,7 +95,7 @@ query listBlobSolverData(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$vari
         where: {id: \$sessionId}
       ) {
         variables (
-          where: {id: \$variableId}
+          where: {label: \$variableLabel}
         ) {
           solverData {
             solveKey
