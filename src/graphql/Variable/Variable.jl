@@ -65,29 +65,54 @@ query get_variable(
 }
 """
 
-# TODO not used yet
+GQL_GET_VARIABLE2 = """
+$(GQL_FRAGMENT_VARIABLES)
+query get_variables(
+    \$userLabel: String!
+    \$robotLabel: String!
+    \$sessionLabel: String!
+    \$variableLabel: String!
+    \$fields_summary: Boolean! = true
+    \$fields_full: Boolean! = true
+  ) {
+    variables(
+      where: {
+        userLabel: \$userLabel
+        robotLabel: \$robotLabel
+        sessionLabel: \$sessionLabel
+        label: \$variableLabel
+      }
+    ) {
+      ...variable_skeleton_fields
+      ...variable_summary_fields @include(if: \$fields_summary)
+      ...variable_full_fields @include(if: \$fields_full)
+    }
+  }
+"""
+
 GQL_GET_VARIABLES_BY_LABELS = """
 $(GQL_FRAGMENT_VARIABLES)
-query get_variable(
-  \$userId: ID!
-  \$robotId: ID!
-  \$sessionId: ID!
+query get_variables(
+  \$userLabel: String!
+  \$robotLabel: String!
+  \$sessionLabel: String!
   \$variableLabels: [String!]!
   \$fields_summary: Boolean! = true
   \$fields_full: Boolean! = true
-) {
-  users(where: { id: \$userId }) {
-    robots(where: { id: \$robotId }) {
-      sessions(where: { id: \$sessionId }) {
-        variables(where: { label_IN: \$variableLabels }) {
-          ...variable_skeleton_fields
-          ...variable_summary_fields @include(if: \$fields_summary)
-          ...variable_full_fields @include(if: \$fields_full)
-        }
+  ) {
+    variables(
+      where: {
+        userLabel: \$userLabel
+        robotLabel: \$robotLabel
+        sessionLabel: \$sessionLabel
+        label_IN: \$variableLabels
       }
+    ) {
+      ...variable_skeleton_fields
+      ...variable_summary_fields @include(if: \$fields_summary)
+      ...variable_full_fields @include(if: \$fields_full)
     }
   }
-}
 """
 
 GQL_GET_VARIABLES = """
@@ -109,6 +134,29 @@ query get_variables(
         }
       }
     }
+  }
+}
+"""
+
+GQL_GET_VARIABLES2 = """
+$(GQL_FRAGMENT_VARIABLES)
+query get_variables(
+  \$userLabel: String!
+  \$robotLabel: String!
+  \$sessionLabel: String!
+  \$fields_summary: Boolean! = true
+  \$fields_full: Boolean! = true
+) {
+  variables(
+    where: {
+      userLabel: \$userLabel
+      robotLabel: \$robotLabel
+      sessionLabel: \$sessionLabel
+    }
+  ) {
+    ...variable_skeleton_fields
+    ...variable_summary_fields @include(if: \$fields_summary)
+    ...variable_full_fields @include(if: \$fields_full)
   }
 }
 """
@@ -217,24 +265,79 @@ mutation deleteVariables($variableId: ID!) {
 }
 """
 
-
 GQL_LIST_VARIABLE_NEIGHBORS = GQL.gql"""
 query listVariableNeighbors(
-  $userId: ID!
-  $robotId: ID!
-  $sessionId: ID!
-  $variableId: ID!
+  $userLabel: String!
+  $robotLabel: String!
+  $sessionLabel: String!
+  $variableLabel: String!
 ) {
-  users(where: { id: $userId }) {
-    robots(where: { id: $robotId }) {
-      sessions(where: { id: $sessionId }) {
-        variables(where: { id: $variableId }) {
-          factors {
-            label
-          }
-        }
-      }
+  variables(
+    where: {
+      userLabel: $userLabel
+      robotLabel: $robotLabel
+      sessionLabel: $sessionLabel
+      label: $variableLabel
     }
+  ) {
+    factors {
+      label
+    }
+  }
+}
+"""
+
+GQL_LIST_NEIGHBORS = GQL.gql"""
+query listNeighbors(
+  $userLabel: String!
+  $robotLabel: String!
+  $sessionLabel: String!
+  $nodeLabel: String!
+) {
+  variables(
+    where: {
+      userLabel: $userLabel
+      robotLabel: $robotLabel
+      sessionLabel: $sessionLabel
+      label: $nodeLabel
+    }
+  ) {
+    factors {
+      label
+    }
+  }
+  factors(
+    where: {
+      userLabel: $userLabel
+      robotLabel: $robotLabel
+      sessionLabel: $sessionLabel
+      label: $nodeLabel
+    }
+  ) {
+    variables {
+      label
+    }
+  }
+}
+"""
+
+GQL_FIND_VARIABLES_NEAR_TIMESTAMP = GQL.gql"""
+query findVariablesNearTime(
+  $userLabel: String!
+  $robotLabel: String!
+  $sessionLabel: String!
+  $fromTime: DateTime!
+  $toTime: DateTime!
+) {
+  variables(
+    where: {
+      userLabel: $userLabel
+      robotLabel: $robotLabel
+      sessionLabel: $sessionLabel
+      AND: [{ timestamp_GT: $fromTime }, { timestamp_LT: $toTime }]
+    }
+  ) {
+    label
   }
 }
 """

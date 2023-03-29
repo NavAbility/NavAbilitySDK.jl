@@ -3,14 +3,7 @@ struct DFGClient <: DFG.AbstractDFG{DFG.AbstractParams}
     user::NamedTuple{(:id, :label), Tuple{UUID, String}}
     robot::NamedTuple{(:id, :label), Tuple{UUID, String}}
     session::NamedTuple{(:id, :label), Tuple{UUID, String}}
-end
-
-function DFG.getBlobStore(fgclient::DFGClient, store::Symbol=:NAVABILITY)
-    if store == :NAVABILITY
-        NavAbilityBlobStore(fgclient)
-    else
-        error("DFGClient currently only supports the NAVABILITY blob store")
-    end
+    blobStores::Dict{Symbol, DFG.AbstractBlobStore}
 end
 
 function DFGClient(client::GQL.Client, context::Context)
@@ -19,6 +12,9 @@ function DFGClient(client::GQL.Client, context::Context)
         (id = context.user.id, label = context.user.label),
         (id = context.robot.id, label = context.robot.label),
         (id = context.session.id, label = context.session.label),
+        Dict{Symbol, DFG.AbstractBlobStore}(
+            :NAVABILITY => NavAbilityBlobStore(client, context.user.label),
+        ),
     )
 end
 
@@ -44,6 +40,9 @@ function DFGClient(
         (id = context.user.id, label = context.user.label),
         (id = context.robot.id, label = context.robot.label),
         (id = context.session.id, label = context.session.label),
+        Dict{Symbol, DFG.AbstractBlobStore}(
+            :NAVABILITY => NavAbilityBlobStore(client, context.user.label),
+        ),
     )
 end
 

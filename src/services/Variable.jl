@@ -115,14 +115,14 @@ function addVariables!(fgclient::DFGClient, vars::Vector{PackedVariable})
     #
     addvars = VariableCreateInput.(fgclient, vars)
 
-    # Chunk it at around 100 per call
-    chunks = Iterators.partition(addvars, 20)
+    # Chunk it at around 20 per call
+    chunks = collect(Iterators.partition(addvars, 20))
     length(chunks) > 1 && @info "Adding variables in $(length(chunks)) batches"
 
     newVarReturns = PackedVariable[]
-    p = Progress(length(chunks))
-    for c in chunks
-        ProgressMeter.next!(p; showvalues = [("adding","$(c[1].label)...$(c[end].label)")])
+    # p = Progress(length(chunks))
+    Threads.@threads for c in chunks
+        # ProgressMeter.next!(p; showvalues = [("adding", "$(c[1].label)...$(c[end].label)")])
 
         variables = Dict("variablesToCreate" => c)
 
@@ -160,6 +160,26 @@ function getVariables(fgclient::DFGClient)
         throw_on_execution_error = true,
     )
     return response.data["users"][1]["robots"][1]["sessions"][1]["variables"]
+end
+
+function getVariables(fgclient::DFGClient, label::Vector{Symbol})
+    variables = Dict(
+        "userLabel" => fgclient.user.label,
+        "robotLabel" => fgclient.robot.label,
+        "sessionLabel" => fgclient.session.label,
+        "variableLabels" => string.(label),
+        "fields_summary" => true,
+        "fields_full" => true,
+    )
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_GET_VARIABLES_BY_LABELS,
+        Vector{PackedVariable};
+        variables,
+        throw_on_execution_error = true,
+    )
+    return response.data["variables"]
 end
 
 function listVariables(fgclient::DFGClient)
@@ -212,6 +232,26 @@ function getVariable(fgclient::DFGClient, label::Symbol)
         throw_on_execution_error = true,
     )
     return response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]
+end
+
+function getVariable2(fgclient::DFGClient, label::Symbol)
+    variables = Dict(
+        "userLabel" => fgclient.user.label,
+        "robotLabel" => fgclient.robot.label,
+        "sessionLabel" => fgclient.session.label,
+        "variableLabel" => string(label),
+        "fields_summary" => true,
+        "fields_full" => true,
+    )
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_GET_VARIABLE2,
+        Vector{PackedVariable};
+        variables,
+        throw_on_execution_error = true,
+    )
+    return response.data["variables"][1]
 end
 
 function getVariableSummary(fgclient::DFGClient, label::Symbol)
@@ -277,10 +317,28 @@ function getVariablesSkeleton(fgclient::DFGClient)#, label::Symbol)
         variables,
         throw_on_execution_error = true,
     )
-    # return response.data["variables"][]
 
     jstr = JSON3.write(response.data["users"][1]["robots"][1]["sessions"][1]["variables"])
     return JSON3.read(jstr, Vector{DFG.SkeletonDFGVariable})
+end
+
+function getVariablesSkeleton2(fgclient::DFGClient)#, label::Symbol)
+    variables = Dict(
+        "userLabel" => fgclient.user.label,
+        "robotLabel" => fgclient.robot.label,
+        "sessionLabel" => fgclient.session.label,
+        "fields_summary" => false,
+        "fields_full" => false,
+    )
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_GET_VARIABLES2,
+        Vector{DFG.SkeletonDFGVariable};
+        variables,
+        throw_on_execution_error = true,
+    )
+    return response.data["variables"]
 end
 
 function getVariablesSummary(fgclient::DFGClient)#, label::Symbol)
@@ -330,3 +388,41 @@ function deleteVariable!(fgclient::DFGClient, variable::DFG.AbstractDFGVariable)
 
     return response.data
 end
+
+## ====================
+## Utilities
+## ====================
+
+function DFG.findVariableNearTimestamp(
+    fgclient::DFGClient,
+    timestamp::ZonedDateTime,
+    window::TimePeriod,
+)
+    fromtime = timestamp - window
+    totime = timestamp + window
+
+    variables = Dict(
+        "userLabel" => fgclient.user.label,
+        "robotLabel" => fgclient.robot.label,
+        "sessionLabel" => fgclient.session.label,
+        "fromTime" => fromtime,
+        "toTime" => totime,
+    )
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_FIND_VARIABLES_NEAR_TIMESTAMP;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return Symbol.(
+        get.(
+            response.data["variables"],
+            "label",
+            missing,
+        )
+    )
+end
+
+# findVariableNearTimestamp(fgclient, ZonedDateTime("2018-08-10T13:06:18.622Z"), Millisecond(100))

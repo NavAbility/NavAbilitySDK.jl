@@ -117,14 +117,26 @@ mutation deletePPE($id: ID!) {
 }
 """
 
-# GQL_DELETE_PPE_FOR_SESSION = """
-# mutation deletePPEForSession(\$sessionId: ID!, \$solveKey: ID!) {
-#   deletePpes(
-#     where: {
-#       solveKey: \$solveKey, 
-#       variable: { session: { id: \$sessionId } }
-#     }) {
-#     nodesDeleted
-#   }
-# }
-# """
+GQL_DELETE_PPE_BY_LABEL = GQL.gql"""
+mutation deletePPE(
+  $userLabel: String!
+  $robotLabel: String!
+  $sessionLabel: String!
+  $variableLabel: String!
+  $solveKey: ID!
+) {
+  deletePpes(
+    where: {
+      userLabel: $userLabel
+      robotLabel: $robotLabel
+      sessionLabel: $sessionLabel
+      variableLabel: $variableLabel
+      solveKey: $solveKey
+    }
+  ) {
+    nodesDeleted
+  }
+}
+"""
+
+

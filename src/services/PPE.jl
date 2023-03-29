@@ -116,7 +116,25 @@ function deletePPE!(fgclient::DFGClient, ppe::DFG.MeanMaxPPE)
         throw_on_execution_error = true,
     )
 
-    return response
+    return response.data
+end
+
+function deletePPE!(fgclient::DFGClient, variableLabel::Symbol, solveKey::Symbol)
+    variables = Dict(
+        "userLabel" => fgclient.user.label,
+        "robotLabel" => fgclient.robot.label,
+        "sessionLabel" => fgclient.session.label,
+        "variableLabel" => variableLabel,
+        "solveKey" => solveKey,
+    )
+    response = GQL.execute(
+        fgclient.client,
+        GQL_DELETE_PPE_BY_LABEL;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response.data
 end
 
 function listPPEs(fgclient::DFGClient, variableLabel::Symbol)

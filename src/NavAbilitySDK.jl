@@ -96,6 +96,8 @@ include("NavAbilityClient.jl")
 
 include("services/Common.jl")
 include("services/UserRobotSession.jl")
+include("services/PPE.jl")
+include("services/SolverData.jl")
 include("services/Variable.jl")
 include("services/Factor.jl")
 include("services/BlobEntry.jl")
@@ -108,6 +110,8 @@ include("services/AsyncCalls.jl")
 include("Deprecated.jl")
 
 export NavAbilityClient, DFGClient, NavAbilityBlobStore
+
+export addVariables!
 #exports
 # export NavAbilityClient, NavAbilityWebsocketClient, NavAbilityHttpsClient, QueryOptions, MutationOptions
 # export Client, Scope

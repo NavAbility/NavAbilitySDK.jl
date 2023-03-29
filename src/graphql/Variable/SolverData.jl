@@ -129,6 +129,28 @@ mutation deleteSolverData($id: ID!) {
 }
 """
 
+GQL_DELETE_SOLVERDATA_BY_LABEL = GQL.gql"""
+mutation deleteSolverData(
+  $userLabel: String!
+  $robotLabel: String!
+  $sessionLabel: String!
+  $variableLabel: String!
+  $solveKey: ID!
+) {
+  deleteSolverData(
+    where: {
+      userLabel: $userLabel
+      robotLabel: $robotLabel
+      sessionLabel: $sessionLabel
+      variableLabel: $variableLabel
+      solveKey: $solveKey
+    }
+  ) {
+    nodesDeleted
+  }
+}
+"""
+
 # GQL_DELETE_SOLVERDATA_FOR_SESSION = """
 # mutation deleteSolverDataForSession(\$sessionId: ID!, \$solveKey: ID!) {
 #   deleteSolverData(

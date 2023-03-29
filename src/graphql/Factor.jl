@@ -144,20 +144,21 @@ query sdk_list_factors(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!) {
 
 GQL_LIST_FACTOR_NEIGHBORS = GQL.gql"""
 query listFactorNeighbors(
-  $userId: ID!
-  $robotId: ID!
-  $sessionId: ID!
-  $factorId: ID!
+  $userLabel: String!
+  $robotLabel: String!
+  $sessionLabel: String!
+  $factorLabel: String!
 ) {
-  users(where: { id: $userId }) {
-    robots(where: { id: $robotId }) {
-      sessions(where: { id: $sessionId }) {
-        factors(where: { id: $factorId }) {
-          variables {
-            label
-          }
-        }
-      }
+  factors(
+    where: {
+      userLabel: $userLabel
+      robotLabel: $robotLabel
+      sessionLabel: $sessionLabel
+      label: $factorLabel
+    }
+  ) {
+    variables {
+      label
     }
   }
 }

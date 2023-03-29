@@ -8,18 +8,19 @@ function Base.show(io::IO, ::MIME"text/plain", s::NavAbilityBlobStore)
     summary(io, s)
     print(io, "\n  ")
     show(io, MIME("text/plain"), s.client)
-    println(io, "\n  User Name\n    ",s.userLabel)
+    println(io, "\n  User Name\n    ", s.userLabel)
 end
 
-
-function NavAbilityBlobStore(fgclient::DFGClient) 
+function NavAbilityBlobStore(fgclient::DFGClient)
     NavAbilityBlobStore(fgclient.client, fgclient.user.label)
 end
 
-# struct CachedBlobStore{T} <: DFG.AbstractBlobStore{Vector{UInt8}}
-#     localstore::T
-#     remotestore::NavAbilityBlobStore
-# end
+struct NavAbilityCachedBlobStore{T <: DFG.AbstractBlobStore} <:
+       DFG.AbstractBlobStore{Vector{UInt8}}
+    #TODO key
+    localstore::T
+    remotestore::NavAbilityBlobStore
+end
 
 """
 $(SIGNATURES)
@@ -45,18 +46,29 @@ function createDownload(client::GQL.Client, userLabel::AbstractString, blobId::U
 end
 
 ##
-function getBlob(client::GQL.Client, userLabel::AbstractString, blobId::UUID)
-    url = createDownload(client, userLabel, blobId)
-    io = PipeBuffer()
-    Downloads.download(url, io)
-    return io |> take!
-end
+# function getBlob(client::GQL.Client, userLabel::AbstractString, blobId::UUID)
+#     url = createDownload(client, userLabel, blobId)
+#     io = PipeBuffer()
+#     Downloads.download(url, io)
+#     return io |> take!
+# end
 
 function getBlob(blobstore::NavAbilityBlobStore, blobId::UUID)
     url = createDownload(blobstore.client, blobstore.userLabel, blobId)
     io = PipeBuffer()
     Downloads.download(url, io)
     return io |> take!
+end
+
+function getBlob(blobstore::NavAbilityCachedBlobStore, blobId::UUID)
+    if hasBlob(blobstore.localstore, blobId)
+        blob = getBlob(blobstore.localstore, blobId)
+    else
+        @info "missed in cache, caching" blobId
+        blob = getBlob(blobstore.remotestore, blobId)
+        addBlob!(blobstore.localstore, blobId, blob)
+    end
+    return blob
 end
 
 function listBlobsId(client::GQL.Client)
@@ -121,13 +133,12 @@ end
 
 ##
 
-function addBlob(
-    client::GQL.Client,
-    filename::AbstractString,
+function addBlob!(
+    blobstore::NavAbilityBlobStore,
     blob::AbstractVector{UInt8},
+    filename::AbstractString,
 )
-    #
-    # io = IOBuffer(blob)
+    client = blobstore.client
 
     filesize = length(blob)
     # TODO: Use about a 50M file part here.
@@ -162,43 +173,18 @@ function addBlob(
 
     res == "Accepted" ? nothing : @error("Unable to upload blob, $res")
 
+    return UUID(blobId)
+end
+
+function addBlob!(
+    blobstore::NavAbilityCachedBlobStore,
+    blob::AbstractVector{UInt8},
+    filename::AbstractString,
+)
+    safefilename = split(filename,"/")[end]
+    blobId = addBlob!(blobstore.remotestore, blob, safefilename)
+    addBlob!(blobstore.localstore, blobId, blob, filename)
     return blobId
 end
-#TODO
-#= 
-"""
-    $SIGNATURES
-Get the data blob as defined by a unique `blobId::UUID` identifier.
 
-DevNotes
-- TODO standardize return type as `::Vector{UInt8}` (not an IOBuffer/PipeBuffer)
-
-See also: [`listBlobEntries`](@ref)
-"""
-
-function getBlobAsync(
-    client::GQL.Client,
-    context::Client,
-    vlbl::AbstractString,
-    regex::Regex;
-    verbose::Bool = true,
-    datalabel::Base.RefValue{String} = Ref(""),
-    kw...,
-)
-    bles = getBlobEntry(client, context, vlbl, regex; kw...)
-    # skip out if nothing
-    bles isa Nothing ? (return nothing) : nothing
-    ble_ = bles[end]
-    if (verbose && 1 < length(bles))
-        @warn(
-            "multiple matches on regex, fetching $(ble_.label), w/ regex: $(regex.pattern), $((s->s.label).(bles))"
-        )
-    else
-        nothing
-    end
-    datalabel[] = ble_.label
-    # get blob
-    return NvaSDK.getBlobAsync(client, context, ble_.id)
-end
-
-=#
+#TODO deleteBlob!

@@ -72,6 +72,28 @@ function getFactors(fgclient::DFGClient)
     return response.data["users"][1]["robots"][1]["sessions"][1]["factors"]
 end
 
+
+function getFactorsSkeleton(fgclient::DFGClient)
+    client = fgclient.client
+
+    variables = Dict(
+        "userId" => fgclient.user.id,
+        "robotId" => fgclient.robot.id,
+        "sessionId" => fgclient.session.id,
+        "fields_summary" => false,
+        "fields_full" => false,
+    )
+
+    T = Vector{
+        Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{DFG.SkeletonDFGFactor}}}}}},
+    }
+
+    response =
+        GQL.execute(client, GQL_GET_FACTORS, T; variables, throw_on_execution_error = true)
+
+    return response.data["users"][1]["robots"][1]["sessions"][1]["factors"]
+end
+
 function getFactor(fgclient::DFGClient, label::Symbol)
     client = fgclient.client
 

@@ -133,7 +133,25 @@ function deleteVariableSolverData!(fgclient::DFGClient, vnd::DFG.PackedVariableN
         throw_on_execution_error = true,
     )
 
-    return response
+    return response.data
+end
+
+function deleteVariableSolverData!(fgclient::DFGClient, variableLabel::Symbol, solveKey::Symbol)
+    variables = Dict(
+        "userLabel" => fgclient.user.label,
+        "robotLabel" => fgclient.robot.label,
+        "sessionLabel" => fgclient.session.label,
+        "variableLabel" => variableLabel,
+        "solveKey" => solveKey,
+    )
+    response = GQL.execute(
+        fgclient.client,
+        GQL_DELETE_SOLVERDATA_BY_LABEL;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response.data
 end
 
 function listVariableSolverData(fgclient::DFGClient, variableLabel::Symbol)

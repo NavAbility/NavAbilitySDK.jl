@@ -1,33 +1,13 @@
 
-function getNeighbors(fgclient::DFGClient, v::PackedVariable)
-    #TODO fallback to using the label
-    isnothing(v.id) && error("No id field in variable")
-
+function listVariableNeighbors(fgclient::DFGClient, variableLabel::Symbol)
     variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
-        "variableId" => v.id,
+        "userLabel" => fgclient.user.label,
+        "robotLabel" => fgclient.robot.label,
+        "sessionLabel" => fgclient.session.label,
+        "variableLabel" => variableLabel,
     )
 
-    T = Vector{
-        Dict{
-            String,
-            Vector{
-                Dict{
-                    String,
-                    Vector{
-                        Dict{
-                            String,
-                            Vector{
-                                Dict{String, Vector{NamedTuple{(:label,), Tuple{Symbol}}}},
-                            },
-                        },
-                    },
-                },
-            },
-        },
-    }
+    T = Vector{Dict{String, Vector{NamedTuple{(:label,), Tuple{Symbol}}}}}
 
     response = GQL.execute(
         fgclient.client,
@@ -36,40 +16,18 @@ function getNeighbors(fgclient::DFGClient, v::PackedVariable)
         variables,
         throw_on_execution_error = true,
     )
-    return last.(
-        response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["factors"]
-    )
+    return last.(response.data["variables"][1]["factors"])
 end
 
-function getNeighbors(fgclient::DFGClient, f::DFG.AbstractDFGFactor)
-    #TODO fallback to using the label
-    isnothing(f.id) && error("No id field in factor")
-
+function listFactorNeighbors(fgclient::DFGClient, factorLabel::Symbol)
     variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
-        "factorId" => f.id,
+        "userLabel" => fgclient.user.label,
+        "robotLabel" => fgclient.robot.label,
+        "sessionLabel" => fgclient.session.label,
+        "factorLabel" => factorLabel,
     )
 
-    T = Vector{
-        Dict{
-            String,
-            Vector{
-                Dict{
-                    String,
-                    Vector{
-                        Dict{
-                            String,
-                            Vector{
-                                Dict{String, Vector{NamedTuple{(:label,), Tuple{Symbol}}}},
-                            },
-                        },
-                    },
-                },
-            },
-        },
-    }
+    T = Vector{Dict{String, Vector{NamedTuple{(:label,), Tuple{Symbol}}}}}
 
     response = GQL.execute(
         fgclient.client,
@@ -78,9 +36,34 @@ function getNeighbors(fgclient::DFGClient, f::DFG.AbstractDFGFactor)
         variables,
         throw_on_execution_error = true,
     )
-    return last.(
-        response.data["users"][1]["robots"][1]["sessions"][1]["factors"][1]["variables"]
+    return last.(response.data["factors"][1]["variables"])
+end
+
+function listNeighbors(fgclient::DFGClient, nodeLabel::Symbol)
+    variables = Dict(
+        "userLabel" => fgclient.user.label,
+        "robotLabel" => fgclient.robot.label,
+        "sessionLabel" => fgclient.session.label,
+        "nodeLabel" => nodeLabel,
     )
+
+    T = Vector{Dict{String, Vector{NamedTuple{(:label,), Tuple{Symbol}}}}}
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_LIST_NEIGHBORS,
+        T;
+        variables,
+        throw_on_execution_error = true,
+    )
+    flbls =
+        isempty(response.data["variables"]) ? Symbol[] :
+        last.(response.data["variables"][1]["factors"])
+    vlbls =
+        isempty(response.data["factors"]) ? Symbol[] :
+        last.(response.data["factors"][1]["variables"])
+
+    return union(flbls, vlbls)
 end
 
 function exists(fgclient::DFGClient, label::Symbol)
