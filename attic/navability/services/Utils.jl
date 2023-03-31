@@ -75,6 +75,13 @@ function waitForCompletion2(client, eventId; maxSeconds=60, totalRequired=1, com
             )
         ) |> fetch
         payload = JSON.parse(get_event_response.Data)
+        if haskey(payload, "errors")
+            @error(payload["errors"])
+            error("errors on wait, see above")
+        end
+        if !haskey(payload, "data")
+            error("wait reponse payload doesn't have key data, only keys are: $(keys(payload))")
+        end
         events = payload["data"]["test"]
         completeEvents = filter(event -> event["status"]["state"] == "Complete", events)
         if size(events)[1] >= totalRequired && size(completeEvents)[1] >= completeRequired
