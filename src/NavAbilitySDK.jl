@@ -20,7 +20,7 @@ import GraphQLClient as GQL
 # explicitly use any DFG function to make it easier if it needs to be removed
 import DistributedFactorGraphs as DFG
 using DistributedFactorGraphs:
-    PackedVariable, PackedVariableNodeData, MeanMaxPPE, BlobEntry, PackedFactor
+    Variable, PackedVariable, PackedVariableNodeData, MeanMaxPPE, BlobEntry, PackedFactor
 
 import DistributedFactorGraphs:
     getFactor,
@@ -112,6 +112,44 @@ include("Deprecated.jl")
 export NavAbilityClient, DFGClient, NavAbilityBlobStore
 
 export addVariables!
+#DFG exports
+export 
+    getFactor,
+    getFactors,
+    addFactor!,
+    updateFactor!,
+    deleteFactor!,
+    listFactors,
+    getVariable,
+    getVariables,
+    addVariable!,
+    updateVariable!,
+    deleteVariable!,
+    listVariables,
+    listBlobEntries,
+    listPPEs,
+    getPPE,
+    getPPEs,
+    addPPE!,
+    updatePPE!,
+    deletePPE!,
+    getVariableSolverData,
+    addVariableSolverData!,
+    updateVariableSolverData!,
+    deleteVariableSolverData!,
+    getBlobEntry,
+    getBlobEntries,
+    addBlobEntry!,
+    updateBlobEntry!,
+    deleteBlobEntry!,
+    getBlob,
+    addBlob!,
+    deleteBlob!,
+    exists,
+    getNeighbors
+
+export Variable, Factor
+
 #exports
 # export NavAbilityClient, NavAbilityWebsocketClient, NavAbilityHttpsClient, QueryOptions, MutationOptions
 # export Client, Scope

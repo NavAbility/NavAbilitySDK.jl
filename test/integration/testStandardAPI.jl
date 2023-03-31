@@ -8,7 +8,7 @@ using UUIDs
 apiUrl = get(ENV, "API_URL", "https://api.d1.navability.io")
 userLabel = get(ENV, "USER_ID", "guest@navability.io")
 robotLabel = get(ENV, "ROBOT_ID", "TestRobot")
-sessionLabel = get(ENV, "SESSION_ID", "TestSession")
+sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring)")
 
 @testset "nva-sdk-standard-api-testset" begin
     client = NvaSDK.NavAbilityClient(apiUrl)
@@ -21,7 +21,7 @@ sessionLabel = get(ENV, "SESSION_ID", "TestSession")
         addSessionIfNotExists = true,
     )
 
-    NvaSDK.addVariable!(fgclient, "x0", :Pose2)
+    NvaSDK.addVariable!(fgclient, :x0, "Pose2")
     NvaSDK.addFactor!(
         fgclient,
         [:x0],

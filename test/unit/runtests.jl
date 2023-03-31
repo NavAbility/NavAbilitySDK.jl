@@ -5,5 +5,6 @@ using LinearAlgebra
 using Random
 
 include("./testDistributions.jl")
-@test_broken include("./testFactors.jl")
-@test_broken include("./testVariables.jl")
+include("./testFactors.jl") 
+@test_broken include("./testVariables.jl") #TODO update or rewrite, these are hard to maintain on changes.
+

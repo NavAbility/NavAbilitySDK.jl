@@ -1,73 +1,46 @@
-
-function createClients(apiUrl, userId, robotId, sessionId)
-    client = NvaSDK.NavAbilityClient(apiUrl)
-    context = NvaSDK.Context(userId, robotId, sessionId)
-    return client, context
-end
-
-function exampleGraph1D(client, context; doSolve = true)
+function exampleGraph1D(fgclient; doSolve = false)
     variables = [
-        Variable("x0", :ContinuousScalar),
-        Variable("x1", :ContinuousScalar),
-        Variable("x2", :ContinuousScalar),
-        Variable("x3", :ContinuousScalar),
+        Variable(:x0, "ContinuousScalar"),
+        Variable(:x1, "ContinuousScalar"),
+        Variable(:x2, "ContinuousScalar"),
+        Variable(:x3, "ContinuousScalar"),
     ]
     factors = [
-        Factor("x0f1", "Prior", ["x0"], PriorData(; Z = Normal(0, 1))),
-        Factor(
-            "x0x1f1",
-            "LinearRelative",
-            ["x0", "x1"],
-            LinearRelativeData(; Z = Normal(10, 0.1)),
-        ),
-        Factor(
-            "x1x2f1",
-            "Mixture",
-            ["x1", "x2"],
-            MixtureData(
-                "LinearRelative",
-                (; hypo1 = Normal(0, 2), hypo2 = Uniform(30, 55)),
-                [0.4, 0.6],
-                2,
-            ),
-        ),
-        Factor(
-            "x2x3f1",
-            "LinearRelative",
-            ["x2", "x3"],
-            LinearRelativeData(; Z = Normal(-50, 1)),
-        ),
-        Factor(
-            "x3x0f1",
-            "LinearRelative",
-            ["x3", "x0"],
-            LinearRelativeData(; Z = Normal(40, 1)),
-        ),
+        Factor([:x0], NvaSDK.Prior(NvaSDK.Normal(0, 1))),
+        Factor([:x0, :x1], NvaSDK.LinearRelative(NvaSDK.Normal(10, 0.1))),
+        #Factor(
+        #    [:x1, :x2],
+        #    Mixture(
+        #        "LinearRelative",
+        #        (; hypo1 = NvaSDK.Normal(0, 2), hypo2 = NvaSDK.Uniform(30, 55)),
+        #        [0.4, 0.6],
+        #        2,
+        #    ),
+        #),
+        Factor([:x2, :x3],NvaSDK.LinearRelative(NvaSDK.Normal(-50, 1))),
+        Factor([:x3, :x0], NvaSDK.LinearRelative(NvaSDK.Normal(40, 1))),
     ]
     # Variables
     @info "[Fixture] Adding variables, waiting for completion"
     resultIds = Task[]
-    for v in variables
-        push!(resultIds, addVariable!(client, context, v))
+    retvars = map(variables) do v
+        addVariable!(fgclient, v)
     end
-    waitForCompletion(client, resultIds; expectedStatuses = ["Complete"])
-
+    
     # Add the factors
     @info "[Fixture] Adding factors, waiting for completion"
-    resultIds = Task[]
-    for f in factors
-        push!(resultIds, addFactor(client, context, f))
+    retfacs = map(factors) do f
+        addFactor(fgclient, f)
     end
-    waitForCompletion(client, resultIds; expectedStatuses = ["Complete"])
-
+    
     if doSolve
         @info "[Fixture] solving, waiting for completion"
-        resultId = solveSession(client, context)
+        resultId = solveSession(fgclient)
         waitForCompletion(client, Task[resultIds;]; expectedStatuses = ["Complete"])
     end
 
     # and done
-    return (client, context, variables, factors)
+    return (fgclient, retvars, retfacs)
 end
 # vals = getVariables(client, context; detail=SUMMARY) .|> x->x["ppes"][1]["suggested"]
 
