@@ -40,7 +40,7 @@ function getPPEs(fgclient::DFGClient, variableLabel::Symbol)
 end
 
 function addPPE!(fgclient::DFGClient, variableLabel::Symbol, ppe::DFG.MeanMaxPPE)
-    addPPEs!(fgclient, variableLabel, [ppe])
+    addPPEs!(fgclient, variableLabel, [ppe])[1]
 end
 
 function addPPEs!(fgclient::DFGClient, variableLabel::Symbol, ppes::Vector{DFG.MeanMaxPPE})
@@ -116,7 +116,7 @@ function deletePPE!(fgclient::DFGClient, ppe::DFG.MeanMaxPPE)
         throw_on_execution_error = true,
     )
 
-    return response.data
+    return response.data["deletePpes"]
 end
 
 function deletePPE!(fgclient::DFGClient, variableLabel::Symbol, solveKey::Symbol)
@@ -134,7 +134,7 @@ function deletePPE!(fgclient::DFGClient, variableLabel::Symbol, solveKey::Symbol
         throw_on_execution_error = true,
     )
 
-    return response.data
+    return response.data["deletePpes"]
 end
 
 function listPPEs(fgclient::DFGClient, variableLabel::Symbol)

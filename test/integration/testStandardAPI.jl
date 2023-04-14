@@ -8,7 +8,7 @@ using UUIDs
 apiUrl = get(ENV, "API_URL", "https://api.d1.navability.io")
 userLabel = get(ENV, "USER_ID", "guest@navability.io")
 robotLabel = get(ENV, "ROBOT_ID", "TestRobot")
-sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring)")
+sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
 
 @testset "nva-sdk-standard-api-testset" begin
     client = NvaSDK.NavAbilityClient(apiUrl)
@@ -95,11 +95,77 @@ sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring)")
     @test length(listVariables(fgclient)) == 9
     @test length(listFactors(fgclient)) == 10
 
+    @test exists(fgclient, :x1)
+    x0_neigh = getNeighbors(fgclient, :x0)
+    @test length(x0_neigh) == 3
+    @test exists(fgclient, x0_neigh[1])
+
+
+    ppe = MeanMaxPPE(:default, [0.0], [0.0], [0.0])
+    a_ppe = addPPE!(fgclient, :x0, ppe)
+    g_ppe = getPPE(fgclient, :x0)
+    @test a_ppe == g_ppe
+
+    ppe = MeanMaxPPE(:parametric, [0.0], [0.0], [0.0])
+    a_ppe = addPPE!(fgclient, :x0, ppe)
+    g_ppe = getPPE(fgclient, :x0, :parametric)
+    @test a_ppe == g_ppe
+
+    @test issetequal(listPPEs(fgclient, :x0), [:parametric, :default])
+
+    #modify ppe max
+    g_ppe.max[] = 1.0
+    u_ppe = updatePPE!(fgclient, g_ppe)
+    @test u_ppe.max == [1.0]
+    @test u_ppe.id == g_ppe.id
+    
+    #TODO should this delete exist
+    d_ppe = deletePPE!(fgclient, g_ppe) 
+    #TODO should delete return the deleted node?
+    @test_broken d_ppe == u_ppe
+
+    d_ppe = deletePPE!(fgclient, :x0, :default)
+    #TODO should delete return the deleted node?
+    @test_broken d_ppe == u_ppe
+
+    @test isempty(listPPEs(fgclient, :x0))
+
+
+    #VND
+    pvnd = PackedVariableNodeData(
+        nothing,
+        [1.,2,3,4],
+        2,
+        [1.,2],
+        2,
+        Symbol[],
+        Int[],
+        0,
+        false,
+        :NOTHING,
+        Symbol[],
+        "Pose2",
+        false,
+        [0.0],
+        false,
+        false,
+        0,
+        0,
+        :default,
+        string(DFG._getDFGVersion())
+    )
+
+    a_vnd = addVariableSolverData!(fgclient, :x0, pvnd)
+    @test a_vnd.vecval == pvnd.vecval
+    @test_throws NvaSDK.GQL.GraphQLError NvaSDK.addVariableSolverData!(fgclient, :x0, pvnd)
+
+    g_vnd = getVariableSolverData(fgclient, :x0, :default)
+    @test_broken g_vnd == a_vnd #TODO why is this not working
+
+    d_vnd = deleteVariableSolverData!(fgclient, :x0, :default)
+    
     #test adding variable that already exists
     @test_throws NvaSDK.GQL.GraphQLError NvaSDK.addVariable!(fgclient, :x0, :Pose2)
     
-
 end
-
-
 

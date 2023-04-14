@@ -61,7 +61,7 @@ function addVariableSolverData!(
     variableLabel::Symbol,
     vnd::DFG.PackedVariableNodeData,
 )
-    addVariableSolverData!(fgclient, variableLabel, [vnd])
+    addVariableSolverData!(fgclient, variableLabel, [vnd])[1]
 end
 
 function addVariableSolverData!(
@@ -133,7 +133,7 @@ function deleteVariableSolverData!(fgclient::DFGClient, vnd::DFG.PackedVariableN
         throw_on_execution_error = true,
     )
 
-    return response.data
+    return response.data["deleteSolverData"]
 end
 
 function deleteVariableSolverData!(fgclient::DFGClient, variableLabel::Symbol, solveKey::Symbol)
@@ -151,7 +151,7 @@ function deleteVariableSolverData!(fgclient::DFGClient, variableLabel::Symbol, s
         throw_on_execution_error = true,
     )
 
-    return response.data
+    return response.data["deleteSolverData"]
 end
 
 function listVariableSolverData(fgclient::DFGClient, variableLabel::Symbol)

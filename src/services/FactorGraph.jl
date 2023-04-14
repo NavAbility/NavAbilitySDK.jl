@@ -39,6 +39,9 @@ function listFactorNeighbors(fgclient::DFGClient, factorLabel::Symbol)
     return last.(response.data["factors"][1]["variables"])
 end
 
+#TODO should getNeighbors be listNeighbors
+DFG.getNeighbors(fgclient::DFGClient, nodeLabel::Symbol) = listNeighbors(fgclient, nodeLabel)
+
 function listNeighbors(fgclient::DFGClient, nodeLabel::Symbol)
     variables = Dict(
         "userLabel" => fgclient.user.label,
