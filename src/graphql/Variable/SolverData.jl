@@ -20,6 +20,7 @@ fragment solverdata_fields on SolverData {
   solveInProgress
   solvedCount
   solveKey
+  covar
   _version  
 }
 """

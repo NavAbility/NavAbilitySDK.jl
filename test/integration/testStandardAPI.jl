@@ -134,10 +134,10 @@ sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
     #VND
     pvnd = PackedVariableNodeData(
         nothing,
-        [1.,2,3,4],
-        2,
-        [1.,2],
-        2,
+        [1.,2,3],
+        3,
+        [1.,2,3],
+        3,
         Symbol[],
         Int[],
         0,
@@ -152,6 +152,7 @@ sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
         0,
         0,
         :default,
+        Float64[],
         string(DFG._getDFGVersion())
     )
 
