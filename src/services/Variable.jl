@@ -2,7 +2,7 @@
 # Variable CRUD
 # =======================================================================================
 
-function VariableCreateInput(fgclient::DFGClient, v::PackedVariable)
+function VariableCreateInput(fgclient::DFGClient, v::Variable)
     # copy from a packed variable
     variableLabel = v.label
 
@@ -95,7 +95,7 @@ function VariableCreateInput(fgclient::DFGClient, v::PackedVariable)
     return addvar
 end
 
-function addVariable!(fgclient::DFGClient, v::PackedVariable)
+function addVariable!(fgclient::DFGClient, v::Variable)
     addvar = VariableCreateInput(fgclient, v)
 
     variables = Dict("variablesToCreate" => [addvar])
@@ -111,7 +111,7 @@ function addVariable!(fgclient::DFGClient, v::PackedVariable)
     return response.data["addVariables"].variables[1]
 end
 
-function addVariables!(fgclient::DFGClient, vars::Vector{PackedVariable})
+function addVariables!(fgclient::DFGClient, vars::Vector{Variable})
     #
     addvars = VariableCreateInput.(fgclient, vars)
 
@@ -119,7 +119,7 @@ function addVariables!(fgclient::DFGClient, vars::Vector{PackedVariable})
     chunks = collect(Iterators.partition(addvars, 20))
     length(chunks) > 1 && @info "Adding variables in $(length(chunks)) batches"
 
-    newVarReturns = PackedVariable[]
+    newVarReturns = Variable[]
     # p = Progress(length(chunks))
     Threads.@threads for c in chunks
         # ProgressMeter.next!(p; showvalues = [("adding", "$(c[1].label)...$(c[end].label)")])
@@ -149,7 +149,7 @@ function getVariables(fgclient::DFGClient)
     )
 
     T = Vector{
-        Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{PackedVariable}}}}}},
+        Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{Variable}}}}}},
     }
 
     response = GQL.execute(
@@ -175,7 +175,7 @@ function getVariables(fgclient::DFGClient, label::Vector{Symbol})
     response = GQL.execute(
         fgclient.client,
         GQL_GET_VARIABLES_BY_LABELS,
-        Vector{PackedVariable};
+        Vector{Variable};
         variables,
         throw_on_execution_error = true,
     )
@@ -205,11 +205,6 @@ function listVariables(fgclient::DFGClient)
     )
 end
 
-#TODO consider this to be getVariableFull, that way 
-# - getVariable(...)::DFGVariable
-# - getVariableFull(...)::PackedVariable (to rename to Variable)
-# - getVariableSummary(...)::DFGVariableSummary
-# - getVariableSkeleton(...)::SkeletonDFGVariable (maybe fix inconsistent naming here)
 function getVariable(fgclient::DFGClient, label::Symbol)
     variables = Dict(
         "userId" => fgclient.user.id,
@@ -221,7 +216,7 @@ function getVariable(fgclient::DFGClient, label::Symbol)
     )
 
     T = Vector{
-        Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{PackedVariable}}}}}},
+        Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{Variable}}}}}},
     }
 
     response = GQL.execute(
@@ -247,7 +242,7 @@ function getVariable2(fgclient::DFGClient, label::Symbol)
     response = GQL.execute(
         fgclient.client,
         GQL_GET_VARIABLE2,
-        Vector{PackedVariable};
+        Vector{Variable};
         variables,
         throw_on_execution_error = true,
     )

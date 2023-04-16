@@ -112,7 +112,7 @@ end
 # Variables
 # Used by create and update
 struct VariableResponse
-    variables::Vector{PackedVariable}
+    variables::Vector{Variable}
 end
 
 # VariableNodeData

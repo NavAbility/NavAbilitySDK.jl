@@ -19,7 +19,7 @@ function addVariable!(
 )
     union!(tags, [:VARIABLE])
 
-    pacvar = PackedVariable(;
+    pacvar = Variable(;
         id = nothing,
         label = Symbol(label),
         variableType = string(variableType),

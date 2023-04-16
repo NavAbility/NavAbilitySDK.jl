@@ -20,7 +20,7 @@ import GraphQLClient as GQL
 # explicitly use any DFG function to make it easier if it needs to be removed
 import DistributedFactorGraphs as DFG
 using DistributedFactorGraphs:
-    Variable, PackedVariable, PackedVariableNodeData, MeanMaxPPE, BlobEntry, PackedFactor
+    Variable, PackedVariableNodeData, MeanMaxPPE, BlobEntry, PackedFactor
 
 import DistributedFactorGraphs:
     getFactor,

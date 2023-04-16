@@ -109,7 +109,7 @@ function getFactor(fgclient::DFGClient, label::Symbol)
     response = GQL.execute(
         client,
         GQL_GET_FACTOR_FROM_USER;
-        # Vector{PackedVariable};
+        # Vector{PackedFactor};
         variables,
         throw_on_execution_error = true,
     )
