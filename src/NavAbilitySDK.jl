@@ -37,6 +37,7 @@ import DistributedFactorGraphs:
     listVariables,
     listBlobEntries,
     listPPEs,
+    listVariableSolverData,
     getPPE,
     getPPEs,
     addPPE!,
@@ -116,6 +117,7 @@ export addVariables!
 export 
     getFactor,
     getFactors,
+    getFactorsSkeleton,
     addFactor!,
     updateFactor!,
     deleteFactor!,
@@ -132,12 +134,14 @@ export
     listVariables,
     listBlobEntries,
     listPPEs,
+    listVariableSolverData,
     getPPE,
     getPPEs,
     addPPE!,
     updatePPE!,
     deletePPE!,
     getVariableSolverData,
+    getVariableSolverDataAll,
     addVariableSolverData!,
     updateVariableSolverData!,
     deleteVariableSolverData!,
@@ -151,7 +155,9 @@ export
     deleteBlob!,
     exists,
     getNeighbors,
-    listNeighbors
+    listNeighbors,
+    listVariableNeighbors,
+    listFactorNeighbors
 
 export Variable, Factor, MeanMaxPPE, BlobEntry
 

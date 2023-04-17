@@ -85,7 +85,7 @@ end
 end
 
 # Gets
-@testset "Gets, Sets, and Accessors" begin
+@testset "testing some crud" begin
     global fgclient,v1,v2,f1
     @test getVariable(fgclient, v1.label) == v1
     @test getFactor(fgclient, f1.label) == f1
@@ -100,7 +100,11 @@ end
 
     @test length(getVariablesSkeleton(fgclient)) == 2
     @test length(getVariablesSummary(fgclient)) == 2
-
+    @test length(getVariables(fgclient)) == 2
+    
+    @test length(getFactorsSkeleton(fgclient)) == 1
+    @test length(getFactors(fgclient)) == 1
+    
     # Sets
     # v1Prime = deepcopy(v1)
     # @test updateVariable!(fgclient, v1Prime) == v1 #Maybe move to crud
@@ -108,7 +112,10 @@ end
     # f1Prime = deepcopy(f1)
     # @test updateFactor!(fgclient, f1Prime) == f1 #Maybe move to crud
     # @test updateFactor!(fgclient, f1Prime) == getFactor(fgclient, f1.label)
+end
 
+@testset "VariableSolverData" begin
+    global fgclient,v1,v2,f1
     # Solver Data
     vnd = NvaSDK.PackedVariableNodeData(nothing, [0.0], 1, [0.0], 1, Symbol[], Int64[], 1, false, :NOTHING, Symbol[], "IncrementalInference.Position{1}", false, [0.0], false, false, 0, 0, :parametric, Float64[], "0.21.0")
     par_vnd = addVariableSolverData!(fgclient, :a, vnd)
@@ -118,6 +125,19 @@ end
     
     @test getVariableSolverData(fgclient, :a) ==  def_vnd
     @test getVariableSolverData(fgclient, :a, :parametric) ==  par_vnd
+
+    @test issetequal(listVariableSolverData(fgclient, :a), [:default, :parametric])
+
+    @test length(getVariableSolverDataAll(fgclient, :a)) == 2
+
+    # change some things and update
+    push!(par_vnd.covar, 1.1)
+    u_par_vnd = updateVariableSolverData!(fgclient, par_vnd)
+    @test u_par_vnd.covar == [1.1]
+
+    d_vnd = deleteVariableSolverData!(fgclient, par_vnd)
+
+    @test listVariableSolverData(fgclient, :a) == [:default]
 
 end
 
@@ -203,6 +223,8 @@ end
     @test ppe2 == getPPE(fgclient, :a, :second)
 
     @test issetequal(listPPEs(fgclient, :a), [:default, :second])
+
+    @test length(getPPEs(fgclient, :a)) == 2
     
     # Delete :default and replace to see if new ones can be added
     deletePPE!(fgclient, :a, :default)
@@ -248,10 +270,8 @@ addVariables!(fgclient, vars)
 # updateVariable!(fgclient, verts[7])
 # updateVariable!(fgclient, verts[8])
 
-#TODO add factors in batch
 facts = map(
-    n -> addFactor!(
-        fgclient, 
+    n -> Factor( 
         [vars[n].label, vars[n+1].label],
         NvaSDK.LinearRelative(NvaSDK.Normal(50.0,2.0));
         solvable=0
@@ -259,6 +279,8 @@ facts = map(
     1:(numNodes-1)
 )
 
+#TODO add factors in batch
+a_facts = addFactor!.(fgclient, facts)
 
 @testset "Getting Neighbors" begin
     global fgclient,vars,facts
@@ -266,6 +288,11 @@ facts = map(
     @test listNeighbors(fgclient, :x1) == [facts[1].label]
     neighbors = listNeighbors(fgclient, facts[1].label)
     @test issetequal(neighbors, [:x1, :x2])
+
+    @test listVariableNeighbors(fgclient, :x1) == [facts[1].label]
+    neighbors = listFactorNeighbors(fgclient, facts[1].label)
+    @test issetequal(neighbors, [:x1, :x2])
+
     # Testing aliases
     # @test getNeighbors(fgclient, getFactor(fgclient, :x1x2f1)) == ls(fgclient, getFactor(fgclient, :x1x2f1))
     # @test getNeighbors(fgclient, :x1x2f1) == ls(fgclient, :x1x2f1)

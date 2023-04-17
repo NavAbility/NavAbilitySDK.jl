@@ -108,7 +108,7 @@ function updateVariableSolverData!(fgclient::DFGClient, vnd::DFG.PackedVariableN
     isnothing(vnd.id) &&
         error("Field id is needed for update, please use add, #TODO fallback to add")
 
-    request = Dict(getCommonProperties(PPECreateInput, ppe))
+    request = Dict(getCommonProperties(SolverDataCreateInput, vnd))
     # Make request
     response = GQL.execute(
         fgclient.client,
