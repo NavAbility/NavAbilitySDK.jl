@@ -384,6 +384,25 @@ function deleteVariable!(fgclient::DFGClient, variable::DFG.AbstractDFGVariable)
     return response.data
 end
 
+function deleteVariable!(fgclient::DFGClient, label::Symbol)
+    
+    variables = Dict(
+        "userLabel" => fgclient.user.label,
+        "robotLabel" => fgclient.robot.label,
+        "sessionLabel" => fgclient.session.label,
+        "variableLabel" => label,
+    )
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_DELETE_VARIABLE_BY_LABEL;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response.data
+end
+
 ## ====================
 ## Utilities
 ## ====================
