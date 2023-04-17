@@ -121,7 +121,11 @@ export
     deleteFactor!,
     listFactors,
     getVariable,
+    getVariableSummary,
+    getVariableSkeleton,
     getVariables,
+    getVariablesSummary,
+    getVariablesSkeleton,
     addVariable!,
     updateVariable!,
     deleteVariable!,
@@ -146,9 +150,10 @@ export
     addBlob!,
     deleteBlob!,
     exists,
-    getNeighbors
+    getNeighbors,
+    listNeighbors
 
-export Variable, Factor
+export Variable, Factor, MeanMaxPPE, BlobEntry
 
 #exports
 # export NavAbilityClient, NavAbilityWebsocketClient, NavAbilityHttpsClient, QueryOptions, MutationOptions

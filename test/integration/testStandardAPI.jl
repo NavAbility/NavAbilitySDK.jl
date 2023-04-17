@@ -21,7 +21,12 @@ sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
         addSessionIfNotExists = true,
     )
 
-    NvaSDK.addVariable!(fgclient, :x0, "Pose2")
+    a_var = NvaSDK.addVariable!(fgclient, :x0, "Pose2")
+
+    g_var = getVariable(fgclient, :x0)
+
+    @test a_var == g_var
+
     NvaSDK.addFactor!(
         fgclient,
         [:x0],
@@ -161,7 +166,7 @@ sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
     @test_throws NvaSDK.GQL.GraphQLError NvaSDK.addVariableSolverData!(fgclient, :x0, pvnd)
 
     g_vnd = getVariableSolverData(fgclient, :x0, :default)
-    @test_broken g_vnd == a_vnd #TODO why is this not working
+    @test g_vnd == a_vnd 
 
     d_vnd = deleteVariableSolverData!(fgclient, :x0, :default)
     

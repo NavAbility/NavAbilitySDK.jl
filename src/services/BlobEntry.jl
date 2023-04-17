@@ -116,6 +116,8 @@ function listBlobEntries(fgclient::DFGClient, variableLabel::Symbol)
     )
 end
 
+#TODO delete and update
+
 # =========================================================================================
 # BlobEntry CRUD on other nodes
 # =========================================================================================
