@@ -151,7 +151,7 @@ export
     updateBlobEntry!,
     deleteBlobEntry!,
     getSessionBlobEntry,
-    addSessionBlobEnties!,
+    addSessionBlobEntries!,
     listSessionBlobEntries,
     getBlob,
     addBlob!,
