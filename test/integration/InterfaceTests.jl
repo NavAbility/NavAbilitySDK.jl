@@ -205,6 +205,14 @@ end
     #delete from ddfg
     @test_broken deleteBlobEntry!(fgclient, :a, :key2)
     @test_broken listBlobEntries(fgclient, :a) == Symbol[]
+
+    #Testing session blob entries
+    a_de = addSessionBlobEntries!(fgclient, [de1])[1]
+    g_de = getSessionBlobEntry(fgclient, :key1)
+    @test a_de == g_de
+    @test listSessionBlobEntries(fgclient) == [:key1]
+
+
 end
 
 @testset "PPEs" begin
