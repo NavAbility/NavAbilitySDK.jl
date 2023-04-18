@@ -1,38 +1,49 @@
 
-GQL_CREATE_UPLOAD = """
-mutation sdk_url_createupload(\$filename: String!, \$filesize: BigInt!, \$parts: Int!) {
+GQL_CREATE_UPLOAD = GQL.gql"""
+mutation sdk_url_createupload($name: String!, $size: BigInt!, $parts: Int!) {
   createUpload(
-    file: {
-      filename: \$filename,
-      filesize: \$filesize
+    blob: {
+      name: $name,
+      size: $size
     },
-    parts: \$parts
+    parts: $parts
   ) {
     uploadId
     parts {
       partNumber
       url
     }
-    file {
+    blob {
       id
     }
   }
 }
 """
 
-GQL_COMPLETEUPLOAD_SINGLE = """
-mutation completeUpload(\$fileId: ID!, \$uploadId: ID!, \$eTag: String) {
+GQL_COMPLETEUPLOAD_SINGLE = GQL.gql"""
+mutation completeUpload($blobId: ID!, $uploadId: ID!, $eTag: String) {
   completeUpload (
-    fileId: \$fileId,
+    blobId: $blobId,
     completedUpload: {
-      uploadId: \$uploadId,
+      uploadId: $uploadId,
       parts: [
         {
           partNumber: 1,
-          eTag: \$eTag
+          eTag: $eTag
         }
       ]
     }
   )
+}
+"""
+
+GQL_LIST_BLOBS_NAME_CONTAINS = GQL.gql"""
+query($name: String!) {
+  blobs(where: { name_CONTAINS: $name }) {
+    id
+    name
+    size
+    createdTimestamp
+  }
 }
 """
