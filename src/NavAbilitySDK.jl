@@ -115,6 +115,10 @@ export NavAbilityClient, DFGClient, NavAbilityBlobStore
 export addVariables!
 #DFG exports
 export 
+    addRobot!,
+    addSession!,
+    deleteSession!,
+    deleteRobot!,
     getFactor,
     getFactors,
     getFactorsSkeleton,

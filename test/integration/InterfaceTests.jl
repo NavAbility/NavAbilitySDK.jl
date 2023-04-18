@@ -13,8 +13,8 @@ sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
 # sessionLabel = "TestSession_RG94"
 
 @testset "Create fg client" begin
-    client = NvaSDK.NavAbilityClient(apiUrl)
-    global fgclient = NvaSDK.DFGClient(
+    global client = NavAbilityClient(apiUrl)
+    global fgclient = DFGClient(
         client,
         userLabel,
         robotLabel,
@@ -22,6 +22,32 @@ sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
         addRobotIfNotExists = true,
         addSessionIfNotExists = true,
     )
+end
+
+@testset "User Robot Session" begin
+    temp_robotLabel = "TestRobot_"*randstring(4)
+    temp_sessionLabel = "TestSession_"*randstring(4)
+
+    user = NvaSDK.User(client, userLabel)
+    @test user.id == UUID("f6269b80-1d31-4f66-b635-56c014e9e4ac")
+    @test user.label == "guest@navability.io"
+
+    robot = addRobot!(client, user, temp_robotLabel)
+    @test robot.label == temp_robotLabel
+
+    session = addSession!(client, user, robot, temp_sessionLabel)
+    @test session.label == temp_sessionLabel
+
+    context = NvaSDK.Context(user, robot, session)
+
+    tmp_fgclient = DFGClient(client, userLabel, temp_robotLabel, temp_sessionLabel)
+    deleteSession!(tmp_fgclient)
+
+    deleteRobot!(client, userLabel, temp_robotLabel)
+        
+    user = NvaSDK.User(client, userLabel)
+    @test !in(temp_robotLabel, getproperty.(user.robots, :label))
+
 end
 
 # Building simple graph...
