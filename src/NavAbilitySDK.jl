@@ -1,95 +1,203 @@
 module NavAbilitySDK
 
 const NvaSDK = NavAbilitySDK
-# export NVA
+export NvaSDK
 
-# Global imports
-using Diana
 using DocStringExtensions
 using LinearAlgebra
-using JSON
 using UUIDs
+using Dates
+using TimeZones
+using JSON3
+using Base64
+using StructTypes
 using Downloads
 using HTTP
-using Dates
-using Base64
+using DistributedFactorGraphs.ProgressMeter
 
-# for overloading with visualization helpers
-import Base: show
+import GraphQLClient as GQL
 
-# LinearAlgebra pass through exports
-export diagm, norm
-# UUIDs pass through exports
-export uuid4
+# explicitly use any DFG function to make it easier if it needs to be removed
+import DistributedFactorGraphs as DFG
+using DistributedFactorGraphs:
+    Variable, PackedVariableNodeData, MeanMaxPPE, BlobEntry, PackedFactor, hasBlob
 
+import DistributedFactorGraphs:
+    getFactor,
+    getFactors,
+    addFactor!,
+    updateFactor!,
+    deleteFactor!,
+    listFactors,
+    getVariable,
+    getVariables,
+    addVariable!,
+    updateVariable!,
+    deleteVariable!,
+    listVariables,
+    listBlobEntries,
+    listPPEs,
+    listVariableSolverData,
+    getPPE,
+    getPPEs,
+    addPPE!,
+    updatePPE!,
+    deletePPE!,
+    getVariableSolverData,
+    addVariableSolverData!,
+    updateVariableSolverData!,
+    deleteVariableSolverData!,
+    getBlobEntry,
+    getBlobEntries,
+    addBlobEntry!,
+    updateBlobEntry!,
+    deleteBlobEntry!,
+    getBlob,
+    addBlob!,
+    deleteBlob!,
+    exists,
+    getNeighbors,
+    findVariableNearTimestamp
+# setSolverParams!,
+# getSolverParams,
+# getAddHistory,
+#getUserData, # TODO should propably rename to MetaData
+#setUserData!, # TODO should propably rename to MetaData
+#getRobotData, # TODO should propably rename to MetaData
+#setRobotData!, # TODO should propably rename to MetaData
+#getSessionData, # TODO should propably rename to MetaData
+#setSessionData!, # TODO should propably rename to MetaData
+# isVariable,
+# isFactor,
+# ls,
+# lsf,
+# isConnected,
+# buildSubgraph,
+# copyGraph!,
+# getBiadjacencyMatrix,
 
-DFG_VERSION = "0.18.10";
+# # LinearAlgebra pass through exports
+# export diagm, norm
+# # UUIDs pass through exports
+# export uuid4
 
 # Graphql
-include("./navability/graphql/Factor.jl")
-include("./navability/graphql/Status.jl")
-include("./navability/graphql/Variable.jl")
-include("./navability/graphql/DataBlobs.jl")
-include("./navability/graphql/Session.jl")
+include("graphql/BlobEntry.jl")
+include("graphql/UserRobotSession.jl")
+include("graphql/Factor.jl")
+include("graphql/Variable/Variable.jl")
+include("graphql/BlobStore.jl")
 
+include("entities/Distributions.jl")
+include("entities/InferenceTypes.jl")
+include("entities/UserRobotSession.jl")
+include("entities/Variable.jl")
+include("entities/Factor.jl")
 
-include("./navability/graphql/QueriesDeprecated.jl")
-# TODO remove GQL exports, since users can easily just use NVA.QUERY___
-export QUERY_VARIABLE_LABELS
-export QUERY_FILES, QUERY_CALIBRATION
-export MUTATION_ADDVARIABLE, MUTATION_ADDFACTOR, MUTATION_ADDSESSIONDATA
-export MUTATION_SOLVESESSION, MUTATION_SOLVEFEDERATED
-export MUTATION_DEMOCANONICALHEXAGONAL
-export MUTATION_CREATE_UPLOAD, MUTATION_ABORT_UPLOAD, MUTATION_COMPLETE_UPLOAD
-export MUTATION_PROC_CALIBRATION
-export SUBSCRIPTION_UPDATES
+include("NavAbilityClient.jl")
 
-# Entities
-include("./navability/entities/NavAbilityClient.jl")
-include("./navability/entities/Client.jl")
-include("./navability/entities/Common.jl")
-include("./navability/entities/Distributions.jl")
-include("./navability/entities/Variable.jl")
-include("./navability/entities/InferenceTypes.jl")
-include("./navability/entities/Factor.jl")
-include("./navability/entities/Solve.jl")
-include("./navability/entities/Session.jl")
-export NavAbilityClient, NavAbilityWebsocketClient, NavAbilityHttpsClient, QueryOptions, MutationOptions
-export Client, Scope
-export QueryDetail, LABEL, SKELETON, SUMMARY, FULL
-export Distribution, Normal, Rayleigh, FullNormal, Uniform, Categorical
-export ManifoldKernelDensity
-export Variable
-export FactorData, PriorData, PriorPose2Data, PriorPoint2Data, LinearRelativeData, Pose2Pose2Data, Pose2AprilTag4CornersData, Pose2Point2BearingRangeData, Point2Point2RangeData, MixtureData
-export PriorPose3, Pose3Pose3
-export ScatterAlignPose2Data
-export FactorType, Factor
-export SolveOptions
-export SessionKey, SessionId, ExportSessionInput, ExportSessionOptions
+include("services/Common.jl")
+include("services/UserRobotSession.jl")
+include("services/PPE.jl")
+include("services/SolverData.jl")
+include("services/Variable.jl")
+include("services/Factor.jl")
+include("services/BlobEntry.jl")
+include("services/BlobStore.jl")
+include("services/StandardAPI.jl")
+include("services/FactorGraph.jl")
 
-# Services
-include("./navability/services/Variable.jl")
-include("./navability/services/Factor.jl")
-include("./navability/services/Solve.jl")
-include("./navability/services/Status.jl")
-include("./navability/services/Utils.jl")
-include("./navability/services/StandardAPI.jl")
-include("./navability/services/DataBlobs.jl")
-include("./navability/services/Session.jl")
-export getVariable, getVariables, listVariables, ls
-export addVariable, updateVariable, addVariablePacked, updateVariablePacked, addPackedVariable, addPackedVariableOld
-export getFactor, getFactors, listFactors, lsf
-export addFactor, addPackedFactor, deleteFactor
-export initVariable
-export listBlobEntries
-export getBlobEntry, getBlob
-export addBlobEntry, addBlob
-export solveSession, solveFederated
-export getStatusMessages, getStatusLatest, getStatusesLatest
-export waitForCompletion
-export exportSession, getExportSessionBlobId
-export GraphVizApp, MapVizApp
+include("services/AsyncCalls.jl")
 
 include("Deprecated.jl")
+
+export NavAbilityClient, DFGClient, NavAbilityBlobStore
+
+export addVariables!
+#DFG exports
+export 
+    addRobot!,
+    addSession!,
+    deleteSession!,
+    deleteRobot!,
+    listRobots,
+    listSessions,
+    getFactor,
+    getFactors,
+    getFactorsSkeleton,
+    addFactor!,
+    updateFactor!,
+    deleteFactor!,
+    listFactors,
+    getVariable,
+    getVariableSummary,
+    getVariableSkeleton,
+    getVariables,
+    getVariablesSummary,
+    getVariablesSkeleton,
+    addVariable!,
+    updateVariable!,
+    deleteVariable!,
+    listVariables,
+    listBlobEntries,
+    listPPEs,
+    listVariableSolverData,
+    getPPE,
+    getPPEs,
+    addPPE!,
+    updatePPE!,
+    deletePPE!,
+    getVariableSolverData,
+    getVariableSolverDataAll,
+    addVariableSolverData!,
+    updateVariableSolverData!,
+    deleteVariableSolverData!,
+    getBlobEntry,
+    getBlobEntries,
+    addBlobEntry!,
+    updateBlobEntry!,
+    deleteBlobEntry!,
+    getSessionBlobEntry,
+    addSessionBlobEntries!,
+    listSessionBlobEntries,
+    getBlob,
+    addBlob!,
+    deleteBlob!,
+    exists,
+    getNeighbors,
+    listNeighbors,
+    listVariableNeighbors,
+    listFactorNeighbors,
+    findVariableNearTimestamp
+
+export Variable, Factor, MeanMaxPPE, BlobEntry
+
+#exports
+# export NavAbilityClient, NavAbilityWebsocketClient, NavAbilityHttpsClient, QueryOptions, MutationOptions
+# export Client, Scope
+# export QueryDetail, LABEL, SKELETON, SUMMARY, FULL
+# export Distribution, Normal, Rayleigh, FullNormal, Uniform, Categorical
+# export ManifoldKernelDensity
+# export Variable
+# export FactorData, PriorData, PriorPose2Data, PriorPoint2Data, LinearRelativeData, Pose2Pose2Data, Pose2AprilTag4CornersData, Pose2Point2BearingRangeData, Point2Point2RangeData, MixtureData
+# export PriorPose3, Pose3Pose3
+# export ScatterAlignPose2Data
+# export FactorType, Factor
+# export SolveOptions
+# export SessionKey, SessionId, ExportSessionInput, ExportSessionOptions
+
+# export getVariable, getVariables, listVariables, ls
+# export addVariable, updateVariable, addVariablePacked, updateVariablePacked, addPackedVariable, addPackedVariableOld
+# export getFactor, getFactors, listFactors, lsf
+# export addFactor, addPackedFactor, deleteFactor
+# export initVariable
+# export listBlobEntries
+# export getBlobEntry, getBlob
+# export addBlobEntry, addBlob
+# export solveSession, solveFederated
+# export getStatusMessages, getStatusLatest, getStatusesLatest
+# export waitForCompletion
+# export exportSession, getExportSessionBlobId
+# export GraphVizApp, MapVizApp
 
 end

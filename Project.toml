@@ -3,32 +3,35 @@ uuid = "f3e6a059-199c-4ada-8143-fcefb97e6165"
 keywords = ["navability", "navigation", "slam", "sdk", "robotics", "robots"]
 desc = "NavAbility SDK: Access NavAbility Cloud factor graph features. Note that this SDK and the related API are still in development. Please let us know if you have any issues at info@navability.io."
 authors = ["NavAbility <info@navability.io>"]
-version = "0.5.1"
+version = "0.6.0"
 
 [deps]
 Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
-Diana = "070d9d8b-17a7-5814-83fa-42438ba5c6e0"
+DistributedFactorGraphs = "b5cc3c7e-6572-11e9-2517-99fb8daf2f04"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
+GraphQLClient = "09d831e3-9c21-47a9-bfd8-076871817219"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+StructTypes = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
+TimeZones = "f269a46b-ccf7-5d73-abea-4c690281aa53"
 UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [compat]
-Diana = "0.2, 0.3"
+DistributedFactorGraphs = "0.21"
 DocStringExtensions = "0.8, 0.9"
 Downloads = "1"
-HTTP = "^1.7"
-JSON = "0.21"
+HTTP = "1.7"
+JSON3 = "1"
 TensorCast = "0.4"
-julia = "1.6"
+julia = "1.8"
 
 [extras]
 TensorCast = "02d47bb6-7ce6-556a-be16-bb1710789e2b"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["TensorCast","Test"]
+test = ["TensorCast", "Test"]

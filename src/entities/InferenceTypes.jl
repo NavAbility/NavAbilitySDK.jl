@@ -1,0 +1,108 @@
+"""
+$(TYPEDEF)
+Abstract parent type for all InferenceTypes, which are the
+functions inside of factors.
+"""
+abstract type InferenceType <: DFG.AbstractPackedFactor end
+
+"""
+    $SIGNATURES
+
+Macro to autogenerate factor type definitions.  Used for common types such as `Prior, PriorPose2, Pose3Pose3, etc.`
+"""
+macro nvaZInferenceType(inferencetype)
+    return esc(quote
+        Base.@__doc__ struct $inferencetype <: InferenceType
+            Z::Distribution
+        end
+        $inferencetype(; Z) = $inferencetype(Z)
+    end)
+end
+
+@nvaZInferenceType Prior
+@nvaZInferenceType LinearRelative
+
+@nvaZInferenceType PriorPoint2
+@nvaZInferenceType Point2Point2
+@nvaZInferenceType Point2Point2Range
+
+@nvaZInferenceType PriorPose2
+@nvaZInferenceType Pose2Pose2
+
+@nvaZInferenceType PriorPoint3
+@nvaZInferenceType PriorPose3
+@nvaZInferenceType Pose3Pose3
+@nvaZInferenceType Pose3Pose3Rotation
+
+"""
+$(TYPEDEF)
+Pose2Point2BearingRangeInferenceType is used to represent a bearing
++ range measurement.
+"""
+Base.@kwdef struct Pose2Point2BearingRange <: InferenceType
+    bearing::Distribution
+    range::Distribution
+end
+
+const Pose2Point2BearingRangeInferenceType = Pose2Point2BearingRange
+
+"""
+$(TYPEDEF)
+InferenceType for Pose2AprilTag4CornersData.
+"""
+Base.@kwdef struct Pose2AprilTag4Corners <: InferenceType
+    corners::Vector{Float64}
+    homography::Vector{Float64}
+    K::Vector{Float64}
+    taglength::Float64
+    id::Int
+    _type::String = "/application/JuliaLang/PackedPose2AprilTag4Corners"
+end
+
+const Pose2AprilTag4CornersInferenceType = Pose2AprilTag4Corners
+
+"""
+    $SIGNATURES
+
+Alignment factor between point cloud populations, using either
+- a continuous density function cost: `ApproxManifoldProducts.mmd`, or
+- a conventional iterative closest point (ICP) algorithm (when `.sample_count < 0`).
+
+This factor can support very large density clouds, with `sample_count` subsampling for individual alignments.
+"""
+Base.@kwdef struct ScatterAlignPose2 <: InferenceType
+    """ This SDK only supports MKD clouds at this time. Note CJL also supports HeatmapGridDensity, TODO """
+    cloud1::ManifoldKernelDensity
+    cloud2::ManifoldKernelDensity
+    """ Common grid scale for both images -- i.e. units/pixel.  
+    Constructor uses two arguments `gridlength`*`rescale=1`=`gridscale`.
+    Arg 0 < `rescale` ≤ 1 is also used to rescale the images to lower resolution for speed. """
+    gridscale::Float64 = 1.0
+    """ how many heatmap sampled particles to use for mmd alignment """
+    sample_count::Int = 50
+    """ bandwidth to use for mmd """
+    bw::Float64 = 0.01
+    """ EXPERIMENTAL, flag whether to use 'stashing' for large point cloud, see CJL Docs Stash & Cache """
+    useStashing::Bool = false
+    """ DataEntry ID for stash store of cloud 1 & 2 """
+    dataEntry_cloud1::String = ""
+    dataEntry_cloud2::String = ""
+    """ Data store hint where likely to find the data entries and blobs for reconstructing cloud1 and cloud2"""
+    dataStoreHint::String = ""
+    """ Convention store type within the object """
+    _type::String = "Caesar.PackedScatterAlignPose2"
+end
+
+const ScatterAlignPose2InferenceType = ScatterAlignPose2
+
+"""
+$(TYPEDEF)
+InferenceType for MixtureData.
+"""
+Base.@kwdef struct MixtureInferenceType <: InferenceType
+    N::Integer
+    F_::String
+    S::Vector{String}
+    components::Vector{Distribution}
+    diversity::Categorical
+end

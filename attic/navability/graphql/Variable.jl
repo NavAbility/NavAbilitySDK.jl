@@ -1,12 +1,17 @@
 GQL_FRAGMENT_VARIABLES = """
   fragment ppe_fields on Ppe {
+    id
     solveKey
     suggested
     max
     mean
+    _type
+    _version
+    createdTimestamp
     lastUpdatedTimestamp
   }
   fragment solverdata_fields on SolverData {
+    id
     solveKey
     BayesNetOutVertIDs
     BayesNetVertID
@@ -27,33 +32,46 @@ GQL_FRAGMENT_VARIABLES = """
     vecval
     _version  
   }
-  fragment dataEntry_fields on DataEntry {
-    label
+  fragment blobEntry_fields on BlobEntry {
     id
-    blobstore
-    hash
-    origin
+    blobId
+    originId
+    label
     description
+    hash
     mimeType
-    # createdTimestamp
+    blobstore
+    origin
+    metadata
+    timestamp
+    _type
+    _version
+    createdTimestamp
+    lastUpdatedTimestamp
   }  
   fragment variable_skeleton_fields on Variable {
+    id
     label
     tags
   }
   fragment variable_summary_fields on Variable {
     timestamp
+    nstime
+    variableType
     ppes {
       ...ppe_fields
     }
-    dataEntry: data {
-    ...dataEntry_fields
+    blobEntries {
+    ...blobEntry_fields
     }
-    variableType
     _version
+    _type
+    _version
+    createdTimestamp
+    lastUpdatedTimestamp
   }
-  fragment variable_full_fields on Variable{
-    smallData
+  fragment variable_full_fields on Variable {
+    metadata
     solvable
     solverData
     {
