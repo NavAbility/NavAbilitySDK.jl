@@ -108,10 +108,12 @@ end
     # varNearTs = findVariableNearTimestamp(fgclient, now())
     # @test_skip varNearTs[1][1]  == [:b]
 
+    @test findVariableNearTimestamp(fgclient, v1.timestamp, NvaSDK.Dates.Millisecond(1)) == [:a]
+    
 end
 
 # Gets
-@testset "testing some crud" begin
+@testset "getVariable and getFactor" begin
     global fgclient,v1,v2,f1
     @test getVariable(fgclient, v1.label) == v1
     @test getFactor(fgclient, f1.label) == f1
@@ -127,6 +129,7 @@ end
     @test length(getVariablesSkeleton(fgclient)) == 2
     @test length(getVariablesSummary(fgclient)) == 2
     @test length(getVariables(fgclient)) == 2
+    @test getVariables(fgclient, [:a]) == [v1]
     
     @test length(getFactorsSkeleton(fgclient)) == 1
     @test length(getFactors(fgclient)) == 1
@@ -274,6 +277,27 @@ end
     ppe2.mean[] = 5.5
     # they are no longer the same because of updated timestamp
     @test ppe2 != updatePPE!(fgclient, ppe2)
+
+end
+
+# at this stage v has blob entries, solver data and ppes
+@testset "addVariable with satelite" begin
+    va = getVariable(fgclient, :a)
+    vc = Variable(;
+        (k => getproperty(va, k) for k in fieldnames(Variable))...,
+        id=nothing,
+        label=:c
+    )
+    a_vc = addVariable!(fgclient, vc)
+    g_vc = getVariable(fgclient, :c)
+    #order of vector is not maintained so can't do @test a_vc == g_vc so so doing spot check
+    @test length(g_vc.ppes) == 2
+    @test g_vc.solverData == a_vc.solverData
+    @test getBlobEntry(a_vc, :key1) == getBlobEntry(g_vc, :key1)
+    @test a_vc.id == g_vc.id
+
+    del = deleteVariable!(fgclient, :c)
+    @test del["deleteVariables"]["nodesDeleted"] == 6
 
 end
 

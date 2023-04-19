@@ -56,7 +56,8 @@ import DistributedFactorGraphs:
     addBlob!,
     deleteBlob!,
     exists,
-    getNeighbors
+    getNeighbors,
+    findVariableNearTimestamp
 # setSolverParams!,
 # getSolverParams,
 # getAddHistory,
@@ -164,7 +165,8 @@ export
     getNeighbors,
     listNeighbors,
     listVariableNeighbors,
-    listFactorNeighbors
+    listFactorNeighbors,
+    findVariableNearTimestamp
 
 export Variable, Factor, MeanMaxPPE, BlobEntry
 

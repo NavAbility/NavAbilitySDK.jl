@@ -407,7 +407,7 @@ end
 ## Utilities
 ## ====================
 
-function DFG.findVariableNearTimestamp(
+function findVariableNearTimestamp(
     fgclient::DFGClient,
     timestamp::ZonedDateTime,
     window::TimePeriod,
