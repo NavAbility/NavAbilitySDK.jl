@@ -37,8 +37,12 @@ end
     robot = addRobot!(client, user, temp_robotLabel)
     @test robot.label == temp_robotLabel
 
+    @test temp_robotLabel in listRobots(client, userLabel)
+
     session = addSession!(client, user, robot, temp_sessionLabel)
     @test session.label == temp_sessionLabel
+
+    @test temp_sessionLabel in listSessions(client, userLabel, temp_robotLabel)
 
     context = NvaSDK.Context(user, robot, session)
 

@@ -111,12 +111,12 @@ function addVariable!(fgclient::DFGClient, v::Variable)
     return response.data["addVariables"].variables[1]
 end
 
-function addVariables!(fgclient::DFGClient, vars::Vector{Variable})
+function addVariables!(fgclient::DFGClient, vars::Vector{Variable}; chunksize=20)
     #
     addvars = VariableCreateInput.(fgclient, vars)
 
     # Chunk it at around 20 per call
-    chunks = collect(Iterators.partition(addvars, 20))
+    chunks = collect(Iterators.partition(addvars, chunksize))
     length(chunks) > 1 && @info "Adding variables in $(length(chunks)) batches"
 
     newVarReturns = Variable[]

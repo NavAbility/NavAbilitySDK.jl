@@ -120,6 +120,8 @@ export
     addSession!,
     deleteSession!,
     deleteRobot!,
+    listRobots,
+    listSessions,
     getFactor,
     getFactors,
     getFactorsSkeleton,

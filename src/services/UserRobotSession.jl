@@ -205,3 +205,13 @@ function deleteRobot!(client::GQL.Client, userLabel::String, robotLabel::String)
 
     return response.data
 end
+
+function listRobots(client::GQL.Client, userLabel::String)
+    user = User(client, userLabel)
+    return getproperty.(user.robots,:label)
+end
+
+function listSessions(client::GQL.Client, userLabel::String, robotLabel::String)
+    robot = Robot(client, userLabel, robotLabel) 
+    return getproperty.(robot.sessions,:label)
+end
