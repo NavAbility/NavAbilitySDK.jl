@@ -22,6 +22,8 @@ sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
         addRobotIfNotExists = true,
         addSessionIfNotExists = true,
     )
+    #just trigger show to check for error
+    display(fgclient)
 end
 
 @testset "User Robot Session" begin
@@ -109,7 +111,7 @@ end
     # @test_skip varNearTs[1][1]  == [:b]
 
     @test findVariableNearTimestamp(fgclient, v1.timestamp, NvaSDK.Dates.Millisecond(1)) == [:a]
-    
+
 end
 
 # Gets
