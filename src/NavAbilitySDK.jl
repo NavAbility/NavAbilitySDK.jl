@@ -20,7 +20,7 @@ import GraphQLClient as GQL
 # explicitly use any DFG function to make it easier if it needs to be removed
 import DistributedFactorGraphs as DFG
 using DistributedFactorGraphs:
-    Variable, PackedVariableNodeData, MeanMaxPPE, BlobEntry, PackedFactor
+    Variable, PackedVariableNodeData, MeanMaxPPE, BlobEntry, PackedFactor, hasBlob
 
 import DistributedFactorGraphs:
     getFactor,
@@ -56,7 +56,8 @@ import DistributedFactorGraphs:
     addBlob!,
     deleteBlob!,
     exists,
-    getNeighbors
+    getNeighbors,
+    findVariableNearTimestamp
 # setSolverParams!,
 # getSolverParams,
 # getAddHistory,
@@ -115,6 +116,12 @@ export NavAbilityClient, DFGClient, NavAbilityBlobStore
 export addVariables!
 #DFG exports
 export 
+    addRobot!,
+    addSession!,
+    deleteSession!,
+    deleteRobot!,
+    listRobots,
+    listSessions,
     getFactor,
     getFactors,
     getFactorsSkeleton,
@@ -150,6 +157,9 @@ export
     addBlobEntry!,
     updateBlobEntry!,
     deleteBlobEntry!,
+    getSessionBlobEntry,
+    addSessionBlobEntries!,
+    listSessionBlobEntries,
     getBlob,
     addBlob!,
     deleteBlob!,
@@ -157,7 +167,8 @@ export
     getNeighbors,
     listNeighbors,
     listVariableNeighbors,
-    listFactorNeighbors
+    listFactorNeighbors,
+    findVariableNearTimestamp
 
 export Variable, Factor, MeanMaxPPE, BlobEntry
 

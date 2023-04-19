@@ -111,12 +111,12 @@ function addVariable!(fgclient::DFGClient, v::Variable)
     return response.data["addVariables"].variables[1]
 end
 
-function addVariables!(fgclient::DFGClient, vars::Vector{Variable})
+function addVariables!(fgclient::DFGClient, vars::Vector{Variable}; chunksize=20)
     #
     addvars = VariableCreateInput.(fgclient, vars)
 
     # Chunk it at around 20 per call
-    chunks = collect(Iterators.partition(addvars, 20))
+    chunks = collect(Iterators.partition(addvars, chunksize))
     length(chunks) > 1 && @info "Adding variables in $(length(chunks)) batches"
 
     newVarReturns = Variable[]
@@ -384,11 +384,30 @@ function deleteVariable!(fgclient::DFGClient, variable::DFG.AbstractDFGVariable)
     return response.data
 end
 
+function deleteVariable!(fgclient::DFGClient, label::Symbol)
+    
+    variables = Dict(
+        "userLabel" => fgclient.user.label,
+        "robotLabel" => fgclient.robot.label,
+        "sessionLabel" => fgclient.session.label,
+        "variableLabel" => label,
+    )
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_DELETE_VARIABLE_BY_LABEL;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response.data
+end
+
 ## ====================
 ## Utilities
 ## ====================
 
-function DFG.findVariableNearTimestamp(
+function findVariableNearTimestamp(
     fgclient::DFGClient,
     timestamp::ZonedDateTime,
     window::TimePeriod,

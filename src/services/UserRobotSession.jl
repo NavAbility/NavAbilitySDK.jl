@@ -31,7 +31,7 @@ function Context(
     robot = if length(user.robots) > 0
         user.robots[1]
     elseif addRobotIfNotExists
-        addRobot(client, user, robotLabel)
+        addRobot!(client, user, robotLabel)
     else
         error("Robot $(robotLabel) does not exist")
     end
@@ -39,7 +39,7 @@ function Context(
     session = if length(robot.sessions) > 0
         robot.sessions[1]
     elseif addSessionIfNotExists
-        addSession(client, user, robot, sessionLabel)
+        addSession!(client, user, robot, sessionLabel)
     else
         error(
             "Session '$(sessionLabel)' does not exist, use `addSessionIfNotExists=true` to create it automatically.",
@@ -73,7 +73,7 @@ function Robot(client::GQL.Client, userLabel::String, robotLabel::String)
     return response.data["users"][].robots[]
 end
 
-function addSession(client::GQL.Client, user::User, robot::Robot, sessionLabel::String)
+function addSession!(client::GQL.Client, user::User, robot::Robot, sessionLabel::String)
     variables = Dict(
         "robotId" => robot.id,
         "robotLabel" => robot.label,
@@ -97,7 +97,7 @@ function addSession(client::GQL.Client, user::User, robot::Robot, sessionLabel::
     return response.data["addSessions"].sessions[1]
 end
 
-function addRobot(client::GQL.Client, user::User, robotLabel::String)
+function addRobot!(client::GQL.Client, user::User, robotLabel::String)
     variables = Dict(
         "userId" => user.id,
         "uniqueKey" => "$(user.id).$(robotLabel)",
@@ -163,7 +163,7 @@ function setRobotMeta!(fgclient::DFGClient, smallData::Dict{Symbol, DFG.SmallDat
 end
 
 ##
-function deleteSession!(robotId::DFGClient)
+function deleteSession!(fgclient::DFGClient)
     nvars = length(listVariables(fgclient))
     nvars > 0 && error(
         "Only empty sessions can be deleted, $(fgclient.session.label) still has $nvars variables.",
@@ -204,4 +204,14 @@ function deleteRobot!(client::GQL.Client, userLabel::String, robotLabel::String)
     )
 
     return response.data
+end
+
+function listRobots(client::GQL.Client, userLabel::String)
+    user = User(client, userLabel)
+    return getproperty.(user.robots,:label)
+end
+
+function listSessions(client::GQL.Client, userLabel::String, robotLabel::String)
+    robot = Robot(client, userLabel, robotLabel) 
+    return getproperty.(robot.sessions,:label)
 end

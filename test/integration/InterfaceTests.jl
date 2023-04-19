@@ -13,8 +13,8 @@ sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
 # sessionLabel = "TestSession_RG94"
 
 @testset "Create fg client" begin
-    client = NvaSDK.NavAbilityClient(apiUrl)
-    global fgclient = NvaSDK.DFGClient(
+    global client = NavAbilityClient(apiUrl)
+    global fgclient = DFGClient(
         client,
         userLabel,
         robotLabel,
@@ -22,6 +22,38 @@ sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
         addRobotIfNotExists = true,
         addSessionIfNotExists = true,
     )
+    #just trigger show to check for error
+    display(fgclient)
+end
+
+@testset "User Robot Session" begin
+    temp_robotLabel = "TestRobot_"*randstring(4)
+    temp_sessionLabel = "TestSession_"*randstring(4)
+
+    user = NvaSDK.User(client, userLabel)
+    @test user.id == UUID("f6269b80-1d31-4f66-b635-56c014e9e4ac")
+    @test user.label == "guest@navability.io"
+
+    robot = addRobot!(client, user, temp_robotLabel)
+    @test robot.label == temp_robotLabel
+
+    @test temp_robotLabel in listRobots(client, userLabel)
+
+    session = addSession!(client, user, robot, temp_sessionLabel)
+    @test session.label == temp_sessionLabel
+
+    @test temp_sessionLabel in listSessions(client, userLabel, temp_robotLabel)
+
+    context = NvaSDK.Context(user, robot, session)
+
+    tmp_fgclient = DFGClient(client, userLabel, temp_robotLabel, temp_sessionLabel)
+    deleteSession!(tmp_fgclient)
+
+    deleteRobot!(client, userLabel, temp_robotLabel)
+        
+    user = NvaSDK.User(client, userLabel)
+    @test !in(temp_robotLabel, getproperty.(user.robots, :label))
+
 end
 
 # Building simple graph...
@@ -82,10 +114,12 @@ end
     # varNearTs = findVariableNearTimestamp(fgclient, now())
     # @test_skip varNearTs[1][1]  == [:b]
 
+    @test findVariableNearTimestamp(fgclient, v1.timestamp, NvaSDK.Dates.Millisecond(1)) == [:a]
+
 end
 
 # Gets
-@testset "testing some crud" begin
+@testset "getVariable and getFactor" begin
     global fgclient,v1,v2,f1
     @test getVariable(fgclient, v1.label) == v1
     @test getFactor(fgclient, f1.label) == f1
@@ -101,6 +135,7 @@ end
     @test length(getVariablesSkeleton(fgclient)) == 2
     @test length(getVariablesSummary(fgclient)) == 2
     @test length(getVariables(fgclient)) == 2
+    @test getVariables(fgclient, [:a]) == [v1]
     
     @test length(getFactorsSkeleton(fgclient)) == 1
     @test length(getFactors(fgclient)) == 1
@@ -205,6 +240,14 @@ end
     #delete from ddfg
     @test_broken deleteBlobEntry!(fgclient, :a, :key2)
     @test_broken listBlobEntries(fgclient, :a) == Symbol[]
+
+    #Testing session blob entries
+    a_de = addSessionBlobEntries!(fgclient, [de1])[1]
+    g_de = getSessionBlobEntry(fgclient, :key1)
+    @test a_de == g_de
+    @test listSessionBlobEntries(fgclient) == [:key1]
+
+
 end
 
 @testset "PPEs" begin
@@ -240,6 +283,27 @@ end
     ppe2.mean[] = 5.5
     # they are no longer the same because of updated timestamp
     @test ppe2 != updatePPE!(fgclient, ppe2)
+
+end
+
+# at this stage v has blob entries, solver data and ppes
+@testset "addVariable with satelite" begin
+    va = getVariable(fgclient, :a)
+    vc = Variable(;
+        (k => getproperty(va, k) for k in fieldnames(Variable))...,
+        id=nothing,
+        label=:c
+    )
+    a_vc = addVariable!(fgclient, vc)
+    g_vc = getVariable(fgclient, :c)
+    #order of vector is not maintained so can't do @test a_vc == g_vc so so doing spot check
+    @test length(g_vc.ppes) == 2
+    @test g_vc.solverData == a_vc.solverData
+    @test getBlobEntry(a_vc, :key1) == getBlobEntry(g_vc, :key1)
+    @test a_vc.id == g_vc.id
+
+    del = deleteVariable!(fgclient, :c)
+    @test del["deleteVariables"]["nodesDeleted"] == 6
 
 end
 

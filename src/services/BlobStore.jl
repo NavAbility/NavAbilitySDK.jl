@@ -29,13 +29,13 @@ Request URLs for data blob download.
 Args:
   navAbilityClient (NavAbilityClient): The NavAbility client.
   userLabel (String): The userLabel with access to the data.
-  fileId (String): The unique file identifier of the data blob.
+  blobId (String): The unique file identifier of the data blob.
 """
 function createDownload(client::GQL.Client, userLabel::AbstractString, blobId::UUID)
     response = GQL.mutate(
         client,
         "createDownload",
-        Dict("userId" => userLabel, "fileId" => string(blobId));
+        Dict("userId" => userLabel, "blobId" => string(blobId));
         throw_on_execution_error = true,
     )
     #TODO API is a bit confusing as it is the user label that works here, ie. guest@navability.io
@@ -74,12 +74,27 @@ end
 function listBlobsId(client::GQL.Client)
     response = GQL.query(
         client,
-        "files",
+        "blobs",
         Vector{NamedTuple{(:id,), Tuple{UUID}}};
         output_fields = ["id"],
         throw_on_execution_error = true,
     )
-    return last.(response.data["files"])
+    return last.(response.data["blobs"])
+end
+
+function listBlobsMeta(client::GQL.Client, namecontains::String)
+    variables = Dict("name"=>namecontains)
+    response = GQL.execute(
+        client,
+        GQL_LIST_BLOBS_NAME_CONTAINS,
+        Vector{NamedTuple{
+            (:id,:name,:size,:createdTimestamp), 
+            Tuple{UUID,String,String,Union{Nothing,String}}
+        }};
+        variables,
+        throw_on_execution_error = true,
+    )
+    return response.data["blobs"]
 end
 
 ## =========================================================================
@@ -98,15 +113,15 @@ Args:
 """
 function createUpload(
     client::GQL.Client,
-    filename::AbstractString,
-    filesize::Int,
+    name::AbstractString,
+    blobsize::Int,
     parts::Int = 1,
 )
     #
     response = GQL.execute(
         client,
         GQL_CREATE_UPLOAD;
-        variables = Dict("filename" => filename, "filesize" => filesize, "parts" => parts),
+        variables = Dict("name" => name, "size" => blobsize, "parts" => parts),
         throw_on_execution_error = true,
     )
 
@@ -124,7 +139,7 @@ function completeUploadSingle(
     response = GQL.execute(
         client,
         GQL_COMPLETEUPLOAD_SINGLE;
-        variables = Dict("fileId" => blobId, "uploadId" => uploadId, "eTag" => eTag),
+        variables = Dict("blobId" => blobId, "uploadId" => uploadId, "eTag" => eTag),
         throw_on_execution_error = true,
     )
 
@@ -148,7 +163,7 @@ function addBlob!(
 
     url = d["parts"][1]["url"]
     uploadId = d["uploadId"]
-    blobId = d["file"]["id"]
+    blobId = d["blob"]["id"]
 
     # custom header for pushing the file up
     headers = [
@@ -187,4 +202,16 @@ function addBlob!(
     return blobId
 end
 
-#TODO deleteBlob!
+function DFG.deleteBlob!(
+    blobstore::NavAbilityBlobStore,
+    blobId::UUID
+)
+    response = GQL.mutate(
+        blobstore.client,
+        "deleteBlob",
+        Dict("blobId" => string(blobId));
+        throw_on_execution_error = true,
+    )
+    return response.data["deleteBlob"]
+
+end

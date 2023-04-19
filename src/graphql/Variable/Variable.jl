@@ -242,7 +242,7 @@ query sdk_get_variables_filtered(
 """
 
 GQL_DELETE_VARIABLE = GQL.gql"""
-mutation deleteVariables($variableId: ID!) {
+mutation deleteVariable($variableId: ID!) {
   deleteVariables(
     where: { id: $variableId }
     delete: {
@@ -255,6 +255,71 @@ mutation deleteVariables($variableId: ID!) {
       blobEntries: {
         where: {
           node: { variableConnection_ALL: { node: { id: $variableId } } }
+        }
+      }
+    }
+  ) {
+    nodesDeleted
+    relationshipsDeleted
+  }
+}
+"""
+
+GQL_DELETE_VARIABLE_BY_LABEL = GQL.gql"""
+mutation deleteVariable(
+  $userLabel: String!
+  $robotLabel: String!
+  $sessionLabel: String!
+  $variableLabel: String!
+) {
+  deleteVariables(
+    where: {
+      userLabel: $userLabel
+      robotLabel: $robotLabel
+      sessionLabel: $sessionLabel
+      label: $variableLabel
+    }
+    delete: {
+      ppes: {
+        where: {
+          node: {
+            variableConnection: {
+              node: {
+                userLabel: $userLabel
+                robotLabel: $robotLabel
+                sessionLabel: $sessionLabel
+                label: $variableLabel
+              }
+            }
+          }
+        }
+      }
+      solverData: {
+        where: {
+          node: {
+            variableConnection: {
+              node: {
+                userLabel: $userLabel
+                robotLabel: $robotLabel
+                sessionLabel: $sessionLabel
+                label: $variableLabel
+              }
+            }
+          }
+        }
+      }
+      blobEntries: {
+        where: {
+          node: {
+            variableConnection_ALL: {
+              node: {
+                userLabel: $userLabel
+                robotLabel: $robotLabel
+                sessionLabel: $sessionLabel
+                label: $variableLabel
+              }
+            }
+          }
         }
       }
     }
