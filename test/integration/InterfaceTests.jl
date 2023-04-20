@@ -6,7 +6,7 @@ using LinearAlgebra
 using Random
 using UUIDs
 
-apiUrl = get(ENV, "API_URL", "https://api.d1.navability.io")
+apiUrl = get(ENV, "API_URL", "https://api.navability.io")
 userLabel = get(ENV, "USER_ID", "guest@navability.io")
 robotLabel = get(ENV, "ROBOT_ID", "TestRobot")
 sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
@@ -24,6 +24,11 @@ sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
     )
     #just trigger show to check for error
     display(fgclient)
+
+    # test easy constructor
+    fgclient2 = DFGClient(userLabel, robotLabel, sessionLabel)
+    @test fgclient.session == fgclient2.session
+
 end
 
 @testset "User Robot Session" begin
@@ -31,7 +36,7 @@ end
     temp_sessionLabel = "TestSession_"*randstring(4)
 
     user = NvaSDK.User(client, userLabel)
-    @test user.id == UUID("f6269b80-1d31-4f66-b635-56c014e9e4ac")
+    @test user.id == UUID("d4bfaaf6-7d55-49eb-b03a-7806457e09d2")
     @test user.label == "guest@navability.io"
 
     robot = addRobot!(client, user, temp_robotLabel)

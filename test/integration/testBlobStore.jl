@@ -1,6 +1,6 @@
 using NavAbilitySDK
 
-apiUrl = get(ENV, "API_URL", "https://api.d1.navability.io")
+apiUrl = get(ENV, "API_URL", "https://api.navability.io")
 userLabel = get(ENV, "USER_ID", "guest@navability.io")
 
 

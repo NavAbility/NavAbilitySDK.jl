@@ -8,7 +8,7 @@ include("./testFactor.jl")
 include("./testSolve.jl")
 include("./testExportSession.jl")
 
-apiUrl = get(ENV, "API_URL", "https://api.d1.navability.io")
+apiUrl = get(ENV, "API_URL", "https://api.navability.io")
 userLabel = get(ENV, "USER_ID", "guest@navability.io")
 robotLabel = get(ENV, "ROBOT_ID", "IntegrationRobot")
 sessionLabel = get(ENV, "SESSION_ID", "TestSession" * randstring(7))

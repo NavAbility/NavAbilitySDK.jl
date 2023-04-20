@@ -229,26 +229,6 @@ function getVariable(fgclient::DFGClient, label::Symbol)
     return response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]
 end
 
-function getVariable2(fgclient::DFGClient, label::Symbol)
-    variables = Dict(
-        "userLabel" => fgclient.user.label,
-        "robotLabel" => fgclient.robot.label,
-        "sessionLabel" => fgclient.session.label,
-        "variableLabel" => string(label),
-        "fields_summary" => true,
-        "fields_full" => true,
-    )
-
-    response = GQL.execute(
-        fgclient.client,
-        GQL_GET_VARIABLE2,
-        Vector{Variable};
-        variables,
-        throw_on_execution_error = true,
-    )
-    return response.data["variables"][1]
-end
-
 function getVariableSummary(fgclient::DFGClient, label::Symbol)
     variables = Dict(
         "userId" => fgclient.user.id,
@@ -315,25 +295,6 @@ function getVariablesSkeleton(fgclient::DFGClient)#, label::Symbol)
 
     jstr = JSON3.write(response.data["users"][1]["robots"][1]["sessions"][1]["variables"])
     return JSON3.read(jstr, Vector{DFG.SkeletonDFGVariable})
-end
-
-function getVariablesSkeleton2(fgclient::DFGClient)#, label::Symbol)
-    variables = Dict(
-        "userLabel" => fgclient.user.label,
-        "robotLabel" => fgclient.robot.label,
-        "sessionLabel" => fgclient.session.label,
-        "fields_summary" => false,
-        "fields_full" => false,
-    )
-
-    response = GQL.execute(
-        fgclient.client,
-        GQL_GET_VARIABLES2,
-        Vector{DFG.SkeletonDFGVariable};
-        variables,
-        throw_on_execution_error = true,
-    )
-    return response.data["variables"]
 end
 
 function getVariablesSummary(fgclient::DFGClient)#, label::Symbol)

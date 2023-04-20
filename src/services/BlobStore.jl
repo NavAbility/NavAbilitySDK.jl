@@ -82,7 +82,7 @@ function listBlobsId(client::GQL.Client)
     return last.(response.data["blobs"])
 end
 
-function listBlobsMeta(client::GQL.Client, namecontains::String)
+function listBlobsMeta(client::GQL.Client, namecontains::String="")
     variables = Dict("name"=>namecontains)
     response = GQL.execute(
         client,

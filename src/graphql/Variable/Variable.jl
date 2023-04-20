@@ -65,31 +65,6 @@ query get_variable(
 }
 """
 
-GQL_GET_VARIABLE2 = """
-$(GQL_FRAGMENT_VARIABLES)
-query get_variables(
-    \$userLabel: String!
-    \$robotLabel: String!
-    \$sessionLabel: String!
-    \$variableLabel: String!
-    \$fields_summary: Boolean! = true
-    \$fields_full: Boolean! = true
-  ) {
-    variables(
-      where: {
-        userLabel: \$userLabel
-        robotLabel: \$robotLabel
-        sessionLabel: \$sessionLabel
-        label: \$variableLabel
-      }
-    ) {
-      ...variable_skeleton_fields
-      ...variable_summary_fields @include(if: \$fields_summary)
-      ...variable_full_fields @include(if: \$fields_full)
-    }
-  }
-"""
-
 GQL_GET_VARIABLES_BY_LABELS = """
 $(GQL_FRAGMENT_VARIABLES)
 query get_variables(
@@ -134,29 +109,6 @@ query get_variables(
         }
       }
     }
-  }
-}
-"""
-
-GQL_GET_VARIABLES2 = """
-$(GQL_FRAGMENT_VARIABLES)
-query get_variables(
-  \$userLabel: String!
-  \$robotLabel: String!
-  \$sessionLabel: String!
-  \$fields_summary: Boolean! = true
-  \$fields_full: Boolean! = true
-) {
-  variables(
-    where: {
-      userLabel: \$userLabel
-      robotLabel: \$robotLabel
-      sessionLabel: \$sessionLabel
-    }
-  ) {
-    ...variable_skeleton_fields
-    ...variable_summary_fields @include(if: \$fields_summary)
-    ...variable_full_fields @include(if: \$fields_full)
   }
 }
 """
