@@ -1,4 +1,5 @@
 using NavAbilitySDK
+using Test
 
 apiUrl = get(ENV, "API_URL", "https://api.navability.io")
 userLabel = get(ENV, "USER_ID", "guest@navability.io")
@@ -19,9 +20,9 @@ userLabel = get(ENV, "USER_ID", "guest@navability.io")
     @test blob == r_blob
 
     #NOTE don't know if this will work if there are too many blobs
-    @test blobId in NvaSDK.listBlobsId(client)
+    @test blobId in NvaSDK.listBlobsId(store)
 
-    blobsmeta = NvaSDK.listBlobsMeta(client, "TestBlobStore_Blob")
+    blobsmeta = NvaSDK.listBlobsMeta(store, "TestBlobStore_Blob")
 
     @test blobId in getproperty.(blobsmeta, :id)
 
