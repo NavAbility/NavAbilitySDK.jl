@@ -86,6 +86,7 @@ include("graphql/BlobStore.jl")
 
 include("entities/Distributions.jl")
 include("entities/InferenceTypes.jl")
+include("entities/VariableTypes.jl")
 include("entities/UserRobotSession.jl")
 include("entities/Variable.jl")
 include("entities/Factor.jl")
