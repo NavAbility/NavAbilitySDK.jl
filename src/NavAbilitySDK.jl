@@ -19,7 +19,8 @@ import GraphQLClient as GQL
 
 import DistributedFactorGraphs as DFG
 using DistributedFactorGraphs:
-    Variable, PackedVariableNodeData, MeanMaxPPE, BlobEntry, PackedFactor, hasBlob
+    Variable, PackedVariableNodeData, MeanMaxPPE, BlobEntry, PackedFactor, hasBlob,
+    getBlobStore
 
 import DistributedFactorGraphs:
     getFactor,
@@ -113,6 +114,9 @@ export I, diagm, norm
 
 # UUIDs pass through exports
 export UUID, uuid4
+
+# DFG poss through exports
+export getBlobStore
 
 # Type exports
 export NavAbilityClient,
