@@ -1,5 +1,5 @@
 """
-addVariable
+addVariable!
 Add a variable to the NavAbility Platform service
 Example
 
@@ -10,7 +10,7 @@ addVariable!(fgclient, "x0", NvaSDK.Pose2)
 function addVariable!(
     fgclient::DFGClient,
     label::Union{<:AbstractString, Symbol},
-    variableType::Union{<:AbstractString, Symbol};
+    variableType::Union{<:AbstractString, Symbol, Type{<:VariableType}};
     tags::Vector{Symbol} = Symbol[],
     timestamp::ZonedDateTime = now(localzone()),
     solvable::Int = 1,

@@ -31,6 +31,7 @@ end
 
 @nvaZInferenceType PriorPoint3
 @nvaZInferenceType PriorPose3
+@nvaZInferenceType PriorPose3XYYaw
 @nvaZInferenceType Pose3Pose3
 @nvaZInferenceType Pose3Pose3Rotation
 

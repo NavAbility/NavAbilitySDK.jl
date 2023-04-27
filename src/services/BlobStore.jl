@@ -1,8 +1,11 @@
 #TODO we can also extend the blobstore
 struct NavAbilityBlobStore <: DFG.AbstractBlobStore{Vector{UInt8}}
+    key::Symbol
     client::GQL.Client
     userLabel::String
 end
+
+NavAbilityBlobStore(client::GQL.Client, userLabel::String) = NavAbilityBlobStore(:NAVABILITY, client, userLabel)
 
 function Base.show(io::IO, ::MIME"text/plain", s::NavAbilityBlobStore)
     summary(io, s)
@@ -12,14 +15,18 @@ function Base.show(io::IO, ::MIME"text/plain", s::NavAbilityBlobStore)
 end
 
 function NavAbilityBlobStore(fgclient::DFGClient)
-    NavAbilityBlobStore(fgclient.client, fgclient.user.label)
+    NavAbilityBlobStore(:NAVABILITY, fgclient.client, fgclient.user.label)
 end
 
 struct NavAbilityCachedBlobStore{T <: DFG.AbstractBlobStore} <:
        DFG.AbstractBlobStore{Vector{UInt8}}
-    #TODO key
+    key::Symbol
     localstore::T
     remotestore::NavAbilityBlobStore
+end
+
+function NavAbilityCachedBlobStore(localstore::DFG.AbstractBlobStore, remotestore::NavAbilityBlobStore)
+    return NavAbilityCachedBlobStore(:default_nva_cached, localstore, remotestore)
 end
 
 """
@@ -71,18 +78,26 @@ function getBlob(blobstore::NavAbilityCachedBlobStore, blobId::UUID)
     return blob
 end
 
-function listBlobsId(client::GQL.Client)
+listBlobsId(blobstore::NavAbilityBlobStore, namecontains::String="") = 
+    listBlobsId(blobstore.client, namecontains)
+
+function listBlobsId(client::GQL.Client, namecontains::String="")
+    query_args = Dict("where"=>Dict("name_CONTAINS"=>namecontains))
     response = GQL.query(
         client,
         "blobs",
         Vector{NamedTuple{(:id,), Tuple{UUID}}};
         output_fields = ["id"],
+        query_args,
         throw_on_execution_error = true,
     )
     return last.(response.data["blobs"])
 end
 
-function listBlobsMeta(client::GQL.Client, namecontains::String)
+listBlobsMeta(blobstore::NavAbilityBlobStore, namecontains::String="") = 
+    listBlobsMeta(blobstore.client, namecontains)
+
+function listBlobsMeta(client::GQL.Client, namecontains::String="")
     variables = Dict("name"=>namecontains)
     response = GQL.execute(
         client,

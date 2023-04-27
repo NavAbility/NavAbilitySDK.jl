@@ -5,7 +5,7 @@ using LinearAlgebra
 using Random
 using UUIDs
 
-apiUrl = get(ENV, "API_URL", "https://api.d1.navability.io")
+apiUrl = get(ENV, "API_URL", "https://api.navability.io")
 userLabel = get(ENV, "USER_ID", "guest@navability.io")
 robotLabel = get(ENV, "ROBOT_ID", "TestRobot")
 sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")

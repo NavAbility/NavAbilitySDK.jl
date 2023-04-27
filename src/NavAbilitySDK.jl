@@ -17,10 +17,10 @@ using DistributedFactorGraphs.ProgressMeter
 
 import GraphQLClient as GQL
 
-# explicitly use any DFG function to make it easier if it needs to be removed
 import DistributedFactorGraphs as DFG
 using DistributedFactorGraphs:
-    Variable, PackedVariableNodeData, MeanMaxPPE, BlobEntry, PackedFactor, hasBlob
+    Variable, PackedVariableNodeData, MeanMaxPPE, BlobEntry, PackedFactor, hasBlob,
+    getBlobStore
 
 import DistributedFactorGraphs:
     getFactor,
@@ -55,9 +55,11 @@ import DistributedFactorGraphs:
     getBlob,
     addBlob!,
     deleteBlob!,
+    hasBlob,
     exists,
     getNeighbors,
     findVariableNearTimestamp
+# To consider implementing 
 # setSolverParams!,
 # getSolverParams,
 # getAddHistory,
@@ -76,11 +78,6 @@ import DistributedFactorGraphs:
 # copyGraph!,
 # getBiadjacencyMatrix,
 
-# # LinearAlgebra pass through exports
-# export diagm, norm
-# # UUIDs pass through exports
-# export uuid4
-
 # Graphql
 include("graphql/BlobEntry.jl")
 include("graphql/UserRobotSession.jl")
@@ -90,6 +87,7 @@ include("graphql/BlobStore.jl")
 
 include("entities/Distributions.jl")
 include("entities/InferenceTypes.jl")
+include("entities/VariableTypes.jl")
 include("entities/UserRobotSession.jl")
 include("entities/Variable.jl")
 include("entities/Factor.jl")
@@ -111,12 +109,30 @@ include("services/AsyncCalls.jl")
 
 include("Deprecated.jl")
 
-export NavAbilityClient, DFGClient, NavAbilityBlobStore
+# LinearAlgebra pass through exports
+export I, diagm, norm
 
-export addVariables!
-#DFG exports
-export 
-    addRobot!,
+# UUIDs pass through exports
+export UUID, uuid4
+
+# DFG poss through exports
+export getBlobStore
+
+# Type exports
+export NavAbilityClient,
+    DFGClient,
+    NavAbilityBlobStore,
+    Variable,
+    Factor,
+    MeanMaxPPE,
+    BlobEntry,
+    FactorData,
+    PackedVariableNodeData,
+    PackedFactor
+
+
+# Function exports
+export addRobot!,
     addSession!,
     deleteSession!,
     deleteRobot!,
@@ -136,6 +152,7 @@ export
     getVariablesSummary,
     getVariablesSkeleton,
     addVariable!,
+    addVariables!,
     updateVariable!,
     deleteVariable!,
     listVariables,
@@ -158,6 +175,7 @@ export
     updateBlobEntry!,
     deleteBlobEntry!,
     getSessionBlobEntry,
+    getSessionBlobEntries,
     addSessionBlobEntries!,
     listSessionBlobEntries,
     getBlob,
@@ -170,30 +188,15 @@ export
     listFactorNeighbors,
     findVariableNearTimestamp
 
-export Variable, Factor, MeanMaxPPE, BlobEntry
-
-#exports
-# export NavAbilityClient, NavAbilityWebsocketClient, NavAbilityHttpsClient, QueryOptions, MutationOptions
-# export Client, Scope
-# export QueryDetail, LABEL, SKELETON, SUMMARY, FULL
+#old exports
 # export Distribution, Normal, Rayleigh, FullNormal, Uniform, Categorical
 # export ManifoldKernelDensity
-# export Variable
-# export FactorData, PriorData, PriorPose2Data, PriorPoint2Data, LinearRelativeData, Pose2Pose2Data, Pose2AprilTag4CornersData, Pose2Point2BearingRangeData, Point2Point2RangeData, MixtureData
 # export PriorPose3, Pose3Pose3
-# export ScatterAlignPose2Data
-# export FactorType, Factor
 # export SolveOptions
 # export SessionKey, SessionId, ExportSessionInput, ExportSessionOptions
-
-# export getVariable, getVariables, listVariables, ls
-# export addVariable, updateVariable, addVariablePacked, updateVariablePacked, addPackedVariable, addPackedVariableOld
-# export getFactor, getFactors, listFactors, lsf
-# export addFactor, addPackedFactor, deleteFactor
+# export ls
+# export lsf
 # export initVariable
-# export listBlobEntries
-# export getBlobEntry, getBlob
-# export addBlobEntry, addBlob
 # export solveSession, solveFederated
 # export getStatusMessages, getStatusLatest, getStatusesLatest
 # export waitForCompletion

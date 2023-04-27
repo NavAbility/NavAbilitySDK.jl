@@ -19,6 +19,26 @@ function DFGClient(client::GQL.Client, context::Context)
 end
 
 function DFGClient(
+    userLabel::String,
+    robotLabel::String,
+    sessionLabel::String;
+    apiUrl::String = "https://api.navability.io",
+    auth_token::String = "",
+    authorize::Bool = 0 !== length(auth_token),
+    addRobotIfNotExists = false,
+    addSessionIfNotExists = false,
+)
+    return DFGClient(
+        NavAbilityClient(apiUrl; auth_token, authorize),
+        userLabel,
+        robotLabel,
+        sessionLabel;
+        addRobotIfNotExists,
+        addSessionIfNotExists,
+    )
+end
+
+function DFGClient(
     client::GQL.Client,
     userLabel::String,
     robotLabel::String,
@@ -58,7 +78,7 @@ function Base.show(io::IO, ::MIME"text/plain", c::DFGClient)
 end
 
 function NavAbilityClient(
-    apiUrl::String = "https://api.d1.navability.io";
+    apiUrl::String = "https://api.navability.io";
     auth_token::String = "",
     authorize::Bool = 0 !== length(auth_token),
     kwargs...,

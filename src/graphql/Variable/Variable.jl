@@ -26,6 +26,7 @@ fragment variable_summary_fields on Variable {
 }
 """
 
+#TODO looks like $(GQL_FRAGMENT_VARIABLES_SKELETON) should be moved to GQL_FRAGMENT_VARIABLES_SUMMARY
 GQL_FRAGMENT_VARIABLES = """
 $(GQL_FRAGMENT_SOLVERDATA)
 $(GQL_FRAGMENT_VARIABLES_SKELETON)
@@ -63,31 +64,6 @@ query get_variable(
     }
   }
 }
-"""
-
-GQL_GET_VARIABLE2 = """
-$(GQL_FRAGMENT_VARIABLES)
-query get_variables(
-    \$userLabel: String!
-    \$robotLabel: String!
-    \$sessionLabel: String!
-    \$variableLabel: String!
-    \$fields_summary: Boolean! = true
-    \$fields_full: Boolean! = true
-  ) {
-    variables(
-      where: {
-        userLabel: \$userLabel
-        robotLabel: \$robotLabel
-        sessionLabel: \$sessionLabel
-        label: \$variableLabel
-      }
-    ) {
-      ...variable_skeleton_fields
-      ...variable_summary_fields @include(if: \$fields_summary)
-      ...variable_full_fields @include(if: \$fields_full)
-    }
-  }
 """
 
 GQL_GET_VARIABLES_BY_LABELS = """
@@ -138,29 +114,6 @@ query get_variables(
 }
 """
 
-GQL_GET_VARIABLES2 = """
-$(GQL_FRAGMENT_VARIABLES)
-query get_variables(
-  \$userLabel: String!
-  \$robotLabel: String!
-  \$sessionLabel: String!
-  \$fields_summary: Boolean! = true
-  \$fields_full: Boolean! = true
-) {
-  variables(
-    where: {
-      userLabel: \$userLabel
-      robotLabel: \$robotLabel
-      sessionLabel: \$sessionLabel
-    }
-  ) {
-    ...variable_skeleton_fields
-    ...variable_summary_fields @include(if: \$fields_summary)
-    ...variable_full_fields @include(if: \$fields_full)
-  }
-}
-"""
-
 GQL_ADD_VARIABLES = """
 $(GQL_FRAGMENT_VARIABLES)
 mutation sdk_add_variables(\$variablesToCreate: [VariableCreateInput!]!) {
@@ -207,7 +160,7 @@ query($userId: ID!, $robotId: ID!, $sessionId: ID!, $label: String!) {
 
 ##
 
-#TODO not used yet
+#TODO not used yet # also eg. (where :{AND:[{tags_INCLUDES: "POSE"}, {tags_INCLUDES:"VARIABLE"}]})
 GQL_GET_VARIABLES_FILTERED = """
 $(GQL_FRAGMENT_VARIABLES)
 query sdk_get_variables_filtered(
