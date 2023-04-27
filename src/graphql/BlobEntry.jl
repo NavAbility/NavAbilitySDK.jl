@@ -170,6 +170,26 @@ query getSessionBlobEntry(
 }
 """
 
+GQL_GET_SESSION_BLOBENTRIES = """
+$(GQL_FRAGMENT_BLOBENTRY)
+query getSessionBlobEntries(
+  \$userLabel: EmailAddress!
+  \$robotLabel: String!
+  \$sessionLabel: String!
+  \$startwith: String
+) {
+  users(where: { label: \$userLabel }) {
+    robots(where: { label: \$robotLabel }) {
+      sessions(where: { label: \$sessionLabel }) {
+        blobEntries(where: { label_STARTS_WITH: \$startwith }) {
+          ...blobEntry_fields
+        }
+      }
+    }
+  }
+}
+"""
+
 # GQL_UPDATE_BLOBENTRY = """
 # $(GQL_FRAGMENT_BLOBENTRY)
 # mutation updateBlobEntry(\$blobEntry: BlobEntryUpdateInput!, \$uniqueKey: String!) {

@@ -158,6 +158,29 @@ function getSessionBlobEntry(fgclient::DFGClient, label::Symbol)
     return response.data["users"][1]["robots"][1]["sessions"][1]["blobEntries"][1]
 end
 
+function getSessionBlobEntries(fgclient::DFGClient, startwith::Union{Nothing,String}=nothing)
+    client = fgclient.client
+
+    variables = Dict(
+        "userLabel" => fgclient.user.label,
+        "robotLabel" => fgclient.robot.label,
+        "sessionLabel" => fgclient.session.label,
+    )
+    !isnothing(startwith) && (variables["startwith"]=startwith)
+
+    T = Vector{Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{BlobEntry}}}}}}}
+
+    response = GQL.execute(
+        client,
+        GQL_GET_SESSION_BLOBENTRIES,
+        T;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response.data["users"][1]["robots"][1]["sessions"][1]["blobEntries"]
+end
+
 @enum BlobEntryNodeTypes USER ROBOT SESSION VARIABLE FACTOR
 
 function addNodeBlobEntries!(

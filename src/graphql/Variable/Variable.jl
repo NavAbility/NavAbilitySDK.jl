@@ -26,6 +26,7 @@ fragment variable_summary_fields on Variable {
 }
 """
 
+#TODO looks like $(GQL_FRAGMENT_VARIABLES_SKELETON) should be moved to GQL_FRAGMENT_VARIABLES_SUMMARY
 GQL_FRAGMENT_VARIABLES = """
 $(GQL_FRAGMENT_SOLVERDATA)
 $(GQL_FRAGMENT_VARIABLES_SKELETON)
@@ -159,7 +160,7 @@ query($userId: ID!, $robotId: ID!, $sessionId: ID!, $label: String!) {
 
 ##
 
-#TODO not used yet
+#TODO not used yet # also eg. (where :{AND:[{tags_INCLUDES: "POSE"}, {tags_INCLUDES:"VARIABLE"}]})
 GQL_GET_VARIABLES_FILTERED = """
 $(GQL_FRAGMENT_VARIABLES)
 query sdk_get_variables_filtered(
