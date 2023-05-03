@@ -91,6 +91,7 @@ include("entities/VariableTypes.jl")
 include("entities/UserRobotSession.jl")
 include("entities/Variable.jl")
 include("entities/Factor.jl")
+include("entities/BlobStore.jl")
 
 include("NavAbilityClient.jl")
 

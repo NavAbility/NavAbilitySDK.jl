@@ -46,7 +46,12 @@ function getBlobEntries(fgclient::DFGClient, variableLabel::Symbol)
         throw_on_execution_error = true,
     )
 
-    return response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["blobEntries"]
+    varret = response.data["users"][1]["robots"][1]["sessions"][1]["variables"]
+    if 0 < length(varret)
+        return varret[1]["blobEntries"]
+    else
+        return BlobEntry[]
+    end
 end
 
 function addBlobEntry!(fgclient::DFGClient, variableLabel::Symbol, entry::DFG.BlobEntry)
