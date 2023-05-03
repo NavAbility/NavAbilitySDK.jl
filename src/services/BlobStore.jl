@@ -12,12 +12,6 @@ function NavAbilityBlobStore(fgclient::DFGClient)
     NavAbilityBlobStore(:NAVABILITY, fgclient.client, fgclient.user.label)
 end
 
-struct NavAbilityCachedBlobStore{T <: DFG.AbstractBlobStore} <:
-       DFG.AbstractBlobStore{Vector{UInt8}}
-    key::Symbol
-    localstore::T
-    remotestore::NavAbilityBlobStore
-end
 
 function NavAbilityCachedBlobStore(localstore::DFG.AbstractBlobStore, remotestore::NavAbilityBlobStore)
     return NavAbilityCachedBlobStore(:default_nva_cached, localstore, remotestore)
