@@ -84,6 +84,7 @@ include("graphql/UserRobotSession.jl")
 include("graphql/Factor.jl")
 include("graphql/Variable/Variable.jl")
 include("graphql/BlobStore.jl")
+include("graphql/Map.jl")
 
 include("entities/Distributions.jl")
 include("entities/InferenceTypes.jl")
@@ -91,6 +92,7 @@ include("entities/VariableTypes.jl")
 include("entities/UserRobotSession.jl")
 include("entities/Variable.jl")
 include("entities/Factor.jl")
+include("entities/Map.jl")
 
 include("NavAbilityClient.jl")
 
@@ -104,6 +106,7 @@ include("services/BlobEntry.jl")
 include("services/BlobStore.jl")
 include("services/StandardAPI.jl")
 include("services/FactorGraph.jl")
+include("services/Map.jl")
 
 include("services/AsyncCalls.jl")
 
