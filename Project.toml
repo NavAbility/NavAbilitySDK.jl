@@ -30,7 +30,7 @@ JSON3 = "1"
 StructTypes = "1"
 TensorCast = "0.4"
 TimeZones = "1"
-julia = "1.8"
+julia = "1.9"
 
 [extras]
 TensorCast = "02d47bb6-7ce6-556a-be16-bb1710789e2b"
