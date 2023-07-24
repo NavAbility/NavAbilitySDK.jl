@@ -135,7 +135,7 @@ end
 # BlobEntry CRUD on other nodes
 # =========================================================================================
 
-function getSessionBlobEntry(fgclient::DFGClient, label::Symbol)
+function DFG.getSessionBlobEntry(fgclient::DFGClient, label::Symbol)
     client = fgclient.client
 
     variables = Dict(
@@ -158,7 +158,7 @@ function getSessionBlobEntry(fgclient::DFGClient, label::Symbol)
     return response.data["users"][1]["robots"][1]["sessions"][1]["blobEntries"][1]
 end
 
-function getSessionBlobEntries(fgclient::DFGClient, startwith::Union{Nothing,String}=nothing)
+function DFG.getSessionBlobEntries(fgclient::DFGClient, startwith::Union{Nothing,String}=nothing)
     client = fgclient.client
 
     variables = Dict(

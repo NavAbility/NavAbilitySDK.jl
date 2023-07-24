@@ -56,6 +56,10 @@ import DistributedFactorGraphs:
     addBlob!,
     deleteBlob!,
     hasBlob,
+    getSessionBlobEntry,
+    getSessionBlobEntries,
+    addSessionBlobEntry!,
+    addSessionBlobEntries!,
     exists,
     getNeighbors,
     findVariableNearTimestamp
