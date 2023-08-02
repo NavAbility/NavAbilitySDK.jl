@@ -61,7 +61,7 @@ import DistributedFactorGraphs:
     addSessionBlobEntry!,
     addSessionBlobEntries!,
     exists,
-    getNeighbors,
+    listNeighbors,
     findVariableNearTimestamp
 # To consider implementing 
 # setSolverParams!,
