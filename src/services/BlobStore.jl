@@ -165,7 +165,7 @@ end
 
 function addBlob!(
     blobstore::NavAbilityBlobStore,
-    blob::AbstractVector{UInt8},
+    blob::Vector{UInt8},
     filename::AbstractString,
 )
     client = blobstore.client
