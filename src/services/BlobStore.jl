@@ -212,7 +212,7 @@ function addBlob!(
     filename::String,
 )
     safefilename = split(filename,"/")[end]
-    blobId = addBlob!(blobstore.remotestore, blob, safefilename)
+    blobId = addBlob!(blobstore.remotestore, blob, String(safefilename))
     addBlob!(blobstore.localstore, blobId, blob, filename)
     return blobId
 end
