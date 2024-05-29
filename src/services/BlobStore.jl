@@ -208,8 +208,8 @@ end
 
 function addBlob!(
     blobstore::NavAbilityCachedBlobStore,
-    blob::AbstractVector{UInt8},
-    filename::AbstractString,
+    blob::Vector{UInt8},
+    filename::String,
 )
     safefilename = split(filename,"/")[end]
     blobId = addBlob!(blobstore.remotestore, blob, safefilename)
