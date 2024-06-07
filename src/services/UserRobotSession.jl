@@ -163,6 +163,56 @@ function setRobotMeta!(fgclient::DFGClient, smallData::Dict{Symbol, DFG.SmallDat
 end
 
 ##
+
+
+function getSessionMeta(fgclient::DFGClient)
+    gql = """
+      {
+        users(where: { id: "$(fgclient.user.id)" }) {
+          robots(where: { id: "$(fgclient.robot.id)" }) {
+            sessions(where: {id: "$(fgclient.session.id)"}) {
+                metadata
+            }
+          }
+        }
+      }
+      """
+    response = GQL.execute(fgclient.client, gql; throw_on_execution_error = true)
+
+    return JSON3.read(
+        base64decode(response.data["users"][1]["robots"][1]["sessions"][1]["metadata"]),
+        Dict{Symbol, DFG.SmallDataTypes},
+    )
+end
+
+function setSessionMeta!(fgclient::DFGClient, smallData::Dict{Symbol, DFG.SmallDataTypes})
+    meta = base64encode(JSON3.write(smallData))
+
+    gql = """
+    mutation {
+      updateSessions(
+        where: { id: "$(fgclient.session.id)" }
+        update: { metadata: "$(meta)" }
+      ) {
+        sessions {
+          metadata
+        }
+      }
+    }
+    """
+    response = GQL.execute(fgclient.client, gql; throw_on_execution_error = true)
+
+    return JSON3.read(
+        base64decode(response.data["updateSessions"]["sessions"][1]["metadata"]),
+        Dict{Symbol, DFG.SmallDataTypes},
+    )
+end
+
+DFG.getRobotData(fg::DFGClient, key::Symbol) = getRobotMeta(fg)[key]
+DFG.getSessionData(fg::DFGClient, key::Symbol) = getSessionMeta(fg)[key]
+
+
+##
 function deleteSession!(fgclient::DFGClient)
     nvars = length(listVariables(fgclient))
     nvars > 0 && error(

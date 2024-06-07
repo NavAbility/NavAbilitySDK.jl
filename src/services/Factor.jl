@@ -15,12 +15,12 @@ function addFactor!(
             Dict(
                 "where" => Dict(
                     "node" => Dict(
-                        # "userLabel" => fgclient.user.label,
-                        # "robotLabel" => fgclient.robot.label,
-                        # "sessionLabel" => fgclient.session.label,
-                        "sessionConnection" => Dict(
-                            "node" => Dict("id" => fgclient.session.id),
-                        ),
+                        "userLabel" => fgclient.user.label,
+                        "robotLabel" => fgclient.robot.label,
+                        "sessionLabel" => fgclient.session.label,
+                        # "sessionConnection" => Dict(
+                        #     "node" => Dict("id" => fgclient.session.id),
+                        # ),
                         "label" => vlink,
                     ),
                 ),
