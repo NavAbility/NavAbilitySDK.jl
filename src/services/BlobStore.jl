@@ -230,3 +230,31 @@ function DFG.deleteBlob!(
     return response.data["deleteBlob"]
 
 end
+
+##==========================================================================================
+## NavAbility™ Blob Store Deployed on Premise
+##==========================================================================================
+
+struct NavAbilityOnPremBlobStore <: DFG.AbstractBlobStore{Vector{UInt8}}
+    key::Symbol
+    client::NvaSDK.GQL.Client
+    userLabel::String
+end
+
+function NavAbilityOnPremBlobStore(fgclient::DFGClient)
+    NavAbilityOnPremBlobStore(:NAVABILITY, fgclient.client, fgclient.user.label)
+end
+
+function DFG.addBlob!(store::NavAbilityOnPremBlobStore, blobId::UUID, blob::Vector{UInt8})
+    b64blob = base64encode(blob)
+    response = NvaSDK.GQL.mutate(
+        store.client,
+        "addBlob",
+        Dict("blobId" => string(blobId), "input" => b64blob);
+        throw_on_execution_error = true,
+    )
+    blobId_str = response.data["addBlob"]
+    blobId = tryparse(UUID, blobId_str)
+    isnothing(blobId) && error(blobId_str)
+    return blobId
+end

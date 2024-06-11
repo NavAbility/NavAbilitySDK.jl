@@ -108,6 +108,7 @@ include("services/BlobEntry.jl")
 include("services/BlobStore.jl")
 include("services/StandardAPI.jl")
 include("services/FactorGraph.jl")
+include("services/Workers.jl")
 
 include("services/AsyncCalls.jl")
 
@@ -190,7 +191,8 @@ export addRobot!,
     listNeighbors,
     listVariableNeighbors,
     listFactorNeighbors,
-    findVariableNearTimestamp
+    findVariableNearTimestamp,
+    startWorker
 
 #old exports
 # export Distribution, Normal, Rayleigh, FullNormal, Uniform, Categorical
