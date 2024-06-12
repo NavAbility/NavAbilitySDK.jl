@@ -181,6 +181,30 @@ function DFG.getSessionBlobEntries(fgclient::DFGClient, startwith::Union{Nothing
     return response.data["users"][1]["robots"][1]["sessions"][1]["blobEntries"]
 end
 
+
+function DFG.getRobotBlobEntry(fgclient::DFGClient, label::Symbol)
+    client = fgclient.client
+
+    variables = Dict(
+        "userId" => fgclient.user.id,
+        "robotId" => fgclient.robot.id,
+        "blobLabel" => string(label),
+    )
+
+    T = Vector{Dict{String, Vector{Dict{String, Vector{BlobEntry}}}}}
+
+    response = GQL.execute(
+        client,
+        GQL_GET_ROBOT_BLOBENTRY,
+        T;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response.data["users"][1]["robots"][1]["blobEntries"][1]
+end
+
+
 @enum BlobEntryNodeTypes USER ROBOT SESSION VARIABLE FACTOR
 
 function addNodeBlobEntries!(
