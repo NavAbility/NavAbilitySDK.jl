@@ -205,7 +205,7 @@ function listVariables(fgclient::DFGClient)
     )
 end
 
-function getVariable(fgclient::DFGClient, label::Symbol)
+function getVariable(fgclient::DFGClient{VT, <:AbstractDFGFactor}, label::Symbol) where VT
     variables = Dict(
         "userId" => fgclient.user.id,
         "robotId" => fgclient.robot.id,
@@ -226,7 +226,7 @@ function getVariable(fgclient::DFGClient, label::Symbol)
         variables,
         throw_on_execution_error = true,
     )
-    return response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]
+    return VT(response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1])
 end
 
 function getVariableSummary(fgclient::DFGClient, label::Symbol)
