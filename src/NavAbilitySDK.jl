@@ -20,7 +20,7 @@ import GraphQLClient as GQL
 import DistributedFactorGraphs as DFG
 using DistributedFactorGraphs:
     Variable, PackedVariableNodeData, MeanMaxPPE, BlobEntry, PackedFactor, hasBlob,
-    getBlobStore
+    getBlobStore, AbstractDFGVariable, AbstractDFGFactor, AbstractParams, AbstractDFG
 
 import DistributedFactorGraphs:
     getFactor,
