@@ -1,4 +1,4 @@
-struct DFGClient <: DFG.AbstractDFG{DFG.AbstractParams}
+struct DFGClient{VT<:AbstractDFGVariable, FT<:AbstractDFGFactor} <: AbstractDFG{AbstractParams}
     client::GQL.Client
     user::NamedTuple{(:id, :label), Tuple{UUID, String}}
     robot::NamedTuple{(:id, :label), Tuple{UUID, String}}
@@ -6,8 +6,11 @@ struct DFGClient <: DFG.AbstractDFG{DFG.AbstractParams}
     blobStores::Dict{Symbol, DFG.AbstractBlobStore}
 end
 
+DFG.getTypeDFGVariables(::DFGClient{T, <:AbstractDFGFactor}) where {T} = T
+DFG.getTypeDFGFactors(::DFGClient{<:AbstractDFGVariable, T}) where {T} = T
+
 function DFGClient(client::GQL.Client, context::Context)
-    return DFGClient(
+    return DFGClient{DFG.Variable, DFG.PackedFactor}(
         client,
         (id = context.user.id, label = context.user.label),
         (id = context.robot.id, label = context.robot.label),
@@ -55,7 +58,7 @@ function DFGClient(
         addSessionIfNotExists,
     )
 
-    return DFGClient(
+    return DFGClient{DFG.Variable, DFG.PackedFactor}(
         client,
         (id = context.user.id, label = context.user.label),
         (id = context.robot.id, label = context.robot.label),
@@ -76,6 +79,8 @@ function Base.show(io::IO, ::MIME"text/plain", c::DFGClient)
     println(io, "  sessionLabel: ", c.session.label)
     return
 end
+
+Base.show(io::IO, c::DFGClient) = show(io, MIME"text/plain"(), c)
 
 function NavAbilityClient(
     apiUrl::String = "https://api.navability.io";

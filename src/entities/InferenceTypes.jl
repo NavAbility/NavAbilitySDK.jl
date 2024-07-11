@@ -34,6 +34,7 @@ end
 @nvaZInferenceType PriorPose3XYYaw
 @nvaZInferenceType Pose3Pose3
 @nvaZInferenceType Pose3Pose3Rotation
+@nvaZInferenceType Pose3Pose3UnitTrans
 
 """
 $(TYPEDEF)
