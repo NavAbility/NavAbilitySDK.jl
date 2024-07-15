@@ -77,6 +77,8 @@ function Base.show(io::IO, ::MIME"text/plain", c::DFGClient)
     return
 end
 
+Base.show(io::IO, c::DFGClient) = show(io, MIME"text/plain"(), c)
+
 function NavAbilityClient(
     apiUrl::String = "https://api.navability.io";
     auth_token::String = "",
