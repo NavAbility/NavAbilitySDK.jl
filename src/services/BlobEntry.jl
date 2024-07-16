@@ -58,10 +58,6 @@ function addBlobEntries!(
     variableLabel::Symbol,
     entries::Vector{DFG.BlobEntry},
 )
-    # if (variable.id === nothing)
-    #     error("Variable does not have an ID. Has it been created on the server?")
-    # end
-
     connect = createVariableConnect(
         fgclient.user.label,
         fgclient.robot.label,
@@ -76,7 +72,7 @@ function addBlobEntries!(
             robotLabel = fgclient.robot.label,
             sessionLabel = fgclient.session.label,
             variableLabel = string(variableLabel),
-            variable = connect,
+            parent = (Variable=connect,),
             getCommonProperties(BlobEntryCreateInput, entry)...,
         )
     end
@@ -204,7 +200,26 @@ function DFG.getRobotBlobEntry(fgclient::DFGClient, label::Symbol)
     return response.data["users"][1]["robots"][1]["blobEntries"][1]
 end
 
+function DFG.getUserBlobEntry(fgclient::DFGClient, label::Symbol)
+    client = fgclient.client
 
+    variables = Dict(
+        "userId" => fgclient.user.id,
+        "blobLabel" => string(label),
+    )
+
+    T = Vector{Dict{String, Vector{BlobEntry}}}
+
+    response = GQL.execute(
+        client,
+        GQL_GET_USER_BLOBENTRY,
+        T;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response.data["users"][1]["blobEntries"][1]
+end
 @enum BlobEntryNodeTypes USER ROBOT SESSION VARIABLE FACTOR
 
 function addNodeBlobEntries!(
@@ -215,11 +230,19 @@ function addNodeBlobEntries!(
 )
     connect = createConnect(nodeId)
 
-    user = nodeType == USER ? connect : nothing
-    robot = nodeType == ROBOT ? connect : nothing
-    session = nodeType == SESSION ? connect : nothing
-    variable = nodeType == VARIABLE ? connect : nothing
-    factor = nodeType == FACTOR ? connect : nothing
+    if nodeType == USER
+        parent = (User=connect,)
+    elseif nodeType == ROBOT
+        parent = (Robot=connect,)
+    elseif nodeType == SESSION 
+        parent = (Session=connect,)
+    elseif nodeType == VARIABLE
+        parent = (Variable=connect,)
+    elseif nodeType == FACTOR
+        parent = (Factor=connect,)
+    else
+        error("Invalid nodeType")
+    end
 
     userLabel = fgclient.user.label
     robotLabel = nodeType >= ROBOT ? fgclient.robot.label : ""
@@ -229,11 +252,7 @@ function addNodeBlobEntries!(
 
     input = map(entries) do entry
         return BlobEntryCreateInput(;
-            user,
-            robot,
-            session,
-            variable,
-            factor,
+            parent,
             userLabel,
             robotLabel,
             sessionLabel,
