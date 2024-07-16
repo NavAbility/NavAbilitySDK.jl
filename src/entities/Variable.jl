@@ -98,11 +98,7 @@ Base.@kwdef struct BlobEntryCreateInput
     variableLabel::String = ""
     factorLabel::String = ""
 
-    user::Any = nothing# BlobEntryUserFieldInput
-    robot::Any = nothing# BlobEntryRobotFieldInput
-    session::Any = nothing# BlobEntrySessionFieldInput
-    variable::Any = nothing# BlobEntryVariableFieldInput
-    factor::Any = nothing# BlobEntryFactorFieldInput
+    parent::Any = nothing# BlobEntryParentFieldInput
 end
 
 function StructTypes.omitempties(::Type{BlobEntryCreateInput})
