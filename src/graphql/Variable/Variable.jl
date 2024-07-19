@@ -207,7 +207,7 @@ mutation deleteVariable($variableId: ID!) {
       }
       blobEntries: {
         where: {
-          node: { variableConnection_ALL: { node: { id: $variableId } } }
+          node: { parentConnection: {Variable: {node: {id: $variableId } } } }
         }
       }
     }
@@ -264,12 +264,14 @@ mutation deleteVariable(
       blobEntries: {
         where: {
           node: {
-            variableConnection_ALL: {
-              node: {
-                userLabel: $userLabel
-                robotLabel: $robotLabel
-                sessionLabel: $sessionLabel
-                label: $variableLabel
+            parentConnection: {
+              Variable: {
+                node: {
+                  userLabel: $userLabel
+                  robotLabel: $robotLabel
+                  sessionLabel: $sessionLabel
+                  label: $variableLabel
+                }
               }
             }
           }

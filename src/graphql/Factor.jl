@@ -171,7 +171,7 @@ mutation deleteFactor($factorId: ID!) {
     delete: {
       blobEntries: {
         where: {
-          node: { factorConnection_ALL: { node: { id: $factorId } } }
+          node: { parentConnection: {Factor: { node: { id: $factorId } } } }
         }
       }
     }

@@ -141,7 +141,7 @@ mutation deleteSession($sessionId: ID!) {
     where: { id: $sessionId }
     delete: {
       blobEntries: {
-        where: { node: { sessionConnection_ALL: { node: { id: $sessionId } } } }
+        where: { node: { parentConnection: {Session: {node: {id: $sessionId } } } } }
       }
     }
   ) {
@@ -160,7 +160,7 @@ mutation deleteRobot($robotId: ID!) {
     where: { id: $robotId }
     delete: {
       blobEntries: {
-        where: { node: { robotConnection_ALL: { node: { id: $robotId } } } }
+        where: { node: { parentConnection: {Robot: {node: {id: $robotId } } } } }
       }
     }
   ) {
