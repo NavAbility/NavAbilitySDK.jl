@@ -26,7 +26,7 @@ sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
     display(fgclient)
 
     # test easy constructor
-    fgclient2 = DFGClient(userLabel, robotLabel, sessionLabel)
+    fgclient2 = DFGClient(userLabel, robotLabel, sessionLabel; apiUrl)
     @test fgclient.session == fgclient2.session
 
 end
@@ -37,7 +37,7 @@ end
 
     user = NvaSDK.User(client, userLabel)
     @test user.id == UUID("d4bfaaf6-7d55-49eb-b03a-7806457e09d2")
-    @test user.label == "guest@navability.io"
+    @test user.label == userLabel
 
     robot = addRobot!(client, user, temp_robotLabel)
     @test robot.label == temp_robotLabel
@@ -378,6 +378,9 @@ a_facts = addFactor!.(fgclient, facts)
 
 end
 
+deleteVariable!.(fgclient, listVariables(fgclient))
+deleteFactor!.(fgclient, getFactorsSkeleton(fgclient))
+deleteSession!(fgclient)
 # batch delete
 #TODO deleteVariables
 #TODO deleteFactors

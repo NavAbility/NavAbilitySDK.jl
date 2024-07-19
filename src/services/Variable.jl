@@ -16,6 +16,23 @@ function VariableCreateInput(fgclient::DFGClient, v::Variable)
                     robotLabel = fgclient.robot.label,
                     sessionLabel = fgclient.session.label,
                     variableLabel = string(variableLabel),
+                    parent = 
+                        Dict("Variable" => 
+                            Dict("connect" => 
+                                Dict("where" => 
+                                    Dict("node" =>
+                                        Dict("AND" => 
+                                            (
+                                                userLabel = fgclient.user.label,
+                                                robotLabel = fgclient.robot.label,
+                                                sessionLabel = fgclient.session.label,
+                                                label = string(variableLabel)
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        ),
                     getCommonProperties(BlobEntryCreateInput, entry)...,
                     blobId = if isnothing(entry.blobId)
                         entry.originId
