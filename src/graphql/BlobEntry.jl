@@ -119,6 +119,18 @@ query listSessionBlobEntries($userId: ID!, $robotId: ID!, $sessionId: ID!) {
 }
 """
 
+GQL_LIST_ROBOT_BLOBENTRIES = GQL.gql"""
+query listSessionBlobEntries($userId: ID!, $robotId: ID!) {
+  users(where: { id: $userId }) {
+    robots(where: { id: $robotId }) { 
+      blobEntries {
+        label
+      } 
+    }
+  }
+}
+"""
+
 GQL_GET_USER_BLOBENTRY = """
 $(GQL_FRAGMENT_BLOBENTRY)
 query getUserBlobEntry(

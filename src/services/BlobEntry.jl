@@ -311,5 +311,29 @@ function listSessionBlobEntries(fgclient::DFGClient)
     return last.(response.data["users"][1]["robots"][1]["sessions"][1]["blobEntries"])
 end
 
+
+function listRobotBlobEntries(fgclient::DFGClient)
+    variables = Dict(
+        "userId" => fgclient.user.id,
+        "robotId" => fgclient.robot.id,
+    )
+
+    T = Vector{
+        Dict{
+            String,
+            Vector{Dict{String, Vector{NamedTuple{(:label,), Tuple{Symbol}}}}},
+        },
+    }
+
+    response = GQL.execute(
+        fgclient.client,
+        GQL_LIST_ROBOT_BLOBENTRIES,
+        T;
+        variables,
+        throw_on_execution_error = true,
+    )
+    return last.(response.data["users"][1]["robots"][1]["blobEntries"])
+end
+
 #TODO
 # addFactorBlobEntries!
