@@ -117,6 +117,9 @@ include("services/Workers.jl")
 
 include("services/AsyncCalls.jl")
 
+#experimental
+include("services/VarNodeIndex.jl")
+
 include("Deprecated.jl")
 
 # LinearAlgebra pass through exports
