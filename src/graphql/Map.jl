@@ -60,3 +60,14 @@ query QUERY_GET_MAP(\$mapId: ID!) {
   }
 }
 """
+
+GQL_ADD_MAP = """
+$FRAGMENT_MAP
+mutation addMAP(\$label: String!, \$status: String = "", \$description: String = "") {
+  addMaps(input: {label: \$label, status: \$status, description: \$description}) {
+    maps {
+        ...FRAGMENT_MAP
+    }
+  }
+}
+"""

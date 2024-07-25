@@ -36,6 +36,22 @@ mutation linkSessionMap($mapId: ID!, $sessionId: ID!) {
 }
 """
 
+function addMap!(client::GQL.Client, mapLabel::String; status = "", description = "")
+  variables = Dict(
+      "label" => mapLabel,
+      "status" => status,
+      "description" => description,
+  )
+  response = GQL.execute(
+      client,
+      GQL_ADD_MAP;
+      # T;
+      variables,
+      throw_on_execution_error = true,
+  )
+  return response.data["addMaps"]["maps"][1]
+end
+
 function addSession!(client::GQL.Client, mapId, sessionId)
   variables = Dict("mapId" => mapId, "sessionId" => sessionId)
 
