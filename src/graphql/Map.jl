@@ -2,25 +2,8 @@
 # Fragments
 # =================================================
 
-
-FRAGMENT_SESSION = """
-fragment FRAGMENT_SESSION on Session {
-  id
-  label
-  originLatitude
-  originLongitude
-  metadata
-  # blobEntries { ...FRAGMENT_BLOBENTRY }
-  _version
-  createdTimestamp
-  lastUpdatedTimestamp
-  # variables
-  # factors
-}
-"""
-
 FRAGMENT_MAP = """
-$FRAGMENT_SESSION
+$GQL_FRAGMENT_SESSION
 $GQL_FRAGMENT_BLOBENTRY
 fragment FRAGMENT_MAP on Map {
   id
@@ -30,7 +13,7 @@ fragment FRAGMENT_MAP on Map {
   data
   thumbnailId
   exportedMapId 
-  sessions { ...FRAGMENT_SESSION }
+  sessions { ...session_fields }
   createdTimestamp
   lastUpdatedTimestamp
   blobEntries { ...blobEntry_fields }
@@ -52,11 +35,31 @@ query QUERY_GET_MAPS(\$userId: ID!) {
 }
 """
 
+QUERY_GET_MAPS_ALL = """
+$FRAGMENT_MAP
+{
+    maps {
+        ...FRAGMENT_MAP
+    }
+}
+"""
+
 QUERY_GET_MAP = """
 $FRAGMENT_MAP
 query QUERY_GET_MAP(\$mapId: ID!) {
   maps (where: {id: \$mapId}) {
         ...FRAGMENT_MAP
+  }
+}
+"""
+
+GQL_ADD_MAP = """
+$FRAGMENT_MAP
+mutation addMAP(\$label: String!, \$status: String = "", \$description: String = "") {
+  addMaps(input: {label: \$label, status: \$status, description: \$description}) {
+    maps {
+        ...FRAGMENT_MAP
+    }
   }
 }
 """

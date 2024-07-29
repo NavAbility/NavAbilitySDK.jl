@@ -1,6 +1,8 @@
 Base.@kwdef struct Session
     id::UUID
     label::String
+    robotLabel::String
+    userLabel::String
     _version::String
     createdTimestamp::String# = string(now())
     lastUpdatedTimestamp::String

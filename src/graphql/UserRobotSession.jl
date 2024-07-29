@@ -18,10 +18,29 @@ fragment robot_fields on Robot {
 }
 """
 
+# TODO consolidate with GQL_FRAGMENT_SESSION
+# FRAGMENT_SESSION = """
+# fragment FRAGMENT_SESSION on Session {
+#   id
+#   label
+#   originLatitude
+#   originLongitude
+#   metadata
+#   # blobEntries { ...FRAGMENT_BLOBENTRY }
+#   _version
+#   createdTimestamp
+#   lastUpdatedTimestamp
+#   # variables
+#   # factors
+# }
+# """
+
 GQL_FRAGMENT_SESSION = """
 fragment session_fields on Session {
   id
   label
+  robotLabel
+  userLabel
   _version
   createdTimestamp
   lastUpdatedTimestamp

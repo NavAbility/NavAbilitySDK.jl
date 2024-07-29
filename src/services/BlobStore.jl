@@ -258,3 +258,13 @@ function DFG.addBlob!(store::NavAbilityOnPremBlobStore, blobId::UUID, blob::Vect
     isnothing(blobId) && error(blobId_str)
     return blobId
 end
+
+function DFG.getBlob(store::NavAbilityOnPremBlobStore, blobId::UUID)
+    response = GQL.query(
+        store.client,
+        "getBlob";
+        query_args = Dict("blobId" => string(blobId)),
+        throw_on_execution_error = true,
+    )
+    return base64decode(response.data["getBlob"])
+end
