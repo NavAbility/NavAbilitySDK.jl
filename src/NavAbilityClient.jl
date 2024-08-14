@@ -9,14 +9,14 @@ end
 DFG.getTypeDFGVariables(::DFGClient{T, <:AbstractDFGFactor}) where {T} = T
 DFG.getTypeDFGFactors(::DFGClient{<:AbstractDFGVariable, T}) where {T} = T
 
-function DFGClient(client::GQL.Client, context::Context)
+function DFGClient(client::GQL.Client, context::Context, storeLabel=:NAVABILITY)
     return DFGClient{DFG.Variable, DFG.PackedFactor}(
         client,
         (id = context.user.id, label = context.user.label),
         (id = context.robot.id, label = context.robot.label),
         (id = context.session.id, label = context.session.label),
         Dict{Symbol, DFG.AbstractBlobStore}(
-            :NAVABILITY => NavAbilityBlobStore(client, context.user.label),
+            storeLabel => NavAbilityBlobStore(client, context.user.label),
         ),
     )
 end
@@ -46,6 +46,7 @@ function DFGClient(
     userLabel::String,
     robotLabel::String,
     sessionLabel::String;
+    storeLabel = :NAVABILITY,
     addRobotIfNotExists = false,
     addSessionIfNotExists = false,
 )
@@ -64,7 +65,7 @@ function DFGClient(
         (id = context.robot.id, label = context.robot.label),
         (id = context.session.id, label = context.session.label),
         Dict{Symbol, DFG.AbstractBlobStore}(
-            :NAVABILITY => NavAbilityBlobStore(client, context.user.label),
+            storeLabel => NavAbilityBlobStore(storeLabel, client, context.user.label),
         ),
     )
 end
@@ -93,3 +94,8 @@ function NavAbilityClient(
     client = GQL.Client(apiUrl; headers, kwargs...)
     return client
 end
+
+
+DFG.getUserLabel(fg::DFGClient) = fg.user.label
+DFG.getRobotLabel(fg::DFGClient) = fg.robot.label
+DFG.getSessionLabel(fg::DFGClient) = fg.session.label
