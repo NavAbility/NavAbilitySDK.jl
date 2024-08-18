@@ -5,7 +5,7 @@ struct NavAbilityBlobStore <: DFG.AbstractBlobStore{Vector{UInt8}}
     userLabel::String
 end
 
-NavAbilityBlobStore(client::GQL.Client, userLabel::String) = NavAbilityBlobStore(:NAVABILITY, client, userLabel)
+NavAbilityBlobStore(client::GQL.Client, userLabel::String, label = :NAVABILITY) = NavAbilityBlobStore(label, client, userLabel)
 
 function Base.show(io::IO, ::MIME"text/plain", s::NavAbilityBlobStore)
     summary(io, s)
@@ -14,8 +14,8 @@ function Base.show(io::IO, ::MIME"text/plain", s::NavAbilityBlobStore)
     println(io, "\n  User Name\n    ", s.userLabel)
 end
 
-function NavAbilityBlobStore(fgclient::DFGClient)
-    NavAbilityBlobStore(:NAVABILITY, fgclient.client, fgclient.user.label)
+function NavAbilityBlobStore(fgclient::DFGClient, label = :NAVABILITY)
+    NavAbilityBlobStore(label, fgclient.client, fgclient.user.label)
 end
 
 struct NavAbilityCachedBlobStore{T <: DFG.AbstractBlobStore} <:
@@ -241,8 +241,8 @@ struct NavAbilityOnPremBlobStore <: DFG.AbstractBlobStore{Vector{UInt8}}
     userLabel::String
 end
 
-function NavAbilityOnPremBlobStore(fgclient::DFGClient)
-    NavAbilityOnPremBlobStore(:NAVABILITY, fgclient.client, fgclient.user.label)
+function NavAbilityOnPremBlobStore(fgclient::DFGClient, label=:NAVABILITY)
+    NavAbilityOnPremBlobStore(label, fgclient.client, fgclient.user.label)
 end
 
 function DFG.addBlob!(store::NavAbilityOnPremBlobStore, blobId::UUID, blob::Vector{UInt8})

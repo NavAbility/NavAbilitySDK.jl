@@ -162,6 +162,9 @@ function setRobotMeta!(fgclient::DFGClient, smallData::Dict{Symbol, DFG.SmallDat
     )
 end
 
+DFG.getRobotData(fg::DFGClient, key::Symbol) = getRobotMeta(fg)[key]
+DFG.setRobotData!(fg::DFGClient, data::Dict{Symbol, DFG.SmallDataTypes}) = setRobotMeta!(fg, data)
+
 ##
 
 
@@ -208,9 +211,8 @@ function setSessionMeta!(fgclient::DFGClient, smallData::Dict{Symbol, DFG.SmallD
     )
 end
 
-DFG.getRobotData(fg::DFGClient, key::Symbol) = getRobotMeta(fg)[key]
 DFG.getSessionData(fg::DFGClient, key::Symbol) = getSessionMeta(fg)[key]
-
+DFG.setSessionData!(fg::DFGClient, data::Dict{Symbol, DFG.SmallDataTypes}) = setSessionMeta!(fg, data)
 
 ##
 function deleteSession!(fgclient::DFGClient)
