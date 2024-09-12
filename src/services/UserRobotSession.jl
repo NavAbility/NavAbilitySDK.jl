@@ -132,11 +132,15 @@ function getRobotMeta(fgclient::DFGClient)
       }
       """
     response = GQL.execute(fgclient.client, gql; throw_on_execution_error = true)
-
-    return JSON3.read(
-        base64decode(response.data["users"][1]["robots"][1]["metadata"]),
-        Dict{Symbol, DFG.SmallDataTypes},
-    )
+    b64data = response.data["users"][1]["robots"][1]["metadata"]
+    if isnothing(b64data) 
+        return Dict{Symbol, DFG.SmallDataTypes}()
+    else
+        return JSON3.read(
+            base64decode(b64data),
+            Dict{Symbol, DFG.SmallDataTypes},
+        )
+    end
 end
 
 function setRobotMeta!(fgclient::DFGClient, smallData::Dict{Symbol, DFG.SmallDataTypes})
@@ -181,11 +185,16 @@ function getSessionMeta(fgclient::DFGClient)
       }
       """
     response = GQL.execute(fgclient.client, gql; throw_on_execution_error = true)
+    b64data = response.data["users"][1]["robots"][1]["sessions"][1]["metadata"]
 
-    return JSON3.read(
-        base64decode(response.data["users"][1]["robots"][1]["sessions"][1]["metadata"]),
-        Dict{Symbol, DFG.SmallDataTypes},
-    )
+    if isnothing(b64data) 
+        return Dict{Symbol, DFG.SmallDataTypes}()
+    else
+        return JSON3.read(
+            base64decode(b64data),
+            Dict{Symbol, DFG.SmallDataTypes},
+        )
+    end
 end
 
 function setSessionMeta!(fgclient::DFGClient, smallData::Dict{Symbol, DFG.SmallDataTypes})
