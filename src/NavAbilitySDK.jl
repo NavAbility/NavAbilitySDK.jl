@@ -86,24 +86,21 @@ import DistributedFactorGraphs:
 
 # Graphql
 include("graphql/BlobEntry.jl")
-include("graphql/UserRobotSession.jl")
 include("graphql/Factor.jl")
 include("graphql/Variable/Variable.jl")
 include("graphql/BlobStore.jl")
-include("graphql/Map.jl")
+include("graphql/Model.jl")
 
 include("entities/Distributions.jl")
 include("entities/InferenceTypes.jl")
 include("entities/VariableTypes.jl")
-include("entities/UserRobotSession.jl")
+include("entities/_Remote.jl")
 include("entities/Variable.jl")
 include("entities/Factor.jl")
-include("entities/Map.jl")
 
 include("NavAbilityClient.jl")
 
 include("services/Common.jl")
-include("services/UserRobotSession.jl")
 include("services/PPE.jl")
 include("services/SolverData.jl")
 include("services/Variable.jl")
@@ -112,10 +109,13 @@ include("services/BlobEntry.jl")
 include("services/BlobStore.jl")
 include("services/StandardAPI.jl")
 include("services/FactorGraph.jl")
-include("services/Map.jl")
+include("services/Model.jl")
+include("services/Agent.jl")
 include("services/Workers.jl")
 
 include("services/AsyncCalls.jl")
+
+include("sandbox.jl")
 
 include("Deprecated.jl")
 

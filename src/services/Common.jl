@@ -38,3 +38,37 @@ function getCommonProperties(::Type{T}, from::F) where {T, F}
     commonfields = intersect(fieldnames(T), fieldnames(F))
     return (k => getproperty(from, k) for k in commonfields)
 end
+
+function handleQuery(response, nodeName::String, label::Symbol)
+    res = isnothing(response.data) ? nothing : get(response.data, nodeName, nothing)
+    if isnothing(res)
+        #TODO # throw correct error
+        error("Query '$nodeName' failed on $label")
+    elseif isempty(res)
+        throw(KeyError(label))
+    else
+        return res[1]
+    end
+end
+
+function handleQuery(response, nodeName::String)
+    res = isnothing(response.data) ? nothing : get(response.data, nodeName, nothing)
+    if isnothing(res)
+        #TODO # throw correct error
+        error("Query '$nodeName'")
+    else
+        return res
+    end
+end
+
+function handleMutate(response, mutation::String, return_node::Symbol)
+    res = isnothing(response.data) ? nothing : get(response.data, mutation, nothing)
+    if isnothing(res)
+        if !isnothing(response.errors) && !isempty(response.errors)
+            #TODO # throw correct error
+            throw(response.errors[1])
+        end
+    else
+        return res[return_node][1]
+    end
+end

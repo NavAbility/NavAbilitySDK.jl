@@ -6,34 +6,20 @@ function VariableCreateInput(fgclient::DFGClient, v::Variable)
     # copy from a packed variable
     variableLabel = v.label
 
+    namespace = fgclient.fg.namespace
+    fgLabel = fgclient.fg.label
+    fgId = NvaSDK.getId(namespace, fgLabel)
+    varId = NvaSDK.getId(namespace, fgLabel, variableLabel)
+
     if isempty(v.blobEntries)
         blobEntries = nothing
     else
         blobEntryNodes = map(v.blobEntries) do entry
             Dict(
                 "node" => BlobEntryCreateInput(;
-                    userLabel = fgclient.user.label,
-                    robotLabel = fgclient.robot.label,
-                    sessionLabel = fgclient.session.label,
-                    variableLabel = string(variableLabel),
-                    parent = 
-                        Dict("Variable" => 
-                            Dict("connect" => 
-                                Dict("where" => 
-                                    Dict("node" =>
-                                        Dict("AND" => 
-                                            (
-                                                userLabel = fgclient.user.label,
-                                                robotLabel = fgclient.robot.label,
-                                                sessionLabel = fgclient.session.label,
-                                                label = string(variableLabel)
-                                            )
-                                        )
-                                    )
-                                )
-                            )
-                        ),
                     getCommonProperties(BlobEntryCreateInput, entry)...,
+                    id = getId(namespace, fgLabel, variableLabel, entry.label),
+                    parent = (Variable=createConnect(varId),),
                     blobId = if isnothing(entry.blobId)
                         entry.originId
                     else
@@ -51,12 +37,9 @@ function VariableCreateInput(fgclient::DFGClient, v::Variable)
         solverDataNodes = map(v.solverData) do sd
             Dict(
                 "node" => SolverDataCreateInput(;
-                    userLabel = fgclient.user.label,
-                    robotLabel = fgclient.robot.label,
-                    sessionLabel = fgclient.session.label,
-                    variableLabel = string(variableLabel),
-                    variable = nothing,
                     getCommonProperties(SolverDataCreateInput, sd)...,
+                    id = getId(namespace, fgLabel, variableLabel, sd.solveKey),
+                    variable = createConnect(varId),
                 ),
             )
         end
@@ -69,12 +52,9 @@ function VariableCreateInput(fgclient::DFGClient, v::Variable)
         ppeNodes = map(v.ppes) do ppe
             Dict(
                 "node" => PPECreateInput(;
-                    userLabel = fgclient.user.label,
-                    robotLabel = fgclient.robot.label,
-                    sessionLabel = fgclient.session.label,
-                    variableLabel = string(variableLabel),
-                    variable = nothing,
                     getCommonProperties(PPECreateInput, ppe)...,
+                    id = getId(namespace, fgLabel, variableLabel, ppe.solveKey),
+                    variable = createConnect(varId),
                 ),
             )
         end
@@ -89,10 +69,11 @@ function VariableCreateInput(fgclient::DFGClient, v::Variable)
     metadata = v.metadata
     timestamp = string(v.timestamp)
 
-    session = createConnect(fgclient.session.id)
+    fg = createConnect(fgId)
 
     addvar = VariableCreateInput(;
         # TODO replace with `getCommonProperties(VariableCreateInput, v)...` when types updated
+        id = varId,
         label,
         variableType,
         nstime,
@@ -101,13 +82,12 @@ function VariableCreateInput(fgclient::DFGClient, v::Variable)
         metadata,
         timestamp,
         # to here
-        session,
+        #parent
+        fg,
+        #children
         blobEntries,
         solverData,
         ppes,
-        userLabel = fgclient.user.label,
-        robotLabel = fgclient.robot.label,
-        sessionLabel = fgclient.session.label,
     )
     return addvar
 end
@@ -117,15 +97,17 @@ function addVariable!(fgclient::DFGClient, v::Variable)
 
     variables = Dict("variablesToCreate" => [addvar])
 
+    T = @NamedTuple{variables::Vector{Variable}}
+
     response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_ADD_VARIABLES,
-        VariableResponse;
+        T; #FIXME use VariableResponse named tuple
+        # VariableResponse;
         variables,
         throw_on_execution_error = true,
     )
-
-    return response.data["addVariables"].variables[1]
+    return handleMutate(response, "createVariables", :variables)
 end
 
 function addVariables!(fgclient::DFGClient, vars::Vector{Variable}; chunksize=20)
@@ -136,6 +118,8 @@ function addVariables!(fgclient::DFGClient, vars::Vector{Variable}; chunksize=20
     chunks = collect(Iterators.partition(addvars, chunksize))
     length(chunks) > 1 && @info "Adding variables in $(length(chunks)) batches"
 
+    T = @NamedTuple{variables::Vector{Variable}}
+
     newVarReturns = Variable[]
     # p = Progress(length(chunks))
     Threads.@threads for c in chunks
@@ -144,247 +128,238 @@ function addVariables!(fgclient::DFGClient, vars::Vector{Variable}; chunksize=20
         variables = Dict("variablesToCreate" => c)
 
         response = GQL.execute(
-            fgclient.client,
+            fgclient.client.client,
             GQL_ADD_VARIABLES,
-            VariableResponse;
+            T;
+            # VariableResponse;
             variables,
             throw_on_execution_error = true,
         )
-        append!(newVarReturns, response.data["addVariables"].variables)
+        append!(newVarReturns, response.data["createVariables"].variables)
     end
 
     return newVarReturns
 end
 
 function getVariables(fgclient::DFGClient)
+    
+    fgId = NvaSDK.getId(fglient.fg)
+
     variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
+        "fgId" => fgId,
         "fields_summary" => true,
         "fields_full" => true,
     )
 
-    T = Vector{
-        Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{Variable}}}}}},
-    }
+    T = Vector{Dict{String, Vector{Variable}}}
 
     response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_GET_VARIABLES,
         T;
         variables,
         throw_on_execution_error = true,
     )
-    return response.data["users"][1]["robots"][1]["sessions"][1]["variables"]
+
+    return handleQuery(response, "factorgraphs", fgclient.fg.label)["variables"]
+
 end
 
-function getVariables(fgclient::DFGClient, label::Vector{Symbol})
+function getVariables(fgclient::DFGClient, labels::Vector{Symbol})
+
+    namespace = fgclient.fg.namespace
+    fgLabel = fgclient.fg.label
+
     variables = Dict(
-        "userLabel" => fgclient.user.label,
-        "robotLabel" => fgclient.robot.label,
-        "sessionLabel" => fgclient.session.label,
-        "variableLabels" => string.(label),
+        "variableIds" => getId.(namespace, fgLabel, labels),
         "fields_summary" => true,
         "fields_full" => true,
     )
 
     response = GQL.execute(
-        fgclient.client,
-        GQL_GET_VARIABLES_BY_LABELS,
+        fgclient.client.client,
+        GQL_GET_VARIABLES_BY_IDS,
         Vector{Variable};
         variables,
         throw_on_execution_error = true,
     )
-    return response.data["variables"]
+    return handleQuery(response, "variables")
 end
 
 function listVariables(fgclient::DFGClient)
+    
+    namespace = fgclient.fg.namespace
+    fgId = NvaSDK.getId(namespace, fgclient.fg.label)
+
     variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
+        "fgId" => fgId
     )
 
+    T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
+
     response = GQL.execute(
-        fgclient.client,
-        GQL_LIST_VARIABLES;
+        fgclient.client.client,
+        GQL_LIST_VARIABLES,
+        T;
         variables,
         throw_on_execution_error = true,
     )
 
-    return Symbol.(
-        get.(
-            response.data["users"][1]["robots"][1]["sessions"][1]["variables"],
-            "label",
-            missing,
-        )
-    )
+    return last.(handleQuery(response, "factorgraphs", fgclient.fg.label)["variables"])
+
 end
 
 function getVariable(fgclient::DFGClient{VT, <:AbstractDFGFactor}, label::Symbol) where VT
+
+    namespace = fgclient.fg.namespace
+    varId = NvaSDK.getId(namespace, fgclient.fg.label, label)
+
     variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
-        "variableLabel" => string(label),
+        "varId" => varId,
         "fields_summary" => true,
         "fields_full" => true,
     )
 
-    T = Vector{
-        Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{Variable}}}}}},
-    }
+    T = Vector{Variable}
 
     response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_GET_VARIABLE,
         T;
         variables,
         throw_on_execution_error = true,
     )
-    return VT(response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1])
+    return VT(handleQuery(response, "variables", label))
 end
 
 function getVariableSummary(fgclient::DFGClient, label::Symbol)
+    namespace = fgclient.fg.namespace
+    varId = NvaSDK.getId(namespace, fgclient.fg.label, label)
+
     variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
-        "variableLabel" => string(label),
+        "varId" => varId,
         "fields_summary" => true,
         "fields_full" => false,
     )
 
+    T = Vector{DFG.DFGVariableSummary}
+
     response = GQL.execute(
-        fgclient.client,
-        GQL_GET_VARIABLE;
+        fgclient.client.client,
+        GQL_GET_VARIABLE,
+        T;
         variables,
         throw_on_execution_error = true,
     )
-    # return response.data["variables"][]
 
-    jstr =
-        JSON3.write(response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1])
-    return JSON3.read(jstr, DFG.DFGVariableSummary)
+    return handleQuery(response, "variables", label)
 end
 
-#FIXME when variables query work this can be changed
 function getVariableSkeleton(fgclient::DFGClient, label::Symbol)
+    namespace = fgclient.fg.namespace
+    varId = NvaSDK.getId(namespace, fgclient.fg.label, label)
+
     variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
-        "variableLabel" => string(label),
+        "varId" => varId,
         "fields_summary" => false,
         "fields_full" => false,
     )
 
+    T = Vector{DFG.SkeletonDFGVariable}
+
     response = GQL.execute(
-        fgclient.client,
-        GQL_GET_VARIABLE;
+        fgclient.client.client,
+        GQL_GET_VARIABLE,
+        T;
         variables,
         throw_on_execution_error = true,
     )
-    # return response.data["variables"][]
-
-    jstr =
-        JSON3.write(response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1])
-    return JSON3.read(jstr, DFG.SkeletonDFGVariable)
+    
+    return handleQuery(response, "variables", label)
 end
 
 ##
 function getVariablesSkeleton(fgclient::DFGClient)#, label::Symbol)
+
+    namespace = fgclient.fg.namespace
+    fgId = NvaSDK.getId(namespace, fgclient.fg.label)
+    
     variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
+        "fgId" => fgId,
         "fields_summary" => false,
         "fields_full" => false,
     )
+    
+    T = Vector{@NamedTuple{variables::Vector{DFG.SkeletonDFGVariable}}}
 
     response = GQL.execute(
-        fgclient.client,
-        GQL_GET_VARIABLES;
-        variables,
-        throw_on_execution_error = true,
-    )
-
-    jstr = JSON3.write(response.data["users"][1]["robots"][1]["sessions"][1]["variables"])
-    return JSON3.read(jstr, Vector{DFG.SkeletonDFGVariable})
-end
-
-function getVariablesSummary(fgclient::DFGClient)#, label::Symbol)
-    variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
-        "fields_summary" => true,
-        "fields_full" => false,
-    )
-
-    T = Vector{
-        Dict{
-            String, #users
-            Vector{Dict{
-                String, #robots
-                Vector{Dict{
-                    String, #sessions
-                    Vector{DFG.DFGVariableSummary}, #variables
-                }},
-            }},
-        },
-    }
-
-    response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_GET_VARIABLES,
         T;
         variables,
         throw_on_execution_error = true,
     )
 
-    return response.data["users"][1]["robots"][1]["sessions"][1]["variables"]
+    return handleQuery(response, "factorgraphs", :variables)[1]
+
+end
+
+function getVariablesSummary(fgclient::DFGClient)#, label::Symbol)
+ 
+    namespace = fgclient.fg.namespace
+    fgId = NvaSDK.getId(namespace, fgclient.fg.label)
+    
+    variables = Dict(
+        "fgId" => fgId,
+        "fields_summary" => true,
+        "fields_full" => false,
+    )
+    
+    T = Vector{@NamedTuple{variables::Vector{DFG.DFGVariableSummary}}}
+
+    response = GQL.execute(
+        fgclient.client.client,
+        GQL_GET_VARIABLES,
+        T;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return handleQuery(response, "factorgraphs", :variables)[1]
 end
 
 # delete variable and its satelites (by variable id)
 function deleteVariable!(fgclient::DFGClient, variable::DFG.AbstractDFGVariable)
-    isnothing(variable.id) && error("Variable $(variable.label) does not have an id")
-    variables = Dict("variableId" => variable.id)
+
+    namespace = fgclient.fg.namespace
+    varId = NvaSDK.getId(namespace, fgclient.fg.label, variable.label)
+
+    variables = Dict(
+        "variableId" => varId,
+    )
 
     response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_DELETE_VARIABLE;
         variables,
         throw_on_execution_error = true,
     )
 
-    return response.data
+    #FIXME return neighboring factors that got deleted
+    neigfacs = Nothing[]
+
+    return variable, neigfacs
 end
 
 function deleteVariable!(fgclient::DFGClient, label::Symbol)
-    
-    variables = Dict(
-        "userLabel" => fgclient.user.label,
-        "robotLabel" => fgclient.robot.label,
-        "sessionLabel" => fgclient.session.label,
-        "variableLabel" => label,
-    )
-
-    response = GQL.execute(
-        fgclient.client,
-        GQL_DELETE_VARIABLE_BY_LABEL;
-        variables,
-        throw_on_execution_error = true,
-    )
-
-    return response.data
+    v = getVariable(fgclient, label)
+    return deleteVariable!(fgclient, v)
 end
 
 ## ====================
 ## Utilities
 ## ====================
-
+#FIXME findVariable**s**NearTimestamp
 function findVariableNearTimestamp(
     fgclient::DFGClient,
     timestamp::ZonedDateTime,
@@ -393,16 +368,17 @@ function findVariableNearTimestamp(
     fromtime = timestamp - window
     totime = timestamp + window
 
+    namespace = fgclient.fg.namespace
+    fgId = NvaSDK.getId(namespace, fgclient.fg.label)
+    
     variables = Dict(
-        "userLabel" => fgclient.user.label,
-        "robotLabel" => fgclient.robot.label,
-        "sessionLabel" => fgclient.session.label,
+        "fgId" => fgId,
         "fromTime" => fromtime,
         "toTime" => totime,
     )
 
     response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_FIND_VARIABLES_NEAR_TIMESTAMP;
         variables,
         throw_on_execution_error = true,
@@ -410,7 +386,7 @@ function findVariableNearTimestamp(
 
     return Symbol.(
         get.(
-            response.data["variables"],
+            response.data["factorgraphs"][1]["variables"],
             "label",
             missing,
         )

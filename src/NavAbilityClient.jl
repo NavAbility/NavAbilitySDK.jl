@@ -1,89 +1,15 @@
-struct DFGClient{VT<:AbstractDFGVariable, FT<:AbstractDFGFactor} <: AbstractDFG{AbstractParams}
+#TODO use id or label for org?
+# constructor can get the Org from the chosen api using the label, label should then be unique
+# maybe org should get a client number to use that is unique
+struct NavAbilityClient
+    id::UUID
     client::GQL.Client
-    user::NamedTuple{(:id, :label), Tuple{UUID, String}}
-    robot::NamedTuple{(:id, :label), Tuple{UUID, String}}
-    session::NamedTuple{(:id, :label), Tuple{UUID, String}}
-    blobStores::Dict{Symbol, DFG.AbstractBlobStore}
+    # org::Org
 end
 
-DFG.getTypeDFGVariables(::DFGClient{T, <:AbstractDFGFactor}) where {T} = T
-DFG.getTypeDFGFactors(::DFGClient{<:AbstractDFGVariable, T}) where {T} = T
-
-function DFGClient(client::GQL.Client, context::Context, storeLabel=:NAVABILITY)
-    return DFGClient{DFG.Variable, DFG.PackedFactor}(
-        client,
-        (id = context.user.id, label = context.user.label),
-        (id = context.robot.id, label = context.robot.label),
-        (id = context.session.id, label = context.session.label),
-        Dict{Symbol, DFG.AbstractBlobStore}(
-            storeLabel => NavAbilityBlobStore(client, context.user.label),
-        ),
-    )
-end
-
-function DFGClient(
-    userLabel::String,
-    robotLabel::String,
-    sessionLabel::String;
-    apiUrl::String = "https://api.navability.io",
-    auth_token::String = "",
-    authorize::Bool = 0 !== length(auth_token),
-    addRobotIfNotExists = false,
-    addSessionIfNotExists = false,
-)
-    return DFGClient(
-        NavAbilityClient(apiUrl; auth_token, authorize),
-        userLabel,
-        robotLabel,
-        sessionLabel;
-        addRobotIfNotExists,
-        addSessionIfNotExists,
-    )
-end
-
-function DFGClient(
-    client::GQL.Client,
-    userLabel::String,
-    robotLabel::String,
-    sessionLabel::String;
-    storeLabel = :NAVABILITY,
-    addRobotIfNotExists = false,
-    addSessionIfNotExists = false,
-)
-    context = Context(
-        client,
-        userLabel,
-        robotLabel,
-        sessionLabel;
-        addRobotIfNotExists,
-        addSessionIfNotExists,
-    )
-
-    return DFGClient{DFG.Variable, DFG.PackedFactor}(
-        client,
-        (id = context.user.id, label = context.user.label),
-        (id = context.robot.id, label = context.robot.label),
-        (id = context.session.id, label = context.session.label),
-        Dict{Symbol, DFG.AbstractBlobStore}(
-            storeLabel => NavAbilityBlobStore(storeLabel, client, context.user.label),
-        ),
-    )
-end
-
-function Base.show(io::IO, ::MIME"text/plain", c::DFGClient)
-    summary(io, c)
-    print(io, "\n  ")
-    show(io, MIME("text/plain"), c.client)
-    println(io)
-    println(io, "  userLabel: ", c.user.label)
-    println(io, "  robotLabel: ", c.robot.label)
-    println(io, "  sessionLabel: ", c.session.label)
-    return
-end
-
-Base.show(io::IO, c::DFGClient) = show(io, MIME"text/plain"(), c)
-
+#TODO DEPRECATE add orgId
 function NavAbilityClient(
+    orgId::UUID,
     apiUrl::String = "https://api.navability.io";
     auth_token::String = "",
     authorize::Bool = 0 !== length(auth_token),
@@ -92,10 +18,109 @@ function NavAbilityClient(
     headers =
         authorize ? Dict("Authorization" => "Bearer $auth_token") : Dict{String, String}()
     client = GQL.Client(apiUrl; headers, kwargs...)
-    return client
+    return NavAbilityClient(orgId, client)  
 end
 
 
-DFG.getUserLabel(fg::DFGClient) = fg.user.label
-DFG.getRobotLabel(fg::DFGClient) = fg.robot.label
-DFG.getSessionLabel(fg::DFGClient) = fg.session.label
+struct DFGClient{VT<:AbstractDFGVariable, FT<:AbstractDFGFactor} <: AbstractDFG{AbstractParams}
+    client::NavAbilityClient
+    fg::FactorGraphRemote
+    agent::AgentRemote
+    blobStores::Dict{Symbol, DFG.AbstractBlobStore}
+end
+
+#TODO wip
+getId(ns::UUID, labels...) = uuid5(ns, string(labels...))
+
+DFG.getTypeDFGVariables(::DFGClient{T, <:AbstractDFGFactor}) where {T} = T
+DFG.getTypeDFGFactors(::DFGClient{<:AbstractDFGVariable, T}) where {T} = T
+
+# #FIXME DEPRECATE DFGClient(client::GQL.Client, context::Context, storeLabel=:NAVABILITY)
+# function DFGClient(client::GQL.Client, context::Context, storeLabel=:NAVABILITY)
+#     return DFGClient{DFG.Variable, DFG.PackedFactor}(
+#         client,
+#         (id = context.user.id, label = context.user.label),
+#         (id = context.robot.id, label = context.robot.label),
+#         (id = context.session.id, label = context.session.label),
+#         Dict{Symbol, DFG.AbstractBlobStore}(
+#             storeLabel => NavAbilityBlobStore(client, context.user.label),
+#         ),
+#     )
+# end
+
+# FIXME DEPRECATE
+# function DFGClient(
+#     userLabel::String,
+#     robotLabel::String,
+#     sessionLabel::String;
+#     apiUrl::String = "https://api.navability.io",
+#     auth_token::String = "",
+#     authorize::Bool = 0 !== length(auth_token),
+#     addRobotIfNotExists = false,
+#     addSessionIfNotExists = false,
+# )
+
+function DFGClient(
+    orgId::UUID,
+    agentLabel::Symbol,
+    fgLabel::Symbol;
+    apiUrl::String = "https://api.navability.io",
+    auth_token::String = "",
+    authorize::Bool = 0 !== length(auth_token),
+    addRobotIfNotExists = false,
+    addSessionIfNotExists = false,
+)
+    return DFGClient(
+        NavAbilityClient(orgId, apiUrl; auth_token, authorize),
+        fgLabel,
+        agentLabel;
+        addRobotIfNotExists,
+        addSessionIfNotExists,
+    )
+end
+
+function DFGClient(
+    client::NavAbilityClient,
+    fgLabel::Symbol,
+    agentLabel::Symbol;
+    storeLabel = :NAVABILITY,
+    addRobotIfNotExists = false,
+    addSessionIfNotExists = false,
+)
+    # context = Context(
+    #     client,
+    #     userLabel,
+    #     robotLabel,
+    #     sessionLabel;
+    #     addRobotIfNotExists,
+    #     addSessionIfNotExists,
+    # )
+    fg = getFactorGraph(client, fgLabel)
+    agent = getAgent(client, agentLabel)
+
+    return DFGClient{DFG.Variable, DFG.PackedFactor}(
+        client,
+        fg,
+        agent,
+        Dict{Symbol, DFG.AbstractBlobStore}(
+            storeLabel => NavAbilityBlobStore(storeLabel, client)
+        ),
+    )
+end
+
+function Base.show(io::IO, ::MIME"text/plain", c::DFGClient)
+    summary(io, c)
+    # print(io, "\n  ")
+    # show(io, MIME("text/plain"), c.client)
+    println(io)
+    println(io, "  Agent: ", c.agent.label)
+    println(io, "  FactorGraph: ", c.fg.label)
+    println(io, "  BlobStores: ", keys(c.blobStores))
+    return
+end
+
+# Base.show(io::IO, c::DFGClient) = show(io, MIME"text/plain"(), c)
+
+DFG.getUserLabel(fg::DFGClient) = "user label deprecated"
+DFG.getRobotLabel(fg::DFGClient) = "robot deprecated"
+DFG.getSessionLabel(fg::DFGClient) = "session deprecated"

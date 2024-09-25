@@ -1,3 +1,71 @@
+QUERY_GET_FACTORGRAPH = """
+query QUERY_GET_FACTORGRAPH(\$fgId: ID!) {
+  factorgraphs (where: {id: \$fgId}) {
+    label
+    createdTimestamp
+    namespace
+  }
+}
+"""
+
+
+function getFactorGraph(client::NavAbilityClient, label::Symbol)
+    fgId = getId(client.id, label)
+    variables = Dict("fgId" => fgId)
+
+    T = Vector{FactorGraphRemote}
+
+    response = GQL.execute(
+        client.client,
+        QUERY_GET_FACTORGRAPH,
+        T;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return handleQuery(response, "factorgraphs", label)
+
+end
+
+GQL_ADD_FACTORGRAPH = GQL.gql"""
+mutation createFactorGraph(
+    $orgId: ID = ""
+    $id: ID = "",
+    $label: String = "",
+    $description: String = "",
+    $metadata: Metadata = "",
+    $_version: String = "",
+) {
+  createFactorgraphs(
+    input: {id: $id, label: $label, _version: $_version, description: $description, metadata: $metadata, org: {connect: {where: {node: {id: $orgId}}}}}
+  ) {
+    factorgraphs {
+        label
+        createdTimestamp
+        namespace
+    }
+  }
+}
+"""
+
+function addFactorGraph!(client::NavAbilityClient, label::Symbol)
+    variables = Dict(
+        "orgId" => client.id,
+        "id" => getId(client.id, label),
+        "label" => label,
+        "_version" => DFG._getDFGVersion(),
+    )
+
+    # FactorGraphRemoteResponse
+    T = @NamedTuple{factorgraphs::Vector{FactorGraphRemote}}
+
+    response =
+        GQL.execute(client.client, GQL_ADD_FACTORGRAPH, T; variables, throw_on_execution_error = true)
+
+    return handleMutate(response, "createFactorgraphs", :factorgraphs)
+end
+
+# ===================================================================
 
 function listVariableNeighbors(fgclient::DFGClient, variableLabel::Symbol)
     variables = Dict(
@@ -40,7 +108,9 @@ function listFactorNeighbors(fgclient::DFGClient, factorLabel::Symbol)
 end
 
 #TODO should getNeighbors be listNeighbors
-DFG.getNeighbors(fgclient::DFGClient, nodeLabel::Symbol) = listNeighbors(fgclient, nodeLabel)
+function DFG.getNeighbors(fgclient::DFGClient, nodeLabel::Symbol)
+    listNeighbors(fgclient, nodeLabel)
+end
 
 function listNeighbors(fgclient::DFGClient, nodeLabel::Symbol)
     variables = Dict(

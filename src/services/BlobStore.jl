@@ -1,8 +1,7 @@
 #TODO we can also extend the blobstore
 struct NavAbilityBlobStore <: DFG.AbstractBlobStore{Vector{UInt8}}
     key::Symbol
-    client::GQL.Client
-    userLabel::String
+    client::NavAbilityClient
 end
 
 NavAbilityBlobStore(client::GQL.Client, userLabel::String, label = :NAVABILITY) = NavAbilityBlobStore(label, client, userLabel)
