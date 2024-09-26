@@ -15,44 +15,22 @@ fragment ppe_fields on PPE {
 
 GQL_GET_PPE = """
 $(GQL_FRAGMENT_PPES)
-query get_ppe(
-  \$userId: ID!
-  \$robotId: ID!
-  \$sessionId: ID!
-  \$variableLabel: String!
-  \$solveKey: ID!
-) {
-  users(where: { id: \$userId }) {
-    robots(where: { id: \$robotId }) {
-      sessions(where: { id: \$sessionId }) {
-        variables(where: { label: \$variableLabel }) {
-          ppes(where: { solveKey: \$solveKey }) {
-            ...ppe_fields
-          }
-        }
-      }
-    }
+query get_ppe(\$id: ID!) {
+  ppes(where: { id: \$id }) {
+    ...ppe_fields
   }
 }
+
 """
 
 GQL_GET_PPES = """
 $(GQL_FRAGMENT_PPES)
 query get_ppes(
-  \$userId: ID!
-  \$robotId: ID!
-  \$sessionId: ID!
-  \$variableLabel: String!
+  \$id: ID!
 ) {
-  users(where: { id: \$userId }) {
-    robots(where: { id: \$robotId }) {
-      sessions(where: { id: \$sessionId }) {
-        variables(where: { label: \$variableLabel }) {
-          ppes {
-            ...ppe_fields
-          }
-        }
-      }
+  variables(where: { id: \$id }) {
+    ppes {
+      ...ppe_fields
     }
   }
 }
@@ -61,7 +39,7 @@ query get_ppes(
 GQL_ADD_PPES = """
 $(GQL_FRAGMENT_PPES)
 mutation addPpes(\$ppes: [PPECreateInput!]!) {
-  addPpes(
+  createPpes(
     input: \$ppes
   ) {
     ppes {
@@ -72,24 +50,12 @@ mutation addPpes(\$ppes: [PPECreateInput!]!) {
 """
 
 GQL_LIST_PPES = """
-query listBlobPPEs(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$variableLabel: String!) {
-  users (
-    where: {id: \$userId}
+query listBlobPPEs(\$id: ID!) {
+  variables (
+    where: {id: \$id}
   ) {
-    robots (
-      where: {id: \$robotId}
-    ) {
-      sessions (
-        where: {id: \$sessionId}
-      ) {
-        variables (
-          where: {label: \$variableLabel}
-        ) {
-          ppes {
-            solveKey
-          }
-        }
-      }
+    ppes {
+      solveKey
     }
   }
 }
@@ -116,27 +82,3 @@ mutation deletePPE($id: ID!) {
   }
 }
 """
-
-GQL_DELETE_PPE_BY_LABEL = GQL.gql"""
-mutation deletePPE(
-  $userLabel: String!
-  $robotLabel: String!
-  $sessionLabel: String!
-  $variableLabel: String!
-  $solveKey: ID!
-) {
-  deletePpes(
-    where: {
-      userLabel: $userLabel
-      robotLabel: $robotLabel
-      sessionLabel: $sessionLabel
-      variableLabel: $variableLabel
-      solveKey: $solveKey
-    }
-  ) {
-    nodesDeleted
-  }
-}
-"""
-
-

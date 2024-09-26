@@ -48,7 +48,7 @@ function addModel!(client::NavAbilityClient, label::Symbol, model=nothing; model
     response =
         GQL.execute(client.client, GQL_ADD_MODELS, T; variables, throw_on_execution_error = true)
 
-    return handleMutate(response, "createModels", :models)
+    return handleMutate(response, "createModels", :models)[1]
 end
 
 ## =======================================================================================

@@ -79,7 +79,6 @@ Base.@kwdef struct BlobEntryCreateInput
     blobstore::Symbol
     origin::String
     metadata::String
-    _type::String
     _version::String
     timestamp::ZonedDateTime
     size::Int
@@ -94,7 +93,7 @@ Base.@kwdef struct BlobEntryCreateInput
 end
 
 function StructTypes.omitempties(::Type{BlobEntryCreateInput})
-    return (:blobId, :user, :robot, :session, :variable, :factor)
+    return (:blobId, :size)
 end
 
 # Variables

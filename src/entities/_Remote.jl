@@ -171,7 +171,10 @@ struct Context end
 Context(a...; ka...) = error("deprecated")
 
 
-function getId(node::Union{FactorGraphRemote, AgentRemote, ModelRemote, BlobStoreRemote})
+#TODO wip
+getId(ns::UUID, labels...) = uuid5(ns, string(labels...))
+
+function getId(node::Union{FactorGraphRemote, AgentRemote, ModelRemote, BlobStoreRemote}, labels...)
     namespace = node.namespace
-    return getId(namespace, node.label)
+    return getId(namespace, node.label, labels...)
 end

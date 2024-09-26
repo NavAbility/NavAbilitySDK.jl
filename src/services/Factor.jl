@@ -45,7 +45,7 @@ function addFactor!(
         throw_on_execution_error = true,
     )
 
-    return handleMutate(response, "createFactors", :factors)
+    return handleMutate(response, "createFactors", :factors)[1]
 end
 
 function getFactors(fgclient::DFGClient)
@@ -130,10 +130,9 @@ end
 
 # delete factor and its satelites (by factor id)
 function deleteFactor!(fgclient::DFGClient, factor::DFG.AbstractDFGFactor)
-    namespace = fgclient.fg.namespace
-    facId = NvaSDK.getId(namespace, fgclient.fg.label, factor.label)
+    facId = getId(fgclient.fg, factor.label)
 
-    variables = Dict("factorId" => facId)
+    variables = (factorId=facId,)
 
     response = GQL.execute(
         fgclient.client.client,
@@ -141,6 +140,8 @@ function deleteFactor!(fgclient::DFGClient, factor::DFG.AbstractDFGFactor)
         variables,
         throw_on_execution_error = true,
     )
+
+    #TODO check if factor was deleted in response
 
     return factor
 end

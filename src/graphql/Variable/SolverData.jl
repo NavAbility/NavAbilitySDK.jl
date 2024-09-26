@@ -28,22 +28,10 @@ fragment solverdata_fields on SolverData {
 GQL_GET_SOLVERDATA = """
 $(GQL_FRAGMENT_SOLVERDATA)
 query get_solver_data(
-  \$userId: ID!
-  \$robotId: ID!
-  \$sessionId: ID!
-  \$variableLabel: String!
-  \$solveKey: ID!
+  \$id: ID!
 ) {
-  users(where: { id: \$userId }) {
-    robots(where: { id: \$robotId }) {
-      sessions(where: { id: \$sessionId }) {
-        variables(where: { label: \$variableLabel }) {
-          solverData(where: { solveKey: \$solveKey }) {
-            ...solverdata_fields
-          }
-        }
-      }
-    }
+  solverData(where: { id: \$id }) {
+    ...solverdata_fields
   }
 }
 """
@@ -51,20 +39,11 @@ query get_solver_data(
 GQL_GET_SOLVERDATA_ALL = """
 $(GQL_FRAGMENT_SOLVERDATA)
 query get_solver_data_all(
-  \$userId: ID!
-  \$robotId: ID!
-  \$sessionId: ID!
-  \$variableLabel: String!
+  \$id: ID!
 ) {
-  users(where: { id: \$userId }) {
-    robots(where: { id: \$robotId }) {
-      sessions(where: { id: \$sessionId }) {
-        variables(where: { label: \$variableLabel }) {
-          solverData {
-            ...solverdata_fields
-          }
-        }
-      }
+  variables(where: { id: \$id }) {
+    solverData {
+      ...solverdata_fields
     }
   }
 }
@@ -74,7 +53,7 @@ GQL_ADD_SOLVERDATA = """
 $(GQL_FRAGMENT_SOLVERDATA)
 mutation addSolverData(\$solverData: [SolverDataCreateInput!]!) {
   # Create the new ones
-  addSolverData(
+  createSolverData(
     input: \$solverData
   ) {
     solverData {
@@ -85,24 +64,12 @@ mutation addSolverData(\$solverData: [SolverDataCreateInput!]!) {
 """
 
 GQL_LIST_SOLVERDATA = """
-query listBlobSolverData(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!, \$variableLabel: String!) {
-  users (
-    where: {id: \$userId}
+query listBlobSolverData(\$id: ID!) {
+  variables (
+    where: {id: \$id}
   ) {
-    robots (
-      where: {id: \$robotId}
-    ) {
-      sessions (
-        where: {id: \$sessionId}
-      ) {
-        variables (
-          where: {label: \$variableLabel}
-        ) {
-          solverData {
-            solveKey
-          }
-        }
-      }
+    solverData {
+      solveKey
     }
   }
 }
@@ -125,28 +92,6 @@ mutation updateSolverData(\$id: ID!, \$solverData: SolverDataUpdateInput!) {
 GQL_DELETE_SOLVERDATA = GQL.gql"""
 mutation deleteSolverData($id: ID!) {
   deleteSolverData(where: { id: $id }) {
-    nodesDeleted
-  }
-}
-"""
-
-GQL_DELETE_SOLVERDATA_BY_LABEL = GQL.gql"""
-mutation deleteSolverData(
-  $userLabel: String!
-  $robotLabel: String!
-  $sessionLabel: String!
-  $variableLabel: String!
-  $solveKey: ID!
-) {
-  deleteSolverData(
-    where: {
-      userLabel: $userLabel
-      robotLabel: $robotLabel
-      sessionLabel: $sessionLabel
-      variableLabel: $variableLabel
-      solveKey: $solveKey
-    }
-  ) {
     nodesDeleted
   }
 }

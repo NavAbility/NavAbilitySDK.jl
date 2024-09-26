@@ -58,5 +58,5 @@ function addAgent!(client::NavAbilityClient, label::Symbol, agent=nothing; agent
     response =
         GQL.execute(client.client, GQL_ADD_AGENTS, T; variables, throw_on_execution_error = true)
 
-    return handleMutate(response, "createAgents", :agents)
+    return handleMutate(response, "createAgents", :agents)[1]
 end

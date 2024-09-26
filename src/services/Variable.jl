@@ -6,10 +6,8 @@ function VariableCreateInput(fgclient::DFGClient, v::Variable)
     # copy from a packed variable
     variableLabel = v.label
 
-    namespace = fgclient.fg.namespace
-    fgLabel = fgclient.fg.label
-    fgId = NvaSDK.getId(namespace, fgLabel)
-    varId = NvaSDK.getId(namespace, fgLabel, variableLabel)
+    fgId = NvaSDK.getId(fgclient.fg)
+    varId = NvaSDK.getId(fgclient.fg, variableLabel)
 
     if isempty(v.blobEntries)
         blobEntries = nothing
@@ -18,7 +16,7 @@ function VariableCreateInput(fgclient::DFGClient, v::Variable)
             Dict(
                 "node" => BlobEntryCreateInput(;
                     getCommonProperties(BlobEntryCreateInput, entry)...,
-                    id = getId(namespace, fgLabel, variableLabel, entry.label),
+                    id = getId(fgclient.fg, variableLabel, entry.label),
                     parent = (Variable=createConnect(varId),),
                     blobId = if isnothing(entry.blobId)
                         entry.originId
@@ -38,7 +36,7 @@ function VariableCreateInput(fgclient::DFGClient, v::Variable)
             Dict(
                 "node" => SolverDataCreateInput(;
                     getCommonProperties(SolverDataCreateInput, sd)...,
-                    id = getId(namespace, fgLabel, variableLabel, sd.solveKey),
+                    id = getId(fgclient.fg, variableLabel, sd.solveKey),
                     variable = createConnect(varId),
                 ),
             )
@@ -53,7 +51,7 @@ function VariableCreateInput(fgclient::DFGClient, v::Variable)
             Dict(
                 "node" => PPECreateInput(;
                     getCommonProperties(PPECreateInput, ppe)...,
-                    id = getId(namespace, fgLabel, variableLabel, ppe.solveKey),
+                    id = getId(fgclient.fg, variableLabel, ppe.solveKey),
                     variable = createConnect(varId),
                 ),
             )
@@ -107,7 +105,7 @@ function addVariable!(fgclient::DFGClient, v::Variable)
         variables,
         throw_on_execution_error = true,
     )
-    return handleMutate(response, "createVariables", :variables)
+    return handleMutate(response, "createVariables", :variables)[1]
 end
 
 function addVariables!(fgclient::DFGClient, vars::Vector{Variable}; chunksize=20)
@@ -143,7 +141,7 @@ end
 
 function getVariables(fgclient::DFGClient)
     
-    fgId = NvaSDK.getId(fglient.fg)
+    fgId = NvaSDK.getId(fgclient.fg)
 
     variables = Dict(
         "fgId" => fgId,
@@ -188,8 +186,7 @@ end
 
 function listVariables(fgclient::DFGClient)
     
-    namespace = fgclient.fg.namespace
-    fgId = NvaSDK.getId(namespace, fgclient.fg.label)
+    fgId = NvaSDK.getId(fgclient.fg)
 
     variables = Dict(
         "fgId" => fgId
@@ -211,8 +208,7 @@ end
 
 function getVariable(fgclient::DFGClient{VT, <:AbstractDFGFactor}, label::Symbol) where VT
 
-    namespace = fgclient.fg.namespace
-    varId = NvaSDK.getId(namespace, fgclient.fg.label, label)
+    varId = NvaSDK.getId(fgclient.fg, label)
 
     variables = Dict(
         "varId" => varId,
@@ -233,8 +229,8 @@ function getVariable(fgclient::DFGClient{VT, <:AbstractDFGFactor}, label::Symbol
 end
 
 function getVariableSummary(fgclient::DFGClient, label::Symbol)
-    namespace = fgclient.fg.namespace
-    varId = NvaSDK.getId(namespace, fgclient.fg.label, label)
+
+    varId = NvaSDK.getId(fgclient.fg, label)
 
     variables = Dict(
         "varId" => varId,
@@ -256,8 +252,8 @@ function getVariableSummary(fgclient::DFGClient, label::Symbol)
 end
 
 function getVariableSkeleton(fgclient::DFGClient, label::Symbol)
-    namespace = fgclient.fg.namespace
-    varId = NvaSDK.getId(namespace, fgclient.fg.label, label)
+
+    varId = NvaSDK.getId(fgclient.fg, label)
 
     variables = Dict(
         "varId" => varId,
@@ -281,8 +277,7 @@ end
 ##
 function getVariablesSkeleton(fgclient::DFGClient)#, label::Symbol)
 
-    namespace = fgclient.fg.namespace
-    fgId = NvaSDK.getId(namespace, fgclient.fg.label)
+    fgId = NvaSDK.getId(fgclient.fg)
     
     variables = Dict(
         "fgId" => fgId,
@@ -306,8 +301,7 @@ end
 
 function getVariablesSummary(fgclient::DFGClient)#, label::Symbol)
  
-    namespace = fgclient.fg.namespace
-    fgId = NvaSDK.getId(namespace, fgclient.fg.label)
+    fgId = NvaSDK.getId(fgclient.fg)
     
     variables = Dict(
         "fgId" => fgId,
@@ -331,8 +325,7 @@ end
 # delete variable and its satelites (by variable id)
 function deleteVariable!(fgclient::DFGClient, variable::DFG.AbstractDFGVariable)
 
-    namespace = fgclient.fg.namespace
-    varId = NvaSDK.getId(namespace, fgclient.fg.label, variable.label)
+    varId = NvaSDK.getId(fgclient.fg, variable.label)
 
     variables = Dict(
         "variableId" => varId,
@@ -368,8 +361,7 @@ function findVariableNearTimestamp(
     fromtime = timestamp - window
     totime = timestamp + window
 
-    namespace = fgclient.fg.namespace
-    fgId = NvaSDK.getId(namespace, fgclient.fg.label)
+    fgId = NvaSDK.getId(fgclient.fg)
     
     variables = Dict(
         "fgId" => fgId,

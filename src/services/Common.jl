@@ -69,6 +69,6 @@ function handleMutate(response, mutation::String, return_node::Symbol)
             throw(response.errors[1])
         end
     else
-        return res[return_node][1]
+        return res[return_node]
     end
 end

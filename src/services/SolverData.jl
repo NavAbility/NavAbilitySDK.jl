@@ -7,53 +7,35 @@ function getVariableSolverData(
     variableLabel::Symbol,
     solveKey::Symbol = :default,
 )
-    client = fgclient.client
+    id = getId(fgclient.fg, variableLabel, solveKey)
 
-    variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
-        "variableLabel" => variableLabel,
-        "solveKey" => string(solveKey),
-    )
-
-    T = user_robot_session_variable_T(DFG.PackedVariableNodeData)
+    T = Vector{DFG.PackedVariableNodeData}
 
     response = GQL.execute(
-        client,
+        fgclient.client.client,
         GQL_GET_SOLVERDATA,
         T;
-        variables,
+        variables=(id=id,),
         throw_on_execution_error = true,
     )
 
-    solverdata =
-        response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["solverData"]
-    isempty(solverdata) && throw(KeyError(solveKey))
-    return solverdata[]
+    return handleQuery(response, "solverData", solveKey)
 end
 
 function getVariableSolverDataAll(fgclient::DFGClient, variableLabel::Symbol)
-    client = fgclient.client
 
-    variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
-        "variableLabel" => variableLabel,
-    )
-
-    T = user_robot_session_variable_T(DFG.PackedVariableNodeData)
+    id = getId(fgclient.fg, variableLabel)
+    T = Vector{@NamedTuple{solverData::Vector{DFG.PackedVariableNodeData}}}
 
     response = GQL.execute(
-        client,
+        fgclient.client.client,
         GQL_GET_SOLVERDATA_ALL,
         T;
-        variables,
+        variables = (id=id,),
         throw_on_execution_error = true,
     )
 
-    return response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["solverData"]
+    return handleQuery(response, "variables", :solverData)[1]
 end
 
 function addVariableSolverData!(
@@ -61,7 +43,7 @@ function addVariableSolverData!(
     variableLabel::Symbol,
     vnd::DFG.PackedVariableNodeData,
 )
-    addVariableSolverData!(fgclient, variableLabel, [vnd])[1]
+    return addVariableSolverData!(fgclient, variableLabel, [vnd])[1]
 end
 
 function addVariableSolverData!(
@@ -70,51 +52,52 @@ function addVariableSolverData!(
     vnds::Vector{DFG.PackedVariableNodeData},
 )
 
-    # if (variable.id === nothing)
-    #     error("Variable does not have an ID. Has it been created on the server?")
-    # end
-
-    connect = createVariableConnect(
-        fgclient.user.label,
-        fgclient.robot.label,
-        fgclient.session.label,
-        variableLabel,
-    )
+    varId = getId(fgclient.fg, variableLabel)
+    connect = createConnect(varId)
 
     # TODO we can probably standardise this
     input = map(vnds) do vnd
         return SolverDataCreateInput(;
-            userLabel = fgclient.user.label,
-            robotLabel = fgclient.robot.label,
-            sessionLabel = fgclient.session.label,
-            variableLabel = string(variableLabel),
-            variable = connect,
             getCommonProperties(SolverDataCreateInput, vnd)...,
+            id = getId(fgclient.fg, variableLabel, vnd.solveKey),
+            variable = connect,
         )
     end
 
+    T = @NamedTuple{solverData::Vector{PackedVariableNodeData}}
+
     response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_ADD_SOLVERDATA,
-        SolverDataResponse;
-        variables = Dict("solverData" => input),
+        T; #FIXME SolverDataResponse
+        # SolverDataResponse;
+        variables = (solverData=input,),
         throw_on_execution_error = true,
     )
-
-    return response.data["addSolverData"].solverData
+    
+    return handleMutate(response, "createSolverData", :solverData)
 end
 
-function updateVariableSolverData!(fgclient::DFGClient, vnd::DFG.PackedVariableNodeData)
-    isnothing(vnd.id) &&
-        error("Field id is needed for update, please use add, #TODO fallback to add")
+#TODO add if not exist, should now be easy as the id is deterministic
+function updateVariableSolverData!(fgclient::DFGClient, varLabel::Symbol, vnd::DFG.PackedVariableNodeData)
 
-    request = Dict(getCommonProperties(SolverDataCreateInput, vnd))
+    varId = getId(fgclient.fg, varLabel)
+
+    connect = createConnect(varId)
+    id = getId(fgclient.fg, varLabel, vnd.solveKey)
+    
+    request = (
+        getCommonProperties(SolverDataCreateInput, vnd)...,
+        id = id,
+        variable = connect,
+    )
+
     # Make request
     response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_UPDATE_SOLVERDATA,
         SolverDataResponse;
-        variables = Dict("solverData" => request, "id" => vnd.id),
+        variables = Dict("solverData" => request, "id" => id),
         throw_on_execution_error = true,
     )
     # Assuming one update, error if not
@@ -123,55 +106,43 @@ function updateVariableSolverData!(fgclient::DFGClient, vnd::DFG.PackedVariableN
     return response.data["updateSolverData"].solverData[1]
 end
 
-function deleteVariableSolverData!(fgclient::DFGClient, vnd::DFG.PackedVariableNodeData)
-    variables = Dict("id" => vnd.id)
+function deleteVariableSolverData!(fgclient::DFGClient, varLabel::Symbol, vnd::DFG.PackedVariableNodeData)
+
+    id = getId(fgclient.fg, varLabel, vnd.solveKey)
+    variables = (id=id,)
 
     response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_DELETE_SOLVERDATA;
         variables,
         throw_on_execution_error = true,
     )
-
-    return response.data["deleteSolverData"]
+    #TOOD check response.data["deleteSolverData"]["nodesDeleted"]
+    return vnd
 end
 
-function deleteVariableSolverData!(fgclient::DFGClient, variableLabel::Symbol, solveKey::Symbol)
-    variables = Dict(
-        "userLabel" => fgclient.user.label,
-        "robotLabel" => fgclient.robot.label,
-        "sessionLabel" => fgclient.session.label,
-        "variableLabel" => variableLabel,
-        "solveKey" => solveKey,
-    )
-    response = GQL.execute(
-        fgclient.client,
-        GQL_DELETE_SOLVERDATA_BY_LABEL;
-        variables,
-        throw_on_execution_error = true,
-    )
-
-    return response.data["deleteSolverData"]
+function deleteVariableSolverData!(fgclient::DFGClient, varLabel::Symbol, solveKey::Symbol)
+    vnd = getVariableSolverData(fgclient, varLabel, solveKey)
+    return deleteVariableSolverData!(fgclient, varLabel, vnd)
 end
+
 
 function listVariableSolverData(fgclient::DFGClient, variableLabel::Symbol)
-    variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
-        "variableLabel" => variableLabel,
-    )
+    
+    id = getId(fgclient.fg, variableLabel)
+    variables = (id=id,)
 
-    T = user_robot_session_variable_T(NamedTuple{(:solveKey,), Tuple{Symbol}})
+    # T = (NamedTuple{(:solveKey,), Tuple{Symbol}})
+    T = Vector{Dict{String, Vector{@NamedTuple{solveKey::Symbol}}}}
 
     response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_LIST_SOLVERDATA,
         T;
         variables,
         throw_on_execution_error = true,
     )
-    return last.(
-        response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["solverData"]
-    )
+
+    return last.(handleQuery(response, "variables", variableLabel)["solverData"])
+
 end

@@ -2,41 +2,34 @@
 # PPE CRUD
 # =========================================================================================
 
-function getPPE(fgclient::DFGClient, variableLabel::Symbol, solvekey::Symbol = :default)
-    client = fgclient.client
+function getPPE(fgclient::DFGClient, variableLabel::Symbol, solveKey::Symbol = :default)
 
-    variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
-        "variableLabel" => variableLabel,
-        "solveKey" => string(solvekey),
+    id = getId(fgclient.fg, variableLabel, solveKey)
+
+    T = Vector{DFG.MeanMaxPPE}
+
+    response = GQL.execute(fgclient.client.client,
+        GQL_GET_PPE,
+        T; 
+        variables = (id=id,), 
+        throw_on_execution_error = true
     )
-
-    T = user_robot_session_variable_T(DFG.MeanMaxPPE)
-
-    response =
-        GQL.execute(client, GQL_GET_PPE, T; variables, throw_on_execution_error = true)
-
-    return response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["ppes"][1]
+    return handleQuery(response, "ppes", solveKey)
 end
 
 function getPPEs(fgclient::DFGClient, variableLabel::Symbol)
-    client = fgclient.client
+    id = getId(fgclient.fg, variableLabel)
+    T = Vector{@NamedTuple{ppes::Vector{DFG.MeanMaxPPE}}}
 
-    variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
-        "variableLabel" => variableLabel,
+    response = GQL.execute(
+        fgclient.client.client,
+        GQL_GET_PPES,
+        T;
+        variables = (id=id,),
+        throw_on_execution_error = true,
     )
 
-    T = user_robot_session_variable_T(DFG.MeanMaxPPE)
-
-    response =
-        GQL.execute(client, GQL_GET_PPES, T; variables, throw_on_execution_error = true)
-
-    return response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["ppes"]
+    return handleQuery(response, "variables", :ppes)[1]
 end
 
 function addPPE!(fgclient::DFGClient, variableLabel::Symbol, ppe::DFG.MeanMaxPPE)
@@ -45,59 +38,50 @@ end
 
 function addPPEs!(fgclient::DFGClient, variableLabel::Symbol, ppes::Vector{DFG.MeanMaxPPE})
 
-    # if (variable.id === nothing)
-    #     error("Variable does not have an ID. Has it been created on the server?")
-    # end
-
-    connect = createVariableConnect(
-        fgclient.user.label,
-        fgclient.robot.label,
-        fgclient.session.label,
-        variableLabel,
-    )
+    varId = getId(fgclient.fg, variableLabel)
+    connect = createConnect(varId)
 
     # TODO we can probably standardise this
-    ppeinput = map(ppes) do ppe
+    input = map(ppes) do ppe
         return PPECreateInput(;
-            userLabel = fgclient.user.label,
-            robotLabel = fgclient.robot.label,
-            sessionLabel = fgclient.session.label,
-            variableLabel = string(variableLabel),
-            variable = connect,
             getCommonProperties(PPECreateInput, ppe)...,
+            id = getId(fgclient.fg, variableLabel, ppe.solveKey),
+            variable = connect,
         )
     end
 
+    T = @NamedTuple{ppes::Vector{DFG.MeanMaxPPE}}
+
     response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_ADD_PPES,
-        PPEResponse;
-        variables = Dict("ppes" => ppeinput),
+        # PPEResponse;
+        T;
+        variables = (ppes=input,),
         throw_on_execution_error = true,
     )
-
-    return response.data["addPpes"].ppes
+    return handleMutate(response, "createPpes", :ppes)
 end
 
-function PPEUpdateInputDict(ppe::MeanMaxPPE)
-    #Mutable intermediate serialization object
-    request = JSON3.read(JSON3.write(ppe), Dict{String, Any})
-    delete!(request, "createdTimestamp")
-    delete!(request, "lastUpdatedTimestamp")
-    return request
-end
+#TODO add if not exist, should now be easy as the id is deterministic
+function updatePPE!(fgclient::DFGClient, varLabel::Symbol, ppe::MeanMaxPPE)
 
-function updatePPE!(fgclient::DFGClient, ppe::MeanMaxPPE)
-    isnothing(ppe.id) &&
-        error("Field id is needed for update, please use add, #TODO fallback to add")
+    varId = getId(fgclient.fg, varLabel)
 
-    request = Dict(getCommonProperties(PPECreateInput, ppe))
+    connect = createConnect(varId)
+    id = getId(fgclient.fg, varLabel, ppe.solveKey)
+    
+    request = (
+        getCommonProperties(PPECreateInput, ppe)...,
+        id = id,
+        variable = connect,
+    )
     # Make request
     response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_UPDATE_PPE,
         PPEResponse;
-        variables = Dict("ppe" => request, "id" => ppe.id),
+        variables = Dict("ppe" => request, "id" => id),
         throw_on_execution_error = true,
     )
     # Assuming one update, error if not
@@ -106,55 +90,38 @@ function updatePPE!(fgclient::DFGClient, ppe::MeanMaxPPE)
     return response.data["updatePpes"].ppes[1]
 end
 
-function deletePPE!(fgclient::DFGClient, ppe::DFG.MeanMaxPPE)
-    variables = Dict("id" => ppe.id)
+function deletePPE!(fgclient::DFGClient, varLabel::Symbol, ppe::DFG.MeanMaxPPE)
+    id = getId(fgclient.fg, varLabel, ppe.solveKey)
+    variables = (id=id,)
 
     response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_DELETE_PPE;
         variables,
         throw_on_execution_error = true,
     )
-
-    return response.data["deletePpes"]
+    #TOOD check response.data["deleteSolverData"]["nodesDeleted"]
+    return ppe
 end
 
-function deletePPE!(fgclient::DFGClient, variableLabel::Symbol, solveKey::Symbol)
-    variables = Dict(
-        "userLabel" => fgclient.user.label,
-        "robotLabel" => fgclient.robot.label,
-        "sessionLabel" => fgclient.session.label,
-        "variableLabel" => variableLabel,
-        "solveKey" => solveKey,
-    )
-    response = GQL.execute(
-        fgclient.client,
-        GQL_DELETE_PPE_BY_LABEL;
-        variables,
-        throw_on_execution_error = true,
-    )
-
-    return response.data["deletePpes"]
+function deletePPE!(fgclient::DFGClient, varLabel::Symbol, solveKey::Symbol)
+    ppe = getPPE(fgclient, varLabel, solveKey)
+    return deletePPE!(fgclient, varLabel, ppe)
 end
 
 function listPPEs(fgclient::DFGClient, variableLabel::Symbol)
-    variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
-        "variableLabel" => variableLabel,
-    )
+    id = getId(fgclient.fg, variableLabel)
+    variables = (id=id,)
 
-    T = user_robot_session_variable_T(NamedTuple{(:solveKey,), Tuple{Symbol}})
+    # T = (NamedTuple{(:solveKey,), Tuple{Symbol}})
+    T = Vector{Dict{String, Vector{@NamedTuple{solveKey::Symbol}}}}
 
     response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_LIST_PPES,
         T;
         variables,
         throw_on_execution_error = true,
     )
-    return last.(
-        response.data["users"][1]["robots"][1]["sessions"][1]["variables"][1]["ppes"]
-    )
+    return last.(handleQuery(response, "variables", variableLabel)["ppes"])
 end

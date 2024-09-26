@@ -1,9 +1,4 @@
-"""
-$(TYPEDEF)
-Abstract parent type for all InferenceTypes, which are the
-functions inside of factors.
-"""
-abstract type InferenceType <: DFG.AbstractPackedFactor end
+using  DistributedFactorGraphs: InferenceType
 
 """
     $SIGNATURES

@@ -62,7 +62,7 @@ function addFactorGraph!(client::NavAbilityClient, label::Symbol)
     response =
         GQL.execute(client.client, GQL_ADD_FACTORGRAPH, T; variables, throw_on_execution_error = true)
 
-    return handleMutate(response, "createFactorgraphs", :factorgraphs)
+    return handleMutate(response, "createFactorgraphs", :factorgraphs)[1]
 end
 
 # ===================================================================

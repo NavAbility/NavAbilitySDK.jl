@@ -29,9 +29,6 @@ struct DFGClient{VT<:AbstractDFGVariable, FT<:AbstractDFGFactor} <: AbstractDFG{
     blobStores::Dict{Symbol, DFG.AbstractBlobStore}
 end
 
-#TODO wip
-getId(ns::UUID, labels...) = uuid5(ns, string(labels...))
-
 DFG.getTypeDFGVariables(::DFGClient{T, <:AbstractDFGFactor}) where {T} = T
 DFG.getTypeDFGFactors(::DFGClient{<:AbstractDFGVariable, T}) where {T} = T
 
