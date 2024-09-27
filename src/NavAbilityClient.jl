@@ -92,7 +92,7 @@ function DFGClient(
     #     addRobotIfNotExists,
     #     addSessionIfNotExists,
     # )
-    fg = getFactorGraph(client, fgLabel)
+    fg = getFg(client, fgLabel)
     agent = getAgent(client, agentLabel)
 
     return DFGClient{DFG.Variable, DFG.PackedFactor}(

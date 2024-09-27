@@ -178,3 +178,9 @@ function getId(node::Union{FactorGraphRemote, AgentRemote, ModelRemote, BlobStor
     namespace = node.namespace
     return getId(namespace, node.label, labels...)
 end
+#TODO consolidate further
+getId(fgclient::DFGClient, parent::FactorGraphRemote, label::Symbol) = getId(parent, label)
+getId(fgclient::DFGClient, parent::AgentRemote, label::Symbol) = getId(parent, label)
+getId(fgclient::DFGClient, parent::ModelRemote, label::Symbol) = getId(parent, label)
+getId(fgclient::DFGClient, parent::DFG.AbstractDFGVariable, label::Symbol) = getId(fgclient.fg, parent.label, label)
+getId(fgclient::DFGClient, parent::DFG.AbstractDFGFactor, label::Symbol) = getId(fgclient.fg, parent.label, label)

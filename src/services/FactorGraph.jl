@@ -9,7 +9,7 @@ query QUERY_GET_FACTORGRAPH(\$fgId: ID!) {
 """
 
 
-function getFactorGraph(client::NavAbilityClient, label::Symbol)
+function getFg(client::NavAbilityClient, label::Symbol)
     fgId = getId(client.id, label)
     variables = Dict("fgId" => fgId)
 
@@ -48,7 +48,7 @@ mutation createFactorGraph(
 }
 """
 
-function addFactorGraph!(client::NavAbilityClient, label::Symbol)
+function addFg!(client::NavAbilityClient, label::Symbol)
     variables = Dict(
         "orgId" => client.id,
         "id" => getId(client.id, label),
