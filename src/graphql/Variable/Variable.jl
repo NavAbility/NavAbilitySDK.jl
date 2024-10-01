@@ -122,18 +122,12 @@ query list_variables($fgId: ID!) {
 """
 
 GQL_EXISTS_VARIABLE_FACTOR_LABEL = GQL.gql"""
-query($userId: ID!, $robotId: ID!, $sessionId: ID!, $label: String!) {
-  users(where: { id: $userId }) {
-    robots(where: { id: $robotId }) {
-      sessions(where: { id: $sessionId }) {
-        variables(where: { label: $label }) {
-          label
-        }
-        factors(where: { label: $label }) {
-          label
-        }
-      }
-    }
+query($id: ID!) {
+  variables(where: { id: $id }) {
+    label
+  }
+  factors(where: { id: $id }) {
+    label
   }
 }
 """
@@ -199,55 +193,16 @@ mutation deleteVariable($variableId: ID!) {
 }
 """
 
-GQL_LIST_VARIABLE_NEIGHBORS = GQL.gql"""
-query listVariableNeighbors(
-  $userLabel: String!
-  $robotLabel: String!
-  $sessionLabel: String!
-  $variableLabel: String!
-) {
-  variables(
-    where: {
-      userLabel: $userLabel
-      robotLabel: $robotLabel
-      sessionLabel: $sessionLabel
-      label: $variableLabel
-    }
-  ) {
-    factors {
-      label
-    }
-  }
-}
-"""
-
 GQL_LIST_NEIGHBORS = GQL.gql"""
 query listNeighbors(
-  $userLabel: String!
-  $robotLabel: String!
-  $sessionLabel: String!
-  $nodeLabel: String!
+  $id: ID!
 ) {
-  variables(
-    where: {
-      userLabel: $userLabel
-      robotLabel: $robotLabel
-      sessionLabel: $sessionLabel
-      label: $nodeLabel
-    }
-  ) {
+  variables( where: {id: $id}) {
     factors {
       label
     }
   }
-  factors(
-    where: {
-      userLabel: $userLabel
-      robotLabel: $robotLabel
-      sessionLabel: $sessionLabel
-      label: $nodeLabel
-    }
-  ) {
+  factors( where: {id: $id}) {
     variables {
       label
     }

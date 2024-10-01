@@ -358,8 +358,8 @@ a_facts = addFactor!.(fgclient, facts)
     neighbors = listNeighbors(fgclient, facts[1].label)
     @test issetequal(neighbors, [:x1, :x2])
 
-    @test listVariableNeighbors(fgclient, :x1) == [facts[1].label]
-    neighbors = listFactorNeighbors(fgclient, facts[1].label)
+    @test listNeighbors(fgclient, :x1) == [facts[1].label]
+    neighbors = listNeighbors(fgclient, facts[1].label)
     @test issetequal(neighbors, [:x1, :x2])
 
     # Testing aliases

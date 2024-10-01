@@ -169,18 +169,3 @@ end
 # FIXME DEPRECATED
 struct Context end
 Context(a...; ka...) = error("deprecated")
-
-
-#TODO wip
-getId(ns::UUID, labels...) = uuid5(ns, string(labels...))
-
-function getId(node::Union{FactorGraphRemote, AgentRemote, ModelRemote, BlobStoreRemote}, labels...)
-    namespace = node.namespace
-    return getId(namespace, node.label, labels...)
-end
-#TODO consolidate further
-getId(fgclient::DFGClient, parent::FactorGraphRemote, label::Symbol) = getId(parent, label)
-getId(fgclient::DFGClient, parent::AgentRemote, label::Symbol) = getId(parent, label)
-getId(fgclient::DFGClient, parent::ModelRemote, label::Symbol) = getId(parent, label)
-getId(fgclient::DFGClient, parent::DFG.AbstractDFGVariable, label::Symbol) = getId(fgclient.fg, parent.label, label)
-getId(fgclient::DFGClient, parent::DFG.AbstractDFGFactor, label::Symbol) = getId(fgclient.fg, parent.label, label)

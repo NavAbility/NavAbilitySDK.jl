@@ -7,7 +7,17 @@ struct NavAbilityClient
     # org::Org
 end
 
+function Base.show(io::IO, ::MIME"text/plain", s::NavAbilityClient)
+    summary(io, s)
+    println(io)
+    println(io, "  id: ", s.id)
+    print(io, "  ")
+    show(io, MIME("text/plain"), s.client)
+end
+
 #TODO DEPRECATE add orgId
+NavAbilityClient(apiUrl::String = "https://api.navability.io"; kwargs...) = error("Deprecated: NavAbilityClient requires and orgId")
+
 function NavAbilityClient(
     orgId::UUID,
     apiUrl::String = "https://api.navability.io";
@@ -64,15 +74,13 @@ function DFGClient(
     apiUrl::String = "https://api.navability.io",
     auth_token::String = "",
     authorize::Bool = 0 !== length(auth_token),
-    addRobotIfNotExists = false,
-    addSessionIfNotExists = false,
+    kwargs...
 )
     return DFGClient(
         NavAbilityClient(orgId, apiUrl; auth_token, authorize),
         fgLabel,
         agentLabel;
-        addRobotIfNotExists,
-        addSessionIfNotExists,
+        kwargs...
     )
 end
 
@@ -81,19 +89,30 @@ function DFGClient(
     fgLabel::Symbol,
     agentLabel::Symbol;
     storeLabel = :NAVABILITY,
-    addRobotIfNotExists = false,
-    addSessionIfNotExists = false,
+    addAgentIfAbsent = false,
+    addFgIfAbsent = false,
+    addRobotIfNotExists = nothing,
+    addSessionIfNotExists = nothing,
 )
-    # context = Context(
-    #     client,
-    #     userLabel,
-    #     robotLabel,
-    #     sessionLabel;
-    #     addRobotIfNotExists,
-    #     addSessionIfNotExists,
-    # )
-    fg = getFg(client, fgLabel)
-    agent = getAgent(client, agentLabel)
+    if !isnothing(addRobotIfNotExists)
+        @warn "addRobotIfNotExists is deprecated, use addAgentIfAbsent instead"
+        addAgentIfAbsent = addRobotIfNotExists
+    end
+    if !isnothing(addSessionIfNotExists)
+        @warn "addSessionIfNotExists is deprecated, use addFgIfAbsent instead"
+        addFgIfAbsent = addSessionIfNotExists
+    end
+
+    if addAgentIfAbsent && !in(agentLabel, listAgents(client))
+        agent = addAgent!(client, agentLabel)
+    else
+        agent = getAgent(client, agentLabel)
+    end
+    if addFgIfAbsent && !in(fgLabel, listFgs(client))
+        fg = addFg!(client, fgLabel)
+    else
+        fg = getFg(client, fgLabel)
+    end
 
     return DFGClient{DFG.Variable, DFG.PackedFactor}(
         client,

@@ -60,3 +60,29 @@ function addAgent!(client::NavAbilityClient, label::Symbol, agent=nothing; agent
 
     return handleMutate(response, "createAgents", :agents)[1]
 end
+
+QUERY_LIST_AGENTS = GQL.gql"""
+query listAgents($id: ID!) {
+  orgs(where: {id: $id}) {
+    agents {
+      label
+    }
+  }
+}
+"""
+
+function listAgents(client::NavAbilityClient)
+    variables = (id=client.id,)
+
+    T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
+
+    response = GQL.execute(
+        client.client,
+        QUERY_LIST_AGENTS,
+        T;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return last.(handleQuery(response, "orgs", Symbol(client.id))["agents"])
+end

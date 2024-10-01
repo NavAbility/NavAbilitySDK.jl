@@ -106,28 +106,6 @@ query sdk_list_factors(\$fgId: ID!) {
 }
 """
 
-GQL_LIST_FACTOR_NEIGHBORS = GQL.gql"""
-query listFactorNeighbors(
-  $userLabel: String!
-  $robotLabel: String!
-  $sessionLabel: String!
-  $factorLabel: String!
-) {
-  factors(
-    where: {
-      userLabel: $userLabel
-      robotLabel: $robotLabel
-      sessionLabel: $sessionLabel
-      label: $factorLabel
-    }
-  ) {
-    variables {
-      label
-    }
-  }
-}
-"""
-
 GQL_DELETE_FACTOR = GQL.gql"""
 mutation deleteFactor($factorId: ID!) {
   deleteFactors(

@@ -20,7 +20,7 @@ import GraphQLClient as GQL
 import DistributedFactorGraphs as DFG
 using DistributedFactorGraphs:
     Variable, PackedVariableNodeData, MeanMaxPPE, BlobEntry, PackedFactor, hasBlob,
-    getBlobStore, AbstractDFGVariable, AbstractDFGFactor, AbstractParams, AbstractDFG
+    getBlobStore, AbstractDFGVariable, AbstractDFGFactor, AbstractParams, AbstractDFG, FactorData
 
 import DistributedFactorGraphs:
     getFactor,
@@ -194,8 +194,6 @@ export addRobot!,
     exists,
     getNeighbors,
     listNeighbors,
-    listVariableNeighbors,
-    listFactorNeighbors,
     findVariableNearTimestamp,
     startWorker
 
