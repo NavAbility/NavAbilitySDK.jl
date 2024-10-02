@@ -8,7 +8,7 @@ addVariable!(fgclient, "x0", NvaSDK.Pose2)
 ```
 """
 function addVariable!(
-    fgclient::DFGClient,
+    fgclient::NavAbilityDFG,
     label::Union{<:AbstractString, Symbol},
     variableType::Union{<:AbstractString, Symbol, Type{<:VariableType}};
     tags::Vector{Symbol} = Symbol[],
@@ -44,7 +44,7 @@ end
 getFncTypeName(fnc::InferenceType) = split(string(typeof(fnc)), ".")[end]
 
 function addFactor!(
-    fgclient::DFGClient,
+    fgclient::NavAbilityDFG,
     variables::Vector{String},
     fnc::InferenceType;
     kwargs...,
@@ -53,7 +53,7 @@ function addFactor!(
 end
 
 function addFactor!(
-    fgclient::DFGClient,
+    fgclient::NavAbilityDFG,
     xisyms::Vector{Symbol},
     fnc::InferenceType;
     multihypo::Vector{Float64} = Float64[],

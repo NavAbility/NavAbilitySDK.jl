@@ -19,8 +19,18 @@ import GraphQLClient as GQL
 
 import DistributedFactorGraphs as DFG
 using DistributedFactorGraphs:
-    Variable, PackedVariableNodeData, MeanMaxPPE, BlobEntry, PackedFactor, hasBlob,
-    getBlobStore, AbstractDFGVariable, AbstractDFGFactor, AbstractParams, AbstractDFG, FactorData
+    Variable,
+    PackedVariableNodeData,
+    MeanMaxPPE,
+    BlobEntry,
+    PackedFactor,
+    hasBlob,
+    getBlobStore,
+    AbstractDFGVariable,
+    AbstractDFGFactor,
+    AbstractParams,
+    AbstractDFG,
+    FactorData
 
 import DistributedFactorGraphs:
     getFactor,
@@ -94,11 +104,12 @@ include("graphql/Model.jl")
 include("entities/Distributions.jl")
 include("entities/InferenceTypes.jl")
 include("entities/VariableTypes.jl")
-include("entities/_Remote.jl")
+include("entities/NvaNodes.jl")
 include("entities/Variable.jl")
 include("entities/Factor.jl")
 
 include("NavAbilityClient.jl")
+include("NavAbilityDFG.jl")
 
 include("services/Common.jl")
 include("services/PPE.jl")
@@ -115,7 +126,7 @@ include("services/Workers.jl")
 
 include("services/AsyncCalls.jl")
 
-include("sandbox.jl")
+include("services/Org.jl")
 
 include("Deprecated.jl")
 
@@ -125,12 +136,12 @@ export I, diagm, norm
 # UUIDs pass through exports
 export UUID, uuid4
 
-# DFG poss through exports
+# DFG pass through exports
 export getBlobStore
 
 # Type exports
 export NavAbilityClient,
-    DFGClient,
+    NavAbilityDFG,
     NavAbilityBlobStore,
     Variable,
     Factor,
@@ -139,7 +150,6 @@ export NavAbilityClient,
     FactorData,
     PackedVariableNodeData,
     PackedFactor
-
 
 # Function exports
 export addRobot!,
@@ -196,6 +206,13 @@ export addRobot!,
     listNeighbors,
     findVariableNearTimestamp,
     startWorker
+
+# Alias exports
+export NvaDFG
+const NvaDFG = NavAbilityDFG
+
+# TODO NvaModel vs NavAbilityModel
+#  NavAbilityModel
 
 #old exports
 # export Distribution, Normal, Rayleigh, FullNormal, Uniform, Categorical

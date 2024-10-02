@@ -3,7 +3,7 @@
 # =========================================================================================
 
 function getVariableSolverData(
-    fgclient::DFGClient,
+    fgclient::NavAbilityDFG,
     variableLabel::Symbol,
     solveKey::Symbol = :default,
 )
@@ -22,7 +22,7 @@ function getVariableSolverData(
     return handleQuery(response, "solverData", solveKey)
 end
 
-function getVariableSolverDataAll(fgclient::DFGClient, variableLabel::Symbol)
+function getVariableSolverDataAll(fgclient::NavAbilityDFG, variableLabel::Symbol)
 
     id = getId(fgclient.fg, variableLabel)
     T = Vector{@NamedTuple{solverData::Vector{DFG.PackedVariableNodeData}}}
@@ -39,7 +39,7 @@ function getVariableSolverDataAll(fgclient::DFGClient, variableLabel::Symbol)
 end
 
 function addVariableSolverData!(
-    fgclient::DFGClient,
+    fgclient::NavAbilityDFG,
     variableLabel::Symbol,
     vnd::DFG.PackedVariableNodeData,
 )
@@ -47,7 +47,7 @@ function addVariableSolverData!(
 end
 
 function addVariableSolverData!(
-    fgclient::DFGClient,
+    fgclient::NavAbilityDFG,
     variableLabel::Symbol,
     vnds::Vector{DFG.PackedVariableNodeData},
 )
@@ -79,7 +79,7 @@ function addVariableSolverData!(
 end
 
 #TODO add if not exist, should now be easy as the id is deterministic
-function updateVariableSolverData!(fgclient::DFGClient, varLabel::Symbol, vnd::DFG.PackedVariableNodeData)
+function updateVariableSolverData!(fgclient::NavAbilityDFG, varLabel::Symbol, vnd::DFG.PackedVariableNodeData)
 
     varId = getId(fgclient.fg, varLabel)
 
@@ -106,7 +106,7 @@ function updateVariableSolverData!(fgclient::DFGClient, varLabel::Symbol, vnd::D
     return response.data["updateSolverData"].solverData[1]
 end
 
-function deleteVariableSolverData!(fgclient::DFGClient, varLabel::Symbol, vnd::DFG.PackedVariableNodeData)
+function deleteVariableSolverData!(fgclient::NavAbilityDFG, varLabel::Symbol, vnd::DFG.PackedVariableNodeData)
 
     id = getId(fgclient.fg, varLabel, vnd.solveKey)
     variables = (id=id,)
@@ -121,13 +121,13 @@ function deleteVariableSolverData!(fgclient::DFGClient, varLabel::Symbol, vnd::D
     return vnd
 end
 
-function deleteVariableSolverData!(fgclient::DFGClient, varLabel::Symbol, solveKey::Symbol)
+function deleteVariableSolverData!(fgclient::NavAbilityDFG, varLabel::Symbol, solveKey::Symbol)
     vnd = getVariableSolverData(fgclient, varLabel, solveKey)
     return deleteVariableSolverData!(fgclient, varLabel, vnd)
 end
 
 
-function listVariableSolverData(fgclient::DFGClient, variableLabel::Symbol)
+function listVariableSolverData(fgclient::NavAbilityDFG, variableLabel::Symbol)
     
     id = getId(fgclient.fg, variableLabel)
     variables = (id=id,)

@@ -2,7 +2,7 @@
 # PPE CRUD
 # =========================================================================================
 
-function getPPE(fgclient::DFGClient, variableLabel::Symbol, solveKey::Symbol = :default)
+function getPPE(fgclient::NavAbilityDFG, variableLabel::Symbol, solveKey::Symbol = :default)
 
     id = getId(fgclient.fg, variableLabel, solveKey)
 
@@ -17,7 +17,7 @@ function getPPE(fgclient::DFGClient, variableLabel::Symbol, solveKey::Symbol = :
     return handleQuery(response, "ppes", solveKey)
 end
 
-function getPPEs(fgclient::DFGClient, variableLabel::Symbol)
+function getPPEs(fgclient::NavAbilityDFG, variableLabel::Symbol)
     id = getId(fgclient.fg, variableLabel)
     T = Vector{@NamedTuple{ppes::Vector{DFG.MeanMaxPPE}}}
 
@@ -32,11 +32,11 @@ function getPPEs(fgclient::DFGClient, variableLabel::Symbol)
     return handleQuery(response, "variables", :ppes)[1]
 end
 
-function addPPE!(fgclient::DFGClient, variableLabel::Symbol, ppe::DFG.MeanMaxPPE)
+function addPPE!(fgclient::NavAbilityDFG, variableLabel::Symbol, ppe::DFG.MeanMaxPPE)
     addPPEs!(fgclient, variableLabel, [ppe])[1]
 end
 
-function addPPEs!(fgclient::DFGClient, variableLabel::Symbol, ppes::Vector{DFG.MeanMaxPPE})
+function addPPEs!(fgclient::NavAbilityDFG, variableLabel::Symbol, ppes::Vector{DFG.MeanMaxPPE})
 
     varId = getId(fgclient.fg, variableLabel)
     connect = createConnect(varId)
@@ -64,7 +64,7 @@ function addPPEs!(fgclient::DFGClient, variableLabel::Symbol, ppes::Vector{DFG.M
 end
 
 #TODO add if not exist, should now be easy as the id is deterministic
-function updatePPE!(fgclient::DFGClient, varLabel::Symbol, ppe::MeanMaxPPE)
+function updatePPE!(fgclient::NavAbilityDFG, varLabel::Symbol, ppe::MeanMaxPPE)
 
     varId = getId(fgclient.fg, varLabel)
 
@@ -90,7 +90,7 @@ function updatePPE!(fgclient::DFGClient, varLabel::Symbol, ppe::MeanMaxPPE)
     return response.data["updatePpes"].ppes[1]
 end
 
-function deletePPE!(fgclient::DFGClient, varLabel::Symbol, ppe::DFG.MeanMaxPPE)
+function deletePPE!(fgclient::NavAbilityDFG, varLabel::Symbol, ppe::DFG.MeanMaxPPE)
     id = getId(fgclient.fg, varLabel, ppe.solveKey)
     variables = (id=id,)
 
@@ -104,12 +104,12 @@ function deletePPE!(fgclient::DFGClient, varLabel::Symbol, ppe::DFG.MeanMaxPPE)
     return ppe
 end
 
-function deletePPE!(fgclient::DFGClient, varLabel::Symbol, solveKey::Symbol)
+function deletePPE!(fgclient::NavAbilityDFG, varLabel::Symbol, solveKey::Symbol)
     ppe = getPPE(fgclient, varLabel, solveKey)
     return deletePPE!(fgclient, varLabel, ppe)
 end
 
-function listPPEs(fgclient::DFGClient, variableLabel::Symbol)
+function listPPEs(fgclient::NavAbilityDFG, variableLabel::Symbol)
     id = getId(fgclient.fg, variableLabel)
     variables = (id=id,)
 

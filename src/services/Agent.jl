@@ -13,7 +13,7 @@ function getAgent(client::NavAbilityClient, label::Symbol)
     agentId = getId(client.id, label)
     variables = (agentId=agentId,)
 
-    T = Vector{AgentRemote}
+    T = Vector{NvaAgent}
 
     response = GQL.execute(
         client.client,
@@ -53,7 +53,7 @@ function addAgent!(client::NavAbilityClient, label::Symbol, agent=nothing; agent
     variables = (input=input,)
 
     # AgentRemoteResponse
-    T = @NamedTuple{agents::Vector{AgentRemote}}
+    T = @NamedTuple{agents::Vector{NvaAgent}}
 
     response =
         GQL.execute(client.client, GQL_ADD_AGENTS, T; variables, throw_on_execution_error = true)

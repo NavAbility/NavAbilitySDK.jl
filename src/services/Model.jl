@@ -3,7 +3,7 @@ function getModel(client::NavAbilityClient, label::Symbol)
     id = getId(client.id, label)
     variables = Dict("modelId" => id)
 
-    T = Vector{ModelRemote}
+    T = Vector{NvaModel}
 
     response = GQL.execute(
         client.client,
@@ -43,7 +43,7 @@ function addModel!(client::NavAbilityClient, label::Symbol, model=nothing; model
     variables = (input=input,)
 
     # AgentRemoteResponse
-    T = @NamedTuple{models::Vector{ModelRemote}}
+    T = @NamedTuple{models::Vector{NvaModel}}
 
     response =
         GQL.execute(client.client, GQL_ADD_MODELS, T; variables, throw_on_execution_error = true)
@@ -100,7 +100,7 @@ function addModel!(client::GQL.Client, modelLabel::String; status = "", descript
     return response.data["addModels"]["models"][1]
 end
 
-function addFg!(client::GQL.Client, model::ModelRemote, fg::FactorGraphRemote)
+function addFg!(client::GQL.Client, model::NvaModel, fg::NvaFactorGraph)
     variables = Dict("modelId" => modelId, "sessionId" => sessionId)
 
     response = GQL.execute(
@@ -112,3 +112,48 @@ function addFg!(client::GQL.Client, model::ModelRemote, fg::FactorGraphRemote)
 
     return response.data["updateModels"]["info"]
 end
+
+
+##
+
+## model
+# models: {connect: {where: {node: {id: $id2}}}}}
+GQL_ADD_MODEL = GQL.gql"""
+mutation addModel(
+  $id: ID = "",
+  $label: String = "",
+  $status: String = "",
+  $tags: [String!] = "",
+  $description: String = "",
+  $metadata: Metadata = "",
+  $namespace: ID! = ""
+) 
+{
+  createModels(
+    input: {id: $id,
+      label: $label,
+      status: $status,
+      tags: $tags,
+      description: $description,
+      metadata: $metadata,
+      org: {connect: {where: {node: {id: $namespace}}}}
+    }
+  ) {
+    models {
+      createdTimestamp
+      description
+      id
+      label
+      lastUpdatedTimestamp
+      metadata
+      namespace
+      status
+      tags
+    }
+    info {
+      nodesCreated
+      relationshipsCreated
+    }
+  }
+}
+"""

@@ -9,30 +9,6 @@ function user_robot_session_variable_T(T)
     }
 end
 
-function createConnect(id::UUID)
-    return Dict("connect" => Dict("where" => Dict("node" => Dict("id" => string(id)))))
-end
-
-function createVariableConnect(
-    userLabel::String,
-    robotLabel::String,
-    sessionLabel::String,
-    label::Symbol,
-)
-    return Dict(
-        "connect" => Dict(
-            "where" => Dict(
-                "node" => Dict(
-                    "label" => string(label),
-                    "sessionLabel" => string(sessionLabel),
-                    "robotLabel" => string(robotLabel),
-                    "userLabel" => string(userLabel),
-                ),
-            ),
-        ),
-    )
-    # variable": {"connect": { "where": {"node": {"label": "x0", "robotLabel": "IntegrationRobot", "userLabel": 
-end
 # exists(client, context, label::Symbol) = 
 function getCommonProperties(::Type{T}, from::F) where {T, F}
     commonfields = intersect(fieldnames(T), fieldnames(F))
@@ -76,13 +52,25 @@ end
 #TODO wip
 getId(ns::UUID, labels...) = uuid5(ns, string(labels...))
 
-function getId(node::Union{FactorGraphRemote, AgentRemote, ModelRemote, BlobStoreRemote}, labels...)
+function getId(node::Union{NvaFactorGraph, NvaAgent, NvaModel, NvaBlobStore}, labels...)
     namespace = node.namespace
     return getId(namespace, node.label, labels...)
 end
 #TODO consolidate further
-getId(fgclient::DFGClient, parent::FactorGraphRemote, label::Symbol) = getId(parent, label)
-getId(fgclient::DFGClient, parent::AgentRemote, label::Symbol) = getId(parent, label)
-getId(fgclient::DFGClient, parent::ModelRemote, label::Symbol) = getId(parent, label)
-getId(fgclient::DFGClient, parent::DFG.AbstractDFGVariable, label::Symbol) = getId(fgclient.fg, parent.label, label)
-getId(fgclient::DFGClient, parent::DFG.AbstractDFGFactor, label::Symbol) = getId(fgclient.fg, parent.label, label)
+getId(fgclient::NavAbilityDFG, parent::NvaFactorGraph, label::Symbol) = getId(parent, label)
+getId(fgclient::NavAbilityDFG, parent::NvaAgent, label::Symbol) = getId(parent, label)
+getId(fgclient::NavAbilityDFG, parent::NvaModel, label::Symbol) = getId(parent, label)
+getId(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGVariable, label::Symbol) = getId(fgclient.fg, parent.label, label)
+getId(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGFactor, label::Symbol) = getId(fgclient.fg, parent.label, label)
+
+
+function createConnect(id::UUID)
+    # return Dict("connect" => Dict("where" => Dict("node" => Dict("id" => string(id)))))
+    return (connect = (where = (node = (id = string(id),),),),)
+end
+
+createConnect(fgclient::NavAbilityDFG, parent::NvaFactorGraph) = (Factorgraph=createConnect(getId(parent)),)
+createConnect(fgclient::NavAbilityDFG, parent::NvaAgent) = (Agent=createConnect(getId(parent)),)
+createConnect(fgclient::NavAbilityDFG, parent::NvaModel) = (Model=createConnect(getId(parent)),)
+createConnect(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGVariable) = (Variable=createConnect(getId(fgclient.fg, parent.label)),)
+createConnect(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGFactor) = (Factor=createConnect(getId(fgclient.fg, parent.label)),)

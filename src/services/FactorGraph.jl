@@ -13,7 +13,7 @@ function getFg(client::NavAbilityClient, label::Symbol)
     fgId = getId(client.id, label)
     variables = Dict("fgId" => fgId)
 
-    T = Vector{FactorGraphRemote}
+    T = Vector{NvaFactorGraph}
 
     response = GQL.execute(
         client.client,
@@ -57,7 +57,7 @@ function addFg!(client::NavAbilityClient, label::Symbol)
     )
 
     # FactorGraphRemoteResponse
-    T = @NamedTuple{factorgraphs::Vector{FactorGraphRemote}}
+    T = @NamedTuple{factorgraphs::Vector{NvaFactorGraph}}
 
     response =
         GQL.execute(client.client, GQL_ADD_FACTORGRAPH, T; variables, throw_on_execution_error = true)
@@ -90,7 +90,7 @@ function listFgs(client::NavAbilityClient)
     return last.(handleQuery(response, "orgs", Symbol(client.id))["fgs"])
 end
 
-function DFG.listNeighbors(fgclient::DFGClient, label::Symbol)
+function DFG.listNeighbors(fgclient::NavAbilityDFG, label::Symbol)
     variables = (id=getId(fgclient.fg, label),)
 
     T = Vector{Dict{String, Vector{NamedTuple{(:label,), Tuple{Symbol}}}}}
@@ -112,7 +112,7 @@ function DFG.listNeighbors(fgclient::DFGClient, label::Symbol)
     return union(flbls, vlbls)
 end
 
-function exists(fgclient::DFGClient, label::Symbol)
+function exists(fgclient::NavAbilityDFG, label::Symbol)
     variables = (id=getId(fgclient.fg, label),)
 
     response = GQL.execute(

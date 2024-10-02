@@ -1,7 +1,7 @@
 #TODO factor does not have blobs yet
 
 function addFactor!(
-    fgclient::DFGClient,
+    fgclient::NavAbilityDFG,
     pacfac::PackedFactor;
     variableLabels::Vector{<:Union{Symbol, String}} = pacfac._variableOrderSymbols,
 )
@@ -48,7 +48,7 @@ function addFactor!(
     return handleMutate(response, "createFactors", :factors)[1]
 end
 
-function getFactors(fgclient::DFGClient)
+function getFactors(fgclient::NavAbilityDFG)
 
     fgId = getId(fgclient.fg)
 
@@ -67,7 +67,7 @@ function getFactors(fgclient::DFGClient)
 end
 
 
-function getFactorsSkeleton(fgclient::DFGClient)
+function getFactorsSkeleton(fgclient::NavAbilityDFG)
     fgId = getId(fgclient.fg)
 
     variables = Dict(
@@ -84,7 +84,7 @@ function getFactorsSkeleton(fgclient::DFGClient)
     return handleQuery(response, "factorgraphs", fgclient.fg.label)["factors"]
 end
 
-function getFactor(fgclient::DFGClient{<:AbstractDFGVariable, FT}, label::Symbol) where FT
+function getFactor(fgclient::NavAbilityDFG{<:AbstractDFGVariable, FT}, label::Symbol) where FT
     
     namespace = fgclient.fg.namespace
     facId = NvaSDK.getId(namespace, fgclient.fg.label, label)
@@ -107,7 +107,7 @@ function getFactor(fgclient::DFGClient{<:AbstractDFGVariable, FT}, label::Symbol
     return handleQuery(response, "factors", label)
 end
 
-function listFactors(fgclient::DFGClient)
+function listFactors(fgclient::NavAbilityDFG)
 
     fgId = getId(fgclient.fg)
 
@@ -129,7 +129,7 @@ function listFactors(fgclient::DFGClient)
 end
 
 # delete factor and its satelites (by factor id)
-function deleteFactor!(fgclient::DFGClient, factor::DFG.AbstractDFGFactor)
+function deleteFactor!(fgclient::NavAbilityDFG, factor::DFG.AbstractDFGFactor)
     facId = getId(fgclient.fg, factor.label)
 
     variables = (factorId=facId,)
@@ -146,7 +146,7 @@ function deleteFactor!(fgclient::DFGClient, factor::DFG.AbstractDFGFactor)
     return factor
 end
 
-function deleteFactor!(fgclient::DFGClient, label::Symbol)
+function deleteFactor!(fgclient::NavAbilityDFG, label::Symbol)
     f = getFactor(fgclient, label)
     return deleteFactor!(fgclient, f)
 end

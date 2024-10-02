@@ -2,7 +2,7 @@
 # Variable CRUD
 # =======================================================================================
 
-function VariableCreateInput(fgclient::DFGClient, v::Variable)
+function VariableCreateInput(fgclient::NavAbilityDFG, v::Variable)
     # copy from a packed variable
     variableLabel = v.label
 
@@ -90,7 +90,7 @@ function VariableCreateInput(fgclient::DFGClient, v::Variable)
     return addvar
 end
 
-function addVariable!(fgclient::DFGClient, v::Variable)
+function addVariable!(fgclient::NavAbilityDFG, v::Variable)
     addvar = VariableCreateInput(fgclient, v)
 
     variables = Dict("variablesToCreate" => [addvar])
@@ -108,7 +108,7 @@ function addVariable!(fgclient::DFGClient, v::Variable)
     return handleMutate(response, "createVariables", :variables)[1]
 end
 
-function addVariables!(fgclient::DFGClient, vars::Vector{Variable}; chunksize=20)
+function addVariables!(fgclient::NavAbilityDFG, vars::Vector{Variable}; chunksize=20)
     #
     addvars = VariableCreateInput.(fgclient, vars)
 
@@ -139,7 +139,7 @@ function addVariables!(fgclient::DFGClient, vars::Vector{Variable}; chunksize=20
     return newVarReturns
 end
 
-function getVariables(fgclient::DFGClient)
+function getVariables(fgclient::NavAbilityDFG)
     
     fgId = NvaSDK.getId(fgclient.fg)
 
@@ -163,7 +163,7 @@ function getVariables(fgclient::DFGClient)
 
 end
 
-function getVariables(fgclient::DFGClient, labels::Vector{Symbol})
+function getVariables(fgclient::NavAbilityDFG, labels::Vector{Symbol})
 
     namespace = fgclient.fg.namespace
     fgLabel = fgclient.fg.label
@@ -184,7 +184,7 @@ function getVariables(fgclient::DFGClient, labels::Vector{Symbol})
     return handleQuery(response, "variables")
 end
 
-function listVariables(fgclient::DFGClient)
+function listVariables(fgclient::NavAbilityDFG)
     
     fgId = NvaSDK.getId(fgclient.fg)
 
@@ -206,7 +206,7 @@ function listVariables(fgclient::DFGClient)
 
 end
 
-function getVariable(fgclient::DFGClient{VT, <:AbstractDFGFactor}, label::Symbol) where VT
+function getVariable(fgclient::NavAbilityDFG{VT, <:AbstractDFGFactor}, label::Symbol) where VT
 
     varId = NvaSDK.getId(fgclient.fg, label)
 
@@ -228,7 +228,7 @@ function getVariable(fgclient::DFGClient{VT, <:AbstractDFGFactor}, label::Symbol
     return VT(handleQuery(response, "variables", label))
 end
 
-function getVariableSummary(fgclient::DFGClient, label::Symbol)
+function getVariableSummary(fgclient::NavAbilityDFG, label::Symbol)
 
     varId = NvaSDK.getId(fgclient.fg, label)
 
@@ -251,7 +251,7 @@ function getVariableSummary(fgclient::DFGClient, label::Symbol)
     return handleQuery(response, "variables", label)
 end
 
-function getVariableSkeleton(fgclient::DFGClient, label::Symbol)
+function getVariableSkeleton(fgclient::NavAbilityDFG, label::Symbol)
 
     varId = NvaSDK.getId(fgclient.fg, label)
 
@@ -275,7 +275,7 @@ function getVariableSkeleton(fgclient::DFGClient, label::Symbol)
 end
 
 ##
-function getVariablesSkeleton(fgclient::DFGClient)#, label::Symbol)
+function getVariablesSkeleton(fgclient::NavAbilityDFG)#, label::Symbol)
 
     fgId = NvaSDK.getId(fgclient.fg)
     
@@ -299,7 +299,7 @@ function getVariablesSkeleton(fgclient::DFGClient)#, label::Symbol)
 
 end
 
-function getVariablesSummary(fgclient::DFGClient)#, label::Symbol)
+function getVariablesSummary(fgclient::NavAbilityDFG)#, label::Symbol)
  
     fgId = NvaSDK.getId(fgclient.fg)
     
@@ -323,7 +323,7 @@ function getVariablesSummary(fgclient::DFGClient)#, label::Symbol)
 end
 
 # delete variable and its satelites (by variable id)
-function deleteVariable!(fgclient::DFGClient, variable::DFG.AbstractDFGVariable)
+function deleteVariable!(fgclient::NavAbilityDFG, variable::DFG.AbstractDFGVariable)
 
     varId = NvaSDK.getId(fgclient.fg, variable.label)
 
@@ -344,7 +344,7 @@ function deleteVariable!(fgclient::DFGClient, variable::DFG.AbstractDFGVariable)
     return variable, neigfacs
 end
 
-function deleteVariable!(fgclient::DFGClient, label::Symbol)
+function deleteVariable!(fgclient::NavAbilityDFG, label::Symbol)
     v = getVariable(fgclient, label)
     return deleteVariable!(fgclient, v)
 end
@@ -354,7 +354,7 @@ end
 ## ====================
 #FIXME findVariable**s**NearTimestamp
 function findVariableNearTimestamp(
-    fgclient::DFGClient,
+    fgclient::NavAbilityDFG,
     timestamp::ZonedDateTime,
     window::TimePeriod,
 )

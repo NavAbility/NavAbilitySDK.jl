@@ -7,45 +7,26 @@ struct Org
     # fgs::Vector{Factorgraph}#!
     # users::Vector{Symbol}#!
 end
-  
+
+#TODO consider using Remote{T}
+# abstract type AbstractAgent end
+# abstract type AbstractModel end
+# abstract type AbstractFactorGraph end
+
+# struct Remote{T}
+#     namespace::UUID
+#     label::Symbol
+# end
+
 """
-    AgentRemote
+    NvaAgent
 A struct representing a reference to an Agent.
 #TODO Naming
 """
-@kwdef struct AgentRemote
-    # Interface
-    # id::UUID#!
-    label::Symbol#!
-
-    # metadata::String
-    # tags::Vector{String}#! #"For exampl ['Robot', 'SensorHat'], ['Worker'] etc"
-    # maybe type:String -> "Robot"/"Worker"
-    # _version::String#!
-    createdTimestamp::ZonedDateTime#!
-    # lastUpdatedTimestamp::DateTime#!
-    # parent
+@kwdef struct NvaAgent
     namespace::UUID
-    # org::Org#!
-    # children
-    # blobEntries::Vector{BlobEntry}#!
-    # models::Vector{Model}#!
-    # fgs::Vector{Factorgraph}#!
+    label::Symbol
 end
-
-# @kwdef struct Agent
-#     label::String#!
-#     metadata::String
-#     tags::Vector{String}#! #"For exampl ['Robot', 'SensorHat'], ['Worker'] etc"
-#     # maybe type:String -> "Robot"/"Worker"
-#     _version::String = string(DFG._getDFGVersion())#!
-#     # parent
-#     # org::Org#!
-#     # children
-#     # blobEntries::Vector{BlobEntry}#!
-#     # models::Vector{Model}#!
-#     # fgs::Vector{Factorgraph}#!
-# end
 
 @kwdef struct AgentCreateInput
     # Interface
@@ -67,24 +48,14 @@ StructTypes.omitempties(::Type{AgentCreateInput}) = (:blobEntries,)
 
 
 """
-    ModelRemote
+    NvaModel
 A struct representing a reference to a Model.
 Models are representations of some subject matter, such as a map, a car, a city, a supply chain, or a factory and its surroundings.
 #TODO Naming
 """
-@kwdef struct ModelRemote
-    label::Symbol
-    # description::Union{Nothing, String} = ""
-    # metadata::Union{Nothing, String} = ""
-    # tags::Vector{Symbol} = Symbol[]
-    createdTimestamp::Union{Nothing,ZonedDateTime}
-    # lastUpdatedTimestamp::Union{Nothing,ZonedDateTime}
-    # parent
+@kwdef struct NvaModel
     namespace::UUID
-    # children
-    # models::Vector{Symbol}
-    # fgs::Vector{Symbol}
-    # blobEntries::Vector{BlobEntry}
+    label::Symbol
 end
 
 @kwdef struct ModelCreateInput
@@ -104,30 +75,13 @@ end
 StructTypes.omitempties(::Type{ModelCreateInput}) = (:blobEntries,)
 
 """
-    FactorGraphRemote
+    NvaFactorGraph
 A struct representing a reference to a Factor Graph.
 #TODO Naming
 """
-@kwdef struct FactorGraphRemote
-    # id::UUID#!
-    label::Symbol#!
-    # description::String
-    # metadata::String
-    # _version::String
-    createdTimestamp::ZonedDateTime
-    # lastUpdatedTimestamp::DateTime
-    # parent
+@kwdef struct NvaFactorGraph
     namespace::UUID 
-    # relationships
-    # agents::Vector{Symbol}#!
-    # #children
-    # variables::Vector{Variable}#!
-    # factors::Vector{Factor}#!
-    # blobEntries::Vector{BlobEntry}#!
-    # # Derived fields
-    # numVariables::Int 
-    # numFactors::Int 
-    # solveKeys::Vector{String} 
+    label::Symbol#!
 end
 
 @kwdef struct FactorGraphCreateInput
@@ -149,14 +103,9 @@ end
     blobEntries::Any = nothing #TODO VariableBlobEntriesFieldInput
 end
 
-struct BlobStoreRemote <: DFG.AbstractBlobStore{UInt8}
-    # id::UUID#!
+struct NvaBlobStore <: DFG.AbstractBlobStore{UInt8}
     namespace::UUID
     label::String#!
-    createdTimestamp::DateTime#!
-    # lastUpdatedTimestamp::DateTime#!
-    # parent
-    # org::Org#!
 end
   
 struct BlobStoreCreateInput

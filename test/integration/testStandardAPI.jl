@@ -14,7 +14,7 @@ fgLabel = Symbol("TestSession_" * randstring(7))
 @testset "nva-sdk-standard-api-testset" begin
     client = NavAbilityClient(orgId, apiUrl)
 
-    fgclient = NvaSDK.DFGClient(
+    fgclient = NvaSDK.NavAbilityDFG(
         client,
         fgLabel,
         agentLabel;
