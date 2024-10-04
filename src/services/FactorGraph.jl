@@ -127,3 +127,48 @@ function exists(fgclient::NavAbilityDFG, label::Symbol)
 
     return hasvar || hasfac
 end
+
+#TODO update to standard pattern
+function DFG.getFgMetadata(fgclient::NavAbilityDFG)
+    gql = """
+    {
+        factorgraphs(where: {id: "$(getId(fgclient.fg))"}) {
+            metadata
+        }
+    }
+    """
+    response = GQL.execute(fgclient.client.client, gql; throw_on_execution_error = true)
+    b64data = response.data["factorgraphs"][1]["metadata"]
+
+    if isnothing(b64data) || b64data == ""
+        return Dict{Symbol, DFG.SmallDataTypes}()
+    else
+        return JSON3.read(
+            base64decode(b64data),
+            Dict{Symbol, DFG.SmallDataTypes},
+        )
+    end
+end
+
+function DFG.setFgMetadata!(fgclient::NavAbilityDFG, smallData::Dict{Symbol, DFG.SmallDataTypes})
+    meta = base64encode(JSON3.write(smallData))
+
+    gql = """
+    mutation {
+      updateFactorgraphs(
+        where: { id: "$(getId(fgclient.fg))" }
+        update: { metadata: "$(meta)" }
+      ) {
+        factorgraphs {
+          metadata
+        }
+      }
+    }
+    """
+    response = GQL.execute(fgclient.client.client, gql; throw_on_execution_error = true)
+
+    return JSON3.read(
+        base64decode(response.data["updateFactorgraphs"]["factorgraphs"][1]["metadata"]),
+        Dict{Symbol, DFG.SmallDataTypes},
+    )
+end
