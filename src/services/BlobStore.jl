@@ -1,20 +1,23 @@
 #TODO we can also extend the blobstore
 struct NavAbilityBlobStore <: DFG.AbstractBlobStore{Vector{UInt8}}
-    key::Symbol
     client::NavAbilityClient
+    label::Symbol
 end
 
-NavAbilityBlobStore(client::GQL.Client, userLabel::String, label = :NAVABILITY) = NavAbilityBlobStore(label, client, userLabel)
+NavAbilityBlobStore(client::NavAbilityClient) = NavAbilityBlobStore(client, :default)
+
+NavAbilityBlobStore(client::GQL.Client, userLabel::String, label = :default) = 
+    error("Deprecated, use NavAbilityBlobStore(client::NavAbilityClient, label::Symbol)")
 
 function Base.show(io::IO, ::MIME"text/plain", s::NavAbilityBlobStore)
     summary(io, s)
-    print(io, "\n  ")
+    print(io, "\n ")
     show(io, MIME("text/plain"), s.client)
-    println(io, "\n  User Name\n    ", s.userLabel)
+    println(io, "\n  label: ", s.label)
 end
 
-function NavAbilityBlobStore(fgclient::DFGClient, label = :NAVABILITY)
-    NavAbilityBlobStore(label, fgclient.client, fgclient.user.label)
+function NavAbilityBlobStore(fgclient::NavAbilityDFG, label::Symbol = :default)
+    NavAbilityBlobStore(fgclient.client, label)
 end
 
 struct NavAbilityCachedBlobStore{T <: DFG.AbstractBlobStore} <:
@@ -37,30 +40,20 @@ Args:
   userLabel (String): The userLabel with access to the data.
   blobId (String): The unique file identifier of the data blob.
 """
-function createDownload(client::GQL.Client, userLabel::AbstractString, blobId::UUID)
+# function createDownload(client::GQL.Client, userLabel::AbstractString, blobId::UUID)
+function createDownload(store::NavAbilityBlobStore, blobId::UUID)
+    type = "NVA_CLOUD"
     response = GQL.mutate(
-        client,
+        store.client.client,
         "createDownload",
-        Dict("userId" => userLabel, "blobId" => string(blobId));
+        Dict("store"=>(label=store.label, type=type), "blobId"=>string(blobId));
         throw_on_execution_error = true,
     )
-    #TODO API is a bit confusing as it is the user label that works here, ie. guest@navability.io
     return response.data["createDownload"]
-    # data = get(response,"data",nothing)
-    # if data === nothing || !haskey(data, "url") throw(KeyError("Cannot create download for $userLabel, requesting $blobId.\n$rootData")) end
-    # urlMsg = get(data,"url","Error")
 end
 
-##
-# function getBlob(client::GQL.Client, userLabel::AbstractString, blobId::UUID)
-#     url = createDownload(client, userLabel, blobId)
-#     io = PipeBuffer()
-#     Downloads.download(url, io)
-#     return io |> take!
-# end
-
 function getBlob(blobstore::NavAbilityBlobStore, blobId::UUID)
-    url = createDownload(blobstore.client, blobstore.userLabel, blobId)
+    url = createDownload(blobstore, blobId)
     io = PipeBuffer()
     Downloads.download(url, io)
     return io |> take!
@@ -77,39 +70,42 @@ function getBlob(blobstore::NavAbilityCachedBlobStore, blobId::UUID)
     return blob
 end
 
-listBlobsId(blobstore::NavAbilityBlobStore, namecontains::String="") = 
-    listBlobsId(blobstore.client, namecontains)
+# listBlobsId(blobstore::NavAbilityBlobStore, namecontains::String="") = 
+#     listBlobsId(blobstore.client, namecontains)
 
-function listBlobsId(client::GQL.Client, namecontains::String="")
-    query_args = Dict("where"=>Dict("name_CONTAINS"=>namecontains))
-    response = GQL.query(
-        client,
-        "blobs",
-        Vector{NamedTuple{(:id,), Tuple{UUID}}};
-        output_fields = ["id"],
-        query_args,
-        throw_on_execution_error = true,
-    )
-    return last.(response.data["blobs"])
-end
+# function listBlobsId(client::GQL.Client, namecontains::String="")
+#     query_args = Dict("where"=>Dict("name_CONTAINS"=>namecontains))
+#     response = GQL.query(
+#         client,
+#         "blobs",
+#         Vector{NamedTuple{(:id,), Tuple{UUID}}};
+#         output_fields = ["id"],
+#         query_args,
+#         throw_on_execution_error = true,
+#     )
+#     return last.(response.data["blobs"])
+# end
 
-listBlobsMeta(blobstore::NavAbilityBlobStore, namecontains::String="") = 
-    listBlobsMeta(blobstore.client, namecontains)
+listBlobsMeta(args...) = error("listBlobsMeta is deprecated, use BlobEntries")
+listBlobsId(args...) = error("listBlobsId is deprecated, use listBlobs")
 
-function listBlobsMeta(client::GQL.Client, namecontains::String="")
-    variables = Dict("name"=>namecontains)
-    response = GQL.execute(
-        client,
-        GQL_LIST_BLOBS_NAME_CONTAINS,
-        Vector{NamedTuple{
-            (:id,:name,:size,:createdTimestamp), 
-            Tuple{UUID,String,String,Union{Nothing,String}}
-        }};
-        variables,
-        throw_on_execution_error = true,
-    )
-    return response.data["blobs"]
-end
+# listBlobsMeta(blobstore::NavAbilityBlobStore, namecontains::String="") = 
+#     listBlobsMeta(blobstore.client, namecontains)
+
+# function listBlobsMeta(client::GQL.Client, namecontains::String="")
+#     variables = Dict("name"=>namecontains)
+#     response = GQL.execute(
+#         client,
+#         GQL_LIST_BLOBS_NAME_CONTAINS,
+#         Vector{NamedTuple{
+#             (:id,:name,:size,:createdTimestamp), 
+#             Tuple{UUID,String,String,Union{Nothing,String}}
+#         }};
+#         variables,
+#         throw_on_execution_error = true,
+#     )
+#     return response.data["blobs"]
+# end
 
 ## =========================================================================
 ## Upload
@@ -121,21 +117,20 @@ Request URLs for data blob upload.
 
 Args:
   navAbilityClient (NavAbilityClient): The NavAbility client.
-  filename (String): file/blob name.
-  filesize (Int): total number of bytes to upload. 
+  blobId: The unique file identifier of the data blob.
   parts (Int): Split upload into multiple blob parts, FIXME currently only supports parts=1.
 """
 function createUpload(
-    client::GQL.Client,
-    name::AbstractString,
-    blobsize::Int,
+    nvastore::NavAbilityBlobStore,
+    blobId::UUID,
     parts::Int = 1,
 )
     #
+    store = (label=nvastore.label, type="NVA_CLOUD")
     response = GQL.execute(
-        client,
+        nvastore.client.client,
         GQL_CREATE_UPLOAD;
-        variables = Dict("name" => name, "size" => blobsize, "parts" => parts),
+        variables = (blobId=blobId, parts=parts, store=store),
         throw_on_execution_error = true,
     )
 
@@ -146,7 +141,7 @@ end
 
 function completeUploadSingle(
     client::GQL.Client,
-    blobId::AbstractString,
+    blobId::UUID,
     uploadId::AbstractString,
     eTag::AbstractString,
 )
@@ -163,21 +158,20 @@ end
 ##
 
 function addBlob!(
-    blobstore::NavAbilityBlobStore,
+    store::NavAbilityBlobStore,
+    blobId::UUID,
     blob::Vector{UInt8},
-    filename::String,
 )
-    client = blobstore.client
+    client = store.client
 
     filesize = length(blob)
     # TODO: Use about a 50M file part here.
     np = 1 # TODO: ceil(filesize / 50e6)
     # create the upload url destination
-    d = createUpload(client, filename, filesize, np)
+    d = createUpload(store, blobId, np)
 
     url = d["parts"][1]["url"]
     uploadId = d["uploadId"]
-    blobId = d["blob"]["id"]
 
     # custom header for pushing the file up
     headers = [
@@ -198,7 +192,7 @@ function addBlob!(
     eTag = match(r"[a-zA-Z0-9]+", resp["eTag"]).match
 
     # close out the upload
-    res = completeUploadSingle(client, blobId, uploadId, eTag)
+    res = completeUploadSingle(client.client, blobId, uploadId, eTag)
 
     res == "Accepted" ? nothing : @error("Unable to upload blob, $res")
 
@@ -235,13 +229,12 @@ end
 ##==========================================================================================
 
 struct NavAbilityOnPremBlobStore <: DFG.AbstractBlobStore{Vector{UInt8}}
-    key::Symbol
     client::NvaSDK.GQL.Client
-    userLabel::String
+    label::Symbol
 end
 
-function NavAbilityOnPremBlobStore(fgclient::DFGClient, label=:NAVABILITY)
-    NavAbilityOnPremBlobStore(label, fgclient.client, fgclient.user.label)
+function NavAbilityOnPremBlobStore(fgclient::NavAbilityDFG, label=:default)
+    NavAbilityOnPremBlobStore(fgclient.client, label)
 end
 
 function DFG.addBlob!(store::NavAbilityOnPremBlobStore, blobId::UUID, blob::Vector{UInt8})

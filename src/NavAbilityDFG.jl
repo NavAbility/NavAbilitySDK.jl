@@ -30,7 +30,7 @@ function NavAbilityDFG(
     client::NavAbilityClient,
     fgLabel::Symbol,
     agentLabel::Symbol;
-    storeLabel = :NAVABILITY,
+    storeLabel = :default,
     addAgentIfAbsent = false,
     addFgIfAbsent = false,
     addRobotIfNotExists = nothing,
