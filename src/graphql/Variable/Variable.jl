@@ -101,7 +101,7 @@ query get_variables(
 GQL_ADD_VARIABLES = """
 $(GQL_FRAGMENT_VARIABLES)
 mutation sdk_add_variables(\$variablesToCreate: [VariableCreateInput!]!) {
-  createVariables(input: \$variablesToCreate) {
+  addVariables(input: \$variablesToCreate) {
     variables {
       ...variable_skeleton_fields
       ...variable_summary_fields

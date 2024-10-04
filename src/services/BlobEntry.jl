@@ -67,7 +67,7 @@ function addBlobEntries!(
         variables = (blobEntries=input,),
         throw_on_execution_error = true,
     )
-    return handleMutate(response, "createBlobEntries", :blobEntries)
+    return handleMutate(response, "addBlobEntries", :blobEntries)
 end
 
 # another way would be like this:
@@ -191,7 +191,7 @@ function addBlobEntries!(
         variables = (blobEntries=input,),
         throw_on_execution_error = true,
     )
-    return handleMutate(response, "createBlobEntries", :blobEntries)
+    return handleMutate(response, "addBlobEntries", :blobEntries)
 
 end
 

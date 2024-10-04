@@ -18,8 +18,8 @@ end
 
 
 GQL_ADD_MODELS = GQL.gql"""
-mutation createModels($input: [ModelCreateInput!]!) {
-  createModels(input: $input) {
+mutation addModels($input: [ModelCreateInput!]!) {
+  addModels(input: $input) {
     models {
         label
         createdTimestamp
@@ -48,7 +48,7 @@ function addModel!(client::NavAbilityClient, label::Symbol, model=nothing; model
     response =
         GQL.execute(client.client, GQL_ADD_MODELS, T; variables, throw_on_execution_error = true)
 
-    return handleMutate(response, "createModels", :models)[1]
+    return handleMutate(response, "addModels", :models)[1]
 end
 
 ## =======================================================================================
@@ -129,7 +129,7 @@ mutation addModel(
   $namespace: ID! = ""
 ) 
 {
-  createModels(
+  addModels(
     input: {id: $id,
       label: $label,
       status: $status,

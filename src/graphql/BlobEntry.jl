@@ -52,7 +52,7 @@ GQL_ADD_BLOBENTRIES = """
 $(GQL_FRAGMENT_BLOBENTRY)
 mutation addBlobEntries(\$blobEntries: [BlobEntryCreateInput!]!) {
   # Create the new ones
-  createBlobEntries(
+  addBlobEntries(
     input: \$blobEntries
   ) {
     blobEntries {

@@ -45,7 +45,7 @@ function addFactor!(
         throw_on_execution_error = true,
     )
 
-    return handleMutate(response, "createFactors", :factors)[1]
+    return handleMutate(response, "addFactors", :factors)[1]
 end
 
 function getFactors(fgclient::NavAbilityDFG)

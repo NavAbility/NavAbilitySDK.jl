@@ -28,8 +28,8 @@ function getAgent(client::NavAbilityClient, label::Symbol)
 end
 
 GQL_ADD_AGENTS = GQL.gql"""
-mutation createAgents($input: [AgentCreateInput!]!) {
-  createAgents(input: $input) {
+mutation addAgents($input: [AgentCreateInput!]!) {
+  addAgents(input: $input) {
     agents {
         label
         createdTimestamp
@@ -58,7 +58,7 @@ function addAgent!(client::NavAbilityClient, label::Symbol, agent=nothing; agent
     response =
         GQL.execute(client.client, GQL_ADD_AGENTS, T; variables, throw_on_execution_error = true)
 
-    return handleMutate(response, "createAgents", :agents)[1]
+    return handleMutate(response, "addAgents", :agents)[1]
 end
 
 QUERY_LIST_AGENTS = GQL.gql"""

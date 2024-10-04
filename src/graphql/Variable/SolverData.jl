@@ -53,7 +53,7 @@ GQL_ADD_SOLVERDATA = """
 $(GQL_FRAGMENT_SOLVERDATA)
 mutation addSolverData(\$solverData: [SolverDataCreateInput!]!) {
   # Create the new ones
-  createSolverData(
+  addSolverData(
     input: \$solverData
   ) {
     solverData {

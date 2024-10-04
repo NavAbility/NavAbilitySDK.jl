@@ -39,7 +39,7 @@ query get_ppes(
 GQL_ADD_PPES = """
 $(GQL_FRAGMENT_PPES)
 mutation addPpes(\$ppes: [PPECreateInput!]!) {
-  createPpes(
+  addPpes(
     input: \$ppes
   ) {
     ppes {

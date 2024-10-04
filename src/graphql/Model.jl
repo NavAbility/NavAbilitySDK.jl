@@ -41,7 +41,7 @@ $FRAGMENT_MODEL
 GQL_ADD_MODEL = """
 $FRAGMENT_MODEL
 mutation addModel(\$label: String!, \$status: String = "", \$description: String = "") {
-  createModels(input: {label: \$label, status: \$status, description: \$description}) {
+  addModels(input: {label: \$label, status: \$status, description: \$description}) {
     models {
         ...FRAGMENT_MODEL
     }

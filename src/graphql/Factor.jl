@@ -45,7 +45,7 @@ query get_variable(
 GQL_ADD_FACTORS = """
 $(GQL_FRAGMENT_FACTORS)
 mutation sdk_add_factors(\$factorsToCreate: [FactorCreateInput!]!) {
-  createFactors(
+  addFactors(
     input: \$factorsToCreate
   ) {
     factors {

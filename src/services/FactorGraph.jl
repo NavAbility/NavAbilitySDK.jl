@@ -28,7 +28,7 @@ function getFg(client::NavAbilityClient, label::Symbol)
 end
 
 GQL_ADD_FACTORGRAPH = GQL.gql"""
-mutation createFactorGraph(
+mutation addFactorGraph(
     $orgId: ID = ""
     $id: ID = "",
     $label: String = "",
@@ -36,7 +36,7 @@ mutation createFactorGraph(
     $metadata: Metadata = "",
     $_version: String = "",
 ) {
-  createFactorgraphs(
+  addFactorgraphs(
     input: {id: $id, label: $label, _version: $_version, description: $description, metadata: $metadata, org: {connect: {where: {node: {id: $orgId}}}}}
   ) {
     factorgraphs {
@@ -62,7 +62,7 @@ function addFg!(client::NavAbilityClient, label::Symbol)
     response =
         GQL.execute(client.client, GQL_ADD_FACTORGRAPH, T; variables, throw_on_execution_error = true)
 
-    return handleMutate(response, "createFactorgraphs", :factorgraphs)[1]
+    return handleMutate(response, "addFactorgraphs", :factorgraphs)[1]
 end
 
 QUERY_LIST_FACTORGRAPHS = GQL.gql"""

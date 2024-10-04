@@ -60,7 +60,7 @@ function addPPEs!(fgclient::NavAbilityDFG, variableLabel::Symbol, ppes::Vector{D
         variables = (ppes=input,),
         throw_on_execution_error = true,
     )
-    return handleMutate(response, "createPpes", :ppes)
+    return handleMutate(response, "addPpes", :ppes)
 end
 
 #TODO add if not exist, should now be easy as the id is deterministic

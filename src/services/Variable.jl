@@ -105,7 +105,7 @@ function addVariable!(fgclient::NavAbilityDFG, v::Variable)
         variables,
         throw_on_execution_error = true,
     )
-    return handleMutate(response, "createVariables", :variables)[1]
+    return handleMutate(response, "addVariables", :variables)[1]
 end
 
 function addVariables!(fgclient::NavAbilityDFG, vars::Vector{Variable}; chunksize=20)
@@ -133,7 +133,7 @@ function addVariables!(fgclient::NavAbilityDFG, vars::Vector{Variable}; chunksiz
             variables,
             throw_on_execution_error = true,
         )
-        append!(newVarReturns, response.data["createVariables"].variables)
+        append!(newVarReturns, response.data["addVariables"].variables)
     end
 
     return newVarReturns
