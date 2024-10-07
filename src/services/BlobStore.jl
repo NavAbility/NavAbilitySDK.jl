@@ -70,42 +70,37 @@ function getBlob(blobstore::NavAbilityCachedBlobStore, blobId::UUID)
     return blob
 end
 
-# listBlobsId(blobstore::NavAbilityBlobStore, namecontains::String="") = 
-#     listBlobsId(blobstore.client, namecontains)
+function DFG.listBlobs(store::NavAbilityBlobStore)
+    query_args = Dict("store"=>(label=store.label,))
+    response = GQL.query(
+        store.client.client,
+        "listBlobs",
+        Vector{String};
+        # output_fields = ["id"],
+        query_args,
+        throw_on_execution_error = true,
+    )
+    list = response.data["listBlobs"]
+    # FIXME should only return uuid strings
+    return UUID.(last.(split.(list, '/')))
+end
 
-# function listBlobsId(client::GQL.Client, namecontains::String="")
-#     query_args = Dict("where"=>Dict("name_CONTAINS"=>namecontains))
-#     response = GQL.query(
-#         client,
-#         "blobs",
-#         Vector{NamedTuple{(:id,), Tuple{UUID}}};
-#         output_fields = ["id"],
-#         query_args,
-#         throw_on_execution_error = true,
-#     )
-#     return last.(response.data["blobs"])
-# end
+function DFG.hasBlob(store::NavAbilityBlobStore, blobId::UUID)
+    query_args = Dict("store"=>(label=store.label,), "blobId"=>string(blobId))
+    response = GQL.query(
+        store.client.client,
+        "hasBlob",
+        Bool;
+        # output_fields = ["id"],
+        query_args,
+        throw_on_execution_error = true,
+    )
+    return response.data["hasBlob"]
+end
 
 listBlobsMeta(args...) = error("listBlobsMeta is deprecated, use BlobEntries")
 listBlobsId(args...) = error("listBlobsId is deprecated, use listBlobs")
 
-# listBlobsMeta(blobstore::NavAbilityBlobStore, namecontains::String="") = 
-#     listBlobsMeta(blobstore.client, namecontains)
-
-# function listBlobsMeta(client::GQL.Client, namecontains::String="")
-#     variables = Dict("name"=>namecontains)
-#     response = GQL.execute(
-#         client,
-#         GQL_LIST_BLOBS_NAME_CONTAINS,
-#         Vector{NamedTuple{
-#             (:id,:name,:size,:createdTimestamp), 
-#             Tuple{UUID,String,String,Union{Nothing,String}}
-#         }};
-#         variables,
-#         throw_on_execution_error = true,
-#     )
-#     return response.data["blobs"]
-# end
 
 ## =========================================================================
 ## Upload

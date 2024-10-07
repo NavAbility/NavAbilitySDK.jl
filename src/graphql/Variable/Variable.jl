@@ -112,9 +112,9 @@ mutation sdk_add_variables(\$variablesToCreate: [VariableCreateInput!]!) {
 """
 
 GQL_LIST_VARIABLES = GQL.gql"""
-query list_variables($fgId: ID!) {
+query list_variables($fgId: ID!, $varwhere: VariableWhere = {}) {
   factorgraphs(where: { id: $fgId }) {
-    variables {
+    variables (where: $varwhere){
       label
     }
   }
@@ -135,38 +135,39 @@ query($id: ID!) {
 ##
 
 #TODO not used yet # also eg. (where :{AND:[{tags_INCLUDES: "POSE"}, {tags_INCLUDES:"VARIABLE"}]})
-GQL_GET_VARIABLES_FILTERED = """
-$(GQL_FRAGMENT_VARIABLES)
-query sdk_get_variables_filtered(
-  \$userId: ID!
-  \$robotId: ID!
-  \$sessionId: ID!
-  \$variable_label_regexp: String = ".*"
-  \$variable_tags: [String] = ["VARIABLE"]
-  \$solvable: Int! = 0
-  \$fields_summary: Boolean! = false
-  \$fields_full: Boolean! = false
-) {
-  users(where: { id: \$userId }) {
-    robots(where: { id: \$robotId }) {
-      sessions(where: { id: \$sessionId }) {
-        variables(
-          where: {
-            label_MATCHES: \$variable_label_regexp
-            tags: \$variable_tags
-            solvable_GTE: \$solvable
-          }
-          options: { sort: [{ label: ASC }] }
-        ) {
-          ...variable_skeleton_fields
-          ...variable_summary_fields @include(if: \$fields_summary)
-          ...variable_full_fields @include(if: \$fields_full)
-        }
-      }
-    }
-  }
-}
-"""
+# also update to org-fg
+# GQL_GET_VARIABLES_FILTERED = """
+# $(GQL_FRAGMENT_VARIABLES)
+# query sdk_get_variables_filtered(
+#   \$userId: ID!
+#   \$robotId: ID!
+#   \$sessionId: ID!
+#   \$variable_label_regexp: String = ".*"
+#   \$variable_tags: [String] = ["VARIABLE"]
+#   \$solvable: Int! = 0
+#   \$fields_summary: Boolean! = false
+#   \$fields_full: Boolean! = false
+# ) {
+#   users(where: { id: \$userId }) {
+#     robots(where: { id: \$robotId }) {
+#       sessions(where: { id: \$sessionId }) {
+#         variables(
+#           where: {
+#             label_MATCHES: \$variable_label_regexp
+#             tags: \$variable_tags
+#             solvable_GTE: \$solvable
+#           }
+#           options: { sort: [{ label: ASC }] }
+#         ) {
+#           ...variable_skeleton_fields
+#           ...variable_summary_fields @include(if: \$fields_summary)
+#           ...variable_full_fields @include(if: \$fields_full)
+#         }
+#       }
+#     }
+#   }
+# }
+# """
 
 GQL_DELETE_VARIABLE = GQL.gql"""
 mutation deleteVariable($variableId: ID!) {

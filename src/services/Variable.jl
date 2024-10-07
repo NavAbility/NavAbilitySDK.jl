@@ -184,13 +184,24 @@ function getVariables(fgclient::NavAbilityDFG, labels::Vector{Symbol})
     return handleQuery(response, "variables")
 end
 
-function listVariables(fgclient::NavAbilityDFG)
-    
+function listVariables(fgclient::NavAbilityDFG,
+    regexFilter::Union{Nothing, Regex} = nothing;
+    tags::Vector{Symbol} = Symbol[],
+    solvable::Int = 0
+)
     fgId = NvaSDK.getId(fgclient.fg)
 
     variables = Dict(
-        "fgId" => fgId
+        "fgId" => fgId,
+        "varwhere" => Dict{String,Union{Int, Symbol}}(
+            "solvable_GTE" => solvable,
+        ),
     )
+
+    if !isempty(tags)
+        @assert length(tags) == 1 "Only one tag is supported in tags filter"
+        variables["varwhere"]["tags_INCLUDES"]=tags[1]
+    end
 
     T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
 
@@ -202,8 +213,12 @@ function listVariables(fgclient::NavAbilityDFG)
         throw_on_execution_error = true,
     )
 
-    return last.(handleQuery(response, "factorgraphs", fgclient.fg.label)["variables"])
-
+    labels =  last.(handleQuery(response, "factorgraphs", fgclient.fg.label)["variables"])
+    if isnothing(regexFilter)
+        return labels
+    else
+        return filter!(x -> occursin(regexFilter, string(x)), labels)
+    end
 end
 
 function getVariable(fgclient::NavAbilityDFG{VT, <:AbstractDFGFactor}, label::Symbol) where VT
