@@ -10,8 +10,9 @@ function user_robot_session_variable_T(T)
 end
 
 # exists(client, context, label::Symbol) = 
-function getCommonProperties(::Type{T}, from::F) where {T, F}
+function getCommonProperties(::Type{T}, from::F, exclude = Symbol[]) where {T, F}
     commonfields = intersect(fieldnames(T), fieldnames(F))
+    setdiff!(commonfields, exclude)
     return (k => getproperty(from, k) for k in commonfields)
 end
 
@@ -57,9 +58,9 @@ function getId(node::Union{NvaFactorGraph, NvaAgent, NvaModel, NvaBlobStore}, la
     return getId(namespace, node.label, labels...)
 end
 #TODO consolidate further
-getId(fgclient::NavAbilityDFG, parent::NvaFactorGraph, label::Symbol) = getId(parent, label)
-getId(fgclient::NavAbilityDFG, parent::NvaAgent, label::Symbol) = getId(parent, label)
-getId(fgclient::NavAbilityDFG, parent::NvaModel, label::Symbol) = getId(parent, label)
+getId(::NavAbilityDFG, parent::NvaFactorGraph, label::Symbol) = getId(parent, label)
+getId(::NavAbilityDFG, parent::NvaAgent, label::Symbol) = getId(parent, label)
+getId(::NavAbilityDFG, parent::NvaModel, label::Symbol) = getId(parent, label)
 getId(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGVariable, label::Symbol) = getId(fgclient.fg, parent.label, label)
 getId(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGFactor, label::Symbol) = getId(fgclient.fg, parent.label, label)
 

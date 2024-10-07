@@ -10,20 +10,33 @@ end
 function Base.show(io::IO, ::MIME"text/plain", s::NavAbilityClient)
     summary(io, s)
     println(io)
-    println(io, "  id: ", string(s.id)[1:8])
+    println(io, "  id: ", s.id)
     print(io, "  ")
     show(io, MIME("text/plain"), s.client)
 end
 
 function NavAbilityClient(
-    orgId::UUID,
+    auth_token::String,
+    apiUrl::String = "https://api.navability.io";
+    orgLabel::Union{Symbol, Nothing} = nothing,
+    kwargs...,
+)
+    headers = Dict("Authorization" => "Bearer $auth_token")
+    client = GQL.Client(apiUrl; headers, kwargs...)
+    if isnothing(orgLabel)
+        id = getOrgs(client)[1].id
+    else
+        id = getOrg(client, orgLabel).id
+    end
+    return NavAbilityClient(id, client)
+end
+
+function NavAbilityClient(
     apiUrl::String = "https://api.navability.io";
     auth_token::String = "",
     authorize::Bool = 0 !== length(auth_token),
     kwargs...,
-)
-    headers =
-        authorize ? Dict("Authorization" => "Bearer $auth_token") : Dict{String, String}()
-    client = GQL.Client(apiUrl; headers, kwargs...)
-    return NavAbilityClient(orgId, client)  
+) 
+    @warn "Deprecated: NavAbilityClient kwarg `auth_token` is now a required parameter"
+    return NavAbilityClient(auth_token, apiUrl; kwargs...)  
 end

@@ -87,8 +87,7 @@ function updateVariableSolverData!(fgclient::NavAbilityDFG, varLabel::Symbol, vn
     id = getId(fgclient.fg, varLabel, vnd.solveKey)
     
     request = (
-        getCommonProperties(SolverDataCreateInput, vnd)...,
-        id = id,
+        getCommonProperties(SolverDataCreateInput, vnd, [:id, :solveKey])...,
         variable = connect,
     )
 

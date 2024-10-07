@@ -10,19 +10,35 @@ DFG.getTypeDFGVariables(::NavAbilityDFG{T, <:AbstractDFGFactor}) where {T} = T
 DFG.getTypeDFGFactors(::NavAbilityDFG{<:AbstractDFGVariable, T}) where {T} = T
 
 function NavAbilityDFG(
-    orgId::UUID,
+    token::String,
     fgLabel::Symbol,
     agentLabel::Symbol;
     apiUrl::String = "https://api.navability.io",
-    auth_token::String = "",
-    authorize::Bool = 0 !== length(auth_token),
+    orgLabel::Union{Symbol, Nothing} = nothing,
+    auth_token = nothing,
+    authorize = nothing,
+    storeLabel = :default,
+    addAgentIfAbsent = false,
+    addFgIfAbsent = false,
+    addRobotIfNotExists = nothing,
+    addSessionIfNotExists = nothing,
     kwargs...
 )
+    if !isnothing(auth_token)
+        @warn "kwarg auth_token is deprecated"
+    end
+    if !isnothing(authorize)
+        @warn "kwarg authorize is deprecated"
+    end
     return NavAbilityDFG(
-        NavAbilityClient(orgId, apiUrl; auth_token, authorize),
+        NavAbilityClient(token, apiUrl; orgLabel, kwargs...),
         fgLabel,
         agentLabel;
-        kwargs...
+        storeLabel,
+        addAgentIfAbsent,
+        addFgIfAbsent,
+        addRobotIfNotExists,
+        addSessionIfNotExists
     )
 end
 

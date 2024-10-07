@@ -7,7 +7,7 @@ export DFGClient, NavAbilityClient
 DFGClient(args...; kwargs...) = error("DFGClient is deprecated, use NavAbilityDFG instead")
 
 #TODO DEPRECATE add orgId
-NavAbilityClient(args...; kwargs...) = error("Deprecated: NavAbilityClient requires and orgId")
+NavAbilityClient(args...; kwargs...) = error("Deprecated: NavAbilityClient requires a auth_token")
 
 # #FIXME DEPRECATE DFGClient(client::GQL.Client, context::Context, storeLabel=:NAVABILITY)
 # function DFGClient(client::GQL.Client, context::Context, storeLabel=:NAVABILITY)
@@ -33,3 +33,7 @@ NavAbilityClient(args...; kwargs...) = error("Deprecated: NavAbilityClient requi
 #     addRobotIfNotExists = false,
 #     addSessionIfNotExists = false,
 # )
+
+# FIXME DEPRECATED
+struct Context end
+Context(a...; ka...) = error("deprecated")

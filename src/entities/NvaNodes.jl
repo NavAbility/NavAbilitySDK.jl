@@ -1,6 +1,6 @@
 struct Org
     id::UUID#!
-    label::String#!
+    label::Symbol#!
     description::String
     # models::Vector{Model}#!
     # agents::Vector{Agent}#!
@@ -114,7 +114,3 @@ struct BlobStoreCreateInput
     # parent
     org::Any #OrgConnect
 end
-
-# FIXME DEPRECATED
-struct Context end
-Context(a...; ka...) = error("deprecated")

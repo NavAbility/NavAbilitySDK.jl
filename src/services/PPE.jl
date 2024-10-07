@@ -70,10 +70,9 @@ function updatePPE!(fgclient::NavAbilityDFG, varLabel::Symbol, ppe::MeanMaxPPE)
 
     connect = createConnect(varId)
     id = getId(fgclient.fg, varLabel, ppe.solveKey)
-    
+
     request = (
-        getCommonProperties(PPECreateInput, ppe)...,
-        id = id,
+        getCommonProperties(PPECreateInput, ppe, [:id, :solveKey])...,
         variable = connect,
     )
     # Make request
