@@ -1,28 +1,21 @@
 
 GQL_CREATE_UPLOAD = GQL.gql"""
-mutation sdk_url_createupload($name: String!, $size: BigInt!, $parts: Int!) {
-  createUpload(
-    blob: {
-      name: $name,
-      size: $size
-    },
-    parts: $parts
-  ) {
+mutation createUpload($blobId: ID!, $store: BlobStoreInput = {label: "default", type: NVA_CLOUD}, $parts: Int = 1) {
+  createUpload(store: $store, blobId: $blobId, parts: $parts) {
+    blobId
     uploadId
     parts {
       partNumber
       url
-    }
-    blob {
-      id
     }
   }
 }
 """
 
 GQL_COMPLETEUPLOAD_SINGLE = GQL.gql"""
-mutation completeUpload($blobId: ID!, $uploadId: ID!, $eTag: String) {
+mutation completeUpload($blobId: ID!, $uploadId: ID!, $eTag: String, $store: BlobStoreInput = {label: "default", type: NVA_CLOUD}) {
   completeUpload (
+    store: $store,
     blobId: $blobId,
     completedUpload: {
       uploadId: $uploadId,

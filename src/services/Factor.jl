@@ -1,27 +1,24 @@
 #TODO factor does not have blobs yet
 
 function addFactor!(
-    fgclient::DFGClient,
+    fgclient::NavAbilityDFG,
     pacfac::PackedFactor;
     variableLabels::Vector{<:Union{Symbol, String}} = pacfac._variableOrderSymbols,
 )
-    client = fgclient.client
+    client = fgclient.client.client
 
-    # common field names
-    fields = intersect(fieldnames(PackedFactor), fieldnames(FactorCreateInput))
+    factorLabel = pacfac.label
 
-    variables = Dict(
+    namespace = fgclient.fg.namespace
+    fgLabel = fgclient.fg.label
+    fgId = NvaSDK.getId(namespace, fgLabel)
+
+    variablesConnect = Dict(
         "connect" => map(variableLabels) do vlink
             Dict(
                 "where" => Dict(
                     "node" => Dict(
-                        "userLabel" => fgclient.user.label,
-                        "robotLabel" => fgclient.robot.label,
-                        "sessionLabel" => fgclient.session.label,
-                        # "sessionConnection" => Dict(
-                        #     "node" => Dict("id" => fgclient.session.id),
-                        # ),
-                        "label" => vlink,
+                        "id" => getId(namespace, fgLabel, vlink),
                     ),
                 ),
             )
@@ -29,138 +26,127 @@ function addFactor!(
     )
 
     addfac = FactorCreateInput(;
-        # uniqueKey = string(variableId, ".", vnd.solveKey),
-        userLabel = fgclient.user.label,
-        robotLabel = fgclient.robot.label,
-        sessionLabel = fgclient.session.label,
-        session = createConnect(fgclient.session.id),
-        variables,
-        (key => getproperty(pacfac, key) for key in fields)...,
+        getCommonProperties(FactorCreateInput, pacfac)...,
+        variables=variablesConnect,
+        id = getId(namespace, fgLabel, factorLabel),
+        fg = createConnect(fgId),
     )
 
     variables = Dict("factorsToCreate" => [addfac])
+    
+    T = @NamedTuple{factors::Vector{PackedFactor}}
 
     response = GQL.execute(
         client,
         GQL_ADD_FACTORS,
-        FactorResponse;
+        T;#FIXME: use factor response named tuple
+        # FactorResponse;
         variables,
         throw_on_execution_error = true,
     )
 
-    return response.data["addFactors"].factors[1]
+    return handleMutate(response, "addFactors", :factors)[1]
 end
 
-function getFactors(fgclient::DFGClient)
-    client = fgclient.client
+function getFactors(fgclient::NavAbilityDFG)
+
+    fgId = getId(fgclient.fg)
 
     variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
+        "fgId" => fgId,
         "fields_summary" => true,
         "fields_full" => true,
     )
 
-    T = Vector{
-        Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{PackedFactor}}}}}},
-    }
+    T = Vector{Dict{String, Vector{PackedFactor}}}
 
     response =
-        GQL.execute(client, GQL_GET_FACTORS, T; variables, throw_on_execution_error = true)
+        GQL.execute(fgclient.client.client, GQL_GET_FACTORS, T; variables, throw_on_execution_error = true)
 
-    return response.data["users"][1]["robots"][1]["sessions"][1]["factors"]
+    return handleQuery(response, "factorgraphs", fgclient.fg.label)["factors"]
 end
 
 
-function getFactorsSkeleton(fgclient::DFGClient)
-    client = fgclient.client
+function getFactorsSkeleton(fgclient::NavAbilityDFG)
+    fgId = getId(fgclient.fg)
 
     variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
+        "fgId" => fgId,
         "fields_summary" => false,
         "fields_full" => false,
     )
 
-    T = Vector{
-        Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{DFG.SkeletonDFGFactor}}}}}},
-    }
+    T = Vector{Dict{String, Vector{DFG.SkeletonDFGFactor}}}
 
     response =
-        GQL.execute(client, GQL_GET_FACTORS, T; variables, throw_on_execution_error = true)
+        GQL.execute(fgclient.client.client, GQL_GET_FACTORS, T; variables, throw_on_execution_error = true)
 
-    return response.data["users"][1]["robots"][1]["sessions"][1]["factors"]
+    return handleQuery(response, "factorgraphs", fgclient.fg.label)["factors"]
 end
 
-function getFactor(fgclient::DFGClient, label::Symbol)
-    client = fgclient.client
+function getFactor(fgclient::NavAbilityDFG{<:AbstractDFGVariable, FT}, label::Symbol) where FT
+    
+    namespace = fgclient.fg.namespace
+    facId = NvaSDK.getId(namespace, fgclient.fg.label, label)
 
     variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
-        "factorLabel" => string(label),
+        "facId" => facId,
         "fields_summary" => true,
         "fields_full" => true,
     )
 
     response = GQL.execute(
-        client,
-        GQL_GET_FACTOR_FROM_USER;
-        # Vector{PackedFactor};
+        fgclient.client.client,
+        GQL_GET_FACTOR,
+        Vector{PackedFactor};
         variables,
         throw_on_execution_error = true,
     )
-
-    jstr = JSON3.write(response.data["users"][1]["robots"][1]["sessions"][1]["factors"][1])
-
-    return JSON3.read(jstr, PackedFactor)
+    #FIXME FT
+    # return FT(handleQuery(response, "factors", label))
+    return handleQuery(response, "factors", label)
 end
 
-function listFactors(fgclient::DFGClient)
+function listFactors(fgclient::NavAbilityDFG)
+
+    fgId = getId(fgclient.fg)
+
     variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
+        "fgId" => fgId
     )
 
-    T = Vector{
-        Dict{
-            String,
-            Vector{
-                Dict{
-                    String,
-                    Vector{Dict{String, Vector{NamedTuple{(:label,), Tuple{Symbol}}}}},
-                },
-            },
-        },
-    }
+    T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
 
     response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_LISTFACTORS,
         T;
         variables,
         throw_on_execution_error = true,
     )
 
-    return last.(response.data["users"][1]["robots"][1]["sessions"][1]["factors"])
+    return last.(handleQuery(response, "factorgraphs", fgclient.fg.label)["factors"])
 end
 
 # delete factor and its satelites (by factor id)
-function deleteFactor!(fgclient::DFGClient, factor::DFG.AbstractDFGFactor)
-    isnothing(factor.id) && error("Factor $(factor.label) does not have an id")
+function deleteFactor!(fgclient::NavAbilityDFG, factor::DFG.AbstractDFGFactor)
+    facId = getId(fgclient.fg, factor.label)
 
-    variables = Dict("factorId" => factor.id)
+    variables = (factorId=facId,)
 
     response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_DELETE_FACTOR;
         variables,
         throw_on_execution_error = true,
     )
 
-    return response.data
+    #TODO check if factor was deleted in response
+
+    return factor
+end
+
+function deleteFactor!(fgclient::NavAbilityDFG, label::Symbol)
+    f = getFactor(fgclient, label)
+    return deleteFactor!(fgclient, f)
 end

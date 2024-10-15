@@ -1,40 +1,62 @@
-# type builder for JSON3 deserialization of chain of 
-# user[] - robot[] - session[] - variable - T[]
-function user_robot_session_variable_T(T)
-    Vector{
-        Dict{
-            String,
-            Vector{Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{T}}}}}}},
-        },
-    }
-end
 
-function createConnect(id::UUID)
-    return Dict("connect" => Dict("where" => Dict("node" => Dict("id" => string(id)))))
-end
-
-function createVariableConnect(
-    userLabel::String,
-    robotLabel::String,
-    sessionLabel::String,
-    label::Symbol,
-)
-    return Dict(
-        "connect" => Dict(
-            "where" => Dict(
-                "node" => Dict(
-                    "label" => string(label),
-                    "sessionLabel" => string(sessionLabel),
-                    "robotLabel" => string(robotLabel),
-                    "userLabel" => string(userLabel),
-                ),
-            ),
-        ),
-    )
-    # variable": {"connect": { "where": {"node": {"label": "x0", "robotLabel": "IntegrationRobot", "userLabel": 
-end
 # exists(client, context, label::Symbol) = 
-function getCommonProperties(::Type{T}, from::F) where {T, F}
+function getCommonProperties(::Type{T}, from::F, exclude = Symbol[]) where {T, F}
     commonfields = intersect(fieldnames(T), fieldnames(F))
+    setdiff!(commonfields, exclude)
     return (k => getproperty(from, k) for k in commonfields)
 end
+
+function handleQuery(response, nodeName::String, label::Symbol)
+    res = isnothing(response.data) ? nothing : get(response.data, nodeName, nothing)
+    if isnothing(res)
+        #TODO # throw correct error
+        error("Query '$nodeName' failed on $label")
+    elseif isempty(res)
+        throw(KeyError(label))
+    else
+        return res[1]
+    end
+end
+
+function handleQuery(response, nodeName::String)
+    res = isnothing(response.data) ? nothing : get(response.data, nodeName, nothing)
+    if isnothing(res)
+        #TODO # throw correct error
+        error("Query '$nodeName'")
+    else
+        return res
+    end
+end
+
+function handleMutate(response, mutation::String, return_node::Symbol)
+    res = isnothing(response.data) ? nothing : get(response.data, mutation, nothing)
+    if isnothing(res)
+        if !isnothing(response.errors) && !isempty(response.errors)
+            #TODO # throw correct error
+            throw(response.errors[1])
+        end
+    else
+        return res[return_node]
+    end
+end
+
+"""
+    getId
+Get the deterministic identifier (uuid v5) for a node.
+"""
+getId(ns::UUID, labels...) = uuid5(ns, string(labels...))
+getId(node::NvaNode, labels...) = getId(node.namespace, node.label, labels...)
+getId(fgclient::NavAbilityDFG, parent::NvaNode, label::Symbol) = getId(parent, label)
+getId(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGVariable, label::Symbol) = getId(fgclient.fg, parent.label, label)
+getId(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGFactor, label::Symbol) = getId(fgclient.fg, parent.label, label)
+
+"""
+    createConnect
+Create a connection gql query to a node.
+"""
+createConnect(id::UUID) = (connect = (where = (node = (id = string(id),),),),)
+createConnect(fgclient::NavAbilityDFG, parent::NvaNode{Factorgraph}) = (Factorgraph=createConnect(getId(parent)),)
+createConnect(fgclient::NavAbilityDFG, parent::NvaNode{Agent}) = (Agent=createConnect(getId(parent)),)
+createConnect(fgclient::NavAbilityDFG, parent::NvaNode{Model}) = (Model=createConnect(getId(parent)),)
+createConnect(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGVariable) = (Variable=createConnect(getId(fgclient.fg, parent.label)),)
+createConnect(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGFactor) = (Factor=createConnect(getId(fgclient.fg, parent.label)),)

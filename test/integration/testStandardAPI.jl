@@ -6,19 +6,20 @@ using Random
 using UUIDs
 
 apiUrl = get(ENV, "API_URL", "https://api.navability.io")
-userLabel = get(ENV, "USER_ID", "guest@navability.io")
-robotLabel = get(ENV, "ROBOT_ID", "TestRobot")
-sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
+apiUrl = get(ENV, "API_URL", "http://localhost:4141/graphql")
+orgId = UUID(get(ENV, "ORG_ID", "6e7009af-7d9b-4353-85e1-891bfa21c937"))
+agentLabel = Symbol(get(ENV, "AGENT_LABEL", "TestRobot"))
+fgLabel = Symbol("TestSession_" * randstring(7))
 
 @testset "nva-sdk-standard-api-testset" begin
-    client = NvaSDK.NavAbilityClient(apiUrl)
-    fgclient = NvaSDK.DFGClient(
+    client = NavAbilityClient(orgId, apiUrl)
+
+    fgclient = NvaSDK.NavAbilityDFG(
         client,
-        userLabel,
-        robotLabel,
-        sessionLabel;
-        addRobotIfNotExists = true,
-        addSessionIfNotExists = true,
+        fgLabel,
+        agentLabel;
+        addAgentIfAbsent = true,
+        addFgIfAbsent = true,
     )
 
     a_var = NvaSDK.addVariable!(fgclient, :x0, "Pose2")
@@ -109,6 +110,7 @@ sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
     ppe = MeanMaxPPE(:default, [0.0], [0.0], [0.0])
     a_ppe = addPPE!(fgclient, :x0, ppe)
     g_ppe = getPPE(fgclient, :x0)
+    ppe_default = deepcopy(g_ppe)
     @test a_ppe == g_ppe
 
     ppe = MeanMaxPPE(:parametric, [0.0], [0.0], [0.0])
@@ -120,18 +122,18 @@ sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
 
     #modify ppe max
     g_ppe.max[] = 1.0
-    u_ppe = updatePPE!(fgclient, g_ppe)
+    u_ppe = updatePPE!(fgclient, :x0, g_ppe)
     @test u_ppe.max == [1.0]
     @test u_ppe.id == g_ppe.id
     
     #TODO should this delete exist
-    d_ppe = deletePPE!(fgclient, g_ppe) 
-    #TODO should delete return the deleted node?
-    @test_broken d_ppe == u_ppe
+    # d_ppe = deletePPE!(fgclient, g_ppe) 
+    d_ppe = deletePPE!(fgclient, :x0, :parametric) 
+    @test d_ppe == u_ppe
 
     d_ppe = deletePPE!(fgclient, :x0, :default)
     #TODO should delete return the deleted node?
-    @test_broken d_ppe == u_ppe
+    @test d_ppe == ppe_default
 
     @test isempty(listPPEs(fgclient, :x0))
 

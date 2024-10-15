@@ -8,19 +8,23 @@ include("./testFactor.jl")
 include("./testSolve.jl")
 include("./testExportSession.jl")
 
-apiUrl = get(ENV, "API_URL", "https://api.navability.io")
+apiUrl = get(ENV, "API_URL", "http://localhost:4141/graphql")
 userLabel = get(ENV, "USER_ID", "guest@navability.io")
-robotLabel = get(ENV, "ROBOT_ID", "IntegrationRobot")
-sessionLabel = get(ENV, "SESSION_ID", "TestSession" * randstring(7))
-sessionLabel1d = get(ENV, "SESSION_ID", "TestSession1D" * randstring(7))
-sessionLabel2d = get(ENV, "SESSION_ID", "TestSession2D" * randstring(7))
-sessionLabel3d = get(ENV, "SESSION_ID", "TestSession3D" * randstring(7))
+agentLabel = Symbol(get(ENV, "AGENT_ID", "IntegrationRobot"))
+fgLabel = Symbol("TestSession_" * randstring(7))
+fgLabel1d = Symbol("TestSession1D_" * randstring(7))
+fgLabel2d = Symbol("TestSession2D_" * randstring(7))
+fgLabel3d = Symbol("TestSession3D_" * randstring(7))
 
 @testset "nva-sdk-integration-testset" begin
     # Creating one client and two contexts
-    client = NavAbilityClient(apiUrl)
-    fgclient_1D = DFGClient(client, userLabel, robotLabel, sessionLabel1d; addSessionIfNotExists=true)
-    fgclient_2D = DFGClient(client, userLabel, robotLabel, sessionLabel2d; addSessionIfNotExists=true)
+    client = NavAbilityClient(orgId, apiUrl)
+
+    NvaSDK.addAgent!(client, agentLabel)
+    NvaSDK.addFg!(client, fgLabel1d)
+    NvaSDK.addFg!(client, fgLabel2d)
+    fgclient_1D = NavAbilityDFG(client, fgLabel1d, agentLabel; addSessionIfNotExists=true)
+    fgclient2D = NavAbilityDFG(client, fgLabel2d, agentLabel; addSessionIfNotExists=true)
 
     @info "Running nva-sdk-integration-testset..."
 

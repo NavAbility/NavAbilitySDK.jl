@@ -121,7 +121,7 @@ end
 # =========================================================================================
 # get and set!
 
-function getRobotMeta(fgclient::DFGClient)
+function getRobotMeta(fgclient::NavAbilityDFG)
     gql = """
       {
         users(where: { id: "$(fgclient.user.id)" }) {
@@ -143,7 +143,7 @@ function getRobotMeta(fgclient::DFGClient)
     end
 end
 
-function setRobotMeta!(fgclient::DFGClient, smallData::Dict{Symbol, DFG.SmallDataTypes})
+function setRobotMeta!(fgclient::NavAbilityDFG, smallData::Dict{Symbol, DFG.SmallDataTypes})
     meta = base64encode(JSON3.write(smallData))
 
     gql = """
@@ -166,13 +166,13 @@ function setRobotMeta!(fgclient::DFGClient, smallData::Dict{Symbol, DFG.SmallDat
     )
 end
 
-DFG.getRobotData(fg::DFGClient, key::Symbol) = getRobotMeta(fg)[key]
-DFG.setRobotData!(fg::DFGClient, data::Dict{Symbol, DFG.SmallDataTypes}) = setRobotMeta!(fg, data)
+DFG.getRobotData(fg::NavAbilityDFG, key::Symbol) = getRobotMeta(fg)[key]
+DFG.setRobotData!(fg::NavAbilityDFG, data::Dict{Symbol, DFG.SmallDataTypes}) = setRobotMeta!(fg, data)
 
 ##
 
 
-function getSessionMeta(fgclient::DFGClient)
+function getSessionMeta(fgclient::NavAbilityDFG)
     gql = """
       {
         users(where: { id: "$(fgclient.user.id)" }) {
@@ -197,7 +197,7 @@ function getSessionMeta(fgclient::DFGClient)
     end
 end
 
-function setSessionMeta!(fgclient::DFGClient, smallData::Dict{Symbol, DFG.SmallDataTypes})
+function setSessionMeta!(fgclient::NavAbilityDFG, smallData::Dict{Symbol, DFG.SmallDataTypes})
     meta = base64encode(JSON3.write(smallData))
 
     gql = """
@@ -220,11 +220,11 @@ function setSessionMeta!(fgclient::DFGClient, smallData::Dict{Symbol, DFG.SmallD
     )
 end
 
-DFG.getSessionData(fg::DFGClient, key::Symbol) = getSessionMeta(fg)[key]
-DFG.setSessionData!(fg::DFGClient, data::Dict{Symbol, DFG.SmallDataTypes}) = setSessionMeta!(fg, data)
+DFG.getSessionData(fg::NavAbilityDFG, key::Symbol) = getSessionMeta(fg)[key]
+DFG.setSessionData!(fg::NavAbilityDFG, data::Dict{Symbol, DFG.SmallDataTypes}) = setSessionMeta!(fg, data)
 
 ##
-function deleteSession!(fgclient::DFGClient)
+function deleteSession!(fgclient::NavAbilityDFG)
     nvars = length(listVariables(fgclient))
     nvars > 0 && error(
         "Only empty sessions can be deleted, $(fgclient.session.label) still has $nvars variables.",

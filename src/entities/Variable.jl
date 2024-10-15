@@ -1,4 +1,5 @@
 Base.@kwdef struct VariableCreateInput
+    id::UUID
     label::String
     nstime::String = ""
     variableType::String
@@ -8,15 +9,11 @@ Base.@kwdef struct VariableCreateInput
     _version::String = string(DFG._getDFGVersion())
     timestamp::String = string(now(localzone()))
 
-    userLabel::String
-    robotLabel::String
-    sessionLabel::String
-
     ppes::Any = nothing #TODO VariablePpesFieldInput
     blobEntries::Any = nothing #TODO VariableBlobEntriesFieldInput
     solverData::Any = nothing #TODO VariableSolverDataFieldInput
     factors::Any = nothing #TODO VariableFactorsFieldInput
-    session::Any #TODO VariableSessionFieldInput
+    fg::Any #TODO VariableFactorGraphFieldInput
 end
 
 function StructTypes.omitempties(::Type{VariableCreateInput})
@@ -24,6 +21,7 @@ function StructTypes.omitempties(::Type{VariableCreateInput})
 end
 
 Base.@kwdef struct PPECreateInput
+    id::UUID
     solveKey::Symbol
     suggested::Vector{Float64}
     max::Vector{Float64}
@@ -31,22 +29,19 @@ Base.@kwdef struct PPECreateInput
     _type::String = "MeanMaxPPE"
     _version::String = string(DFG._getDFGVersion())
 
-    userLabel::String
-    robotLabel::String
-    sessionLabel::String
-    variableLabel::String
-
-    suggested_cartesian::Any = nothing #TODO PointInput
-    max_cartesian::Any = nothing #TODO PointInput
-    mean_cartesian::Any = nothing #TODO PointInput
+    # suggested_cartesian::Any = nothing #TODO PointInput
+    # max_cartesian::Any = nothing #TODO PointInput
+    # mean_cartesian::Any = nothing #TODO PointInput
     variable::Any  #TODO PPEVariableFieldInput
 end
 
 function StructTypes.omitempties(::Type{PPECreateInput})
-    return (:suggested_cartesian, :max_cartesian, :mean_cartesian, :variable)
+    # return (:suggested_cartesian, :max_cartesian, :mean_cartesian, :variable)
+    return (:variable, )
 end
 
 Base.@kwdef struct SolverDataCreateInput
+    id::UUID
     solveKey::Symbol
     BayesNetOutVertIDs::Vector{Symbol}
     BayesNetVertID::Symbol
@@ -68,17 +63,13 @@ Base.@kwdef struct SolverDataCreateInput
     covar::Vector{Float64} = Float64[]
     _version::String
 
-    userLabel::String
-    robotLabel::String
-    sessionLabel::String
-    variableLabel::String
-
     variable::Any # TODO SolverDataVariableFieldInput
 end
 
 StructTypes.omitempties(::Type{SolverDataCreateInput}) = (:variable,)
 
 Base.@kwdef struct BlobEntryCreateInput
+    id::UUID
     blobId::UUID
     originId::UUID
     label::Symbol
@@ -88,28 +79,30 @@ Base.@kwdef struct BlobEntryCreateInput
     blobstore::Symbol
     origin::String
     metadata::String
-    _type::String
     _version::String
     timestamp::ZonedDateTime
+    size::Int
 
-    userLabel::String
-    robotLabel::String = ""
-    sessionLabel::String = ""
-    variableLabel::String = ""
-    factorLabel::String = ""
+    # userLabel::String
+    # robotLabel::String = ""
+    # sessionLabel::String = ""
+    # variableLabel::String = ""
+    # factorLabel::String = ""
 
     parent::Any = nothing# BlobEntryParentFieldInput
 end
 
 function StructTypes.omitempties(::Type{BlobEntryCreateInput})
-    return (:blobId, :user, :robot, :session, :variable, :factor)
+    return (:blobId, :size)
 end
 
 # Variables
 # Used by create and update
+#FIXME use named tuple
 struct VariableResponse
     variables::Vector{Variable}
 end
+# VariableResponse = @NamedTuple{variables::Vector{Variable}}
 
 # VariableNodeData
 # Used by create and update

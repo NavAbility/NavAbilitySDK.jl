@@ -27,26 +27,17 @@ fragment factor_full_fields on Factor {
 }
 """
 
-GQL_GET_FACTOR_FROM_USER = """
+GQL_GET_FACTOR = """
 $(GQL_FRAGMENT_FACTORS)
 query get_variable(
-  \$userId: ID!
-  \$robotId: ID!
-  \$sessionId: ID!
-  \$factorLabel: String!
+  \$facId: ID!
   \$fields_summary: Boolean! = true
   \$fields_full: Boolean! = true
 ) {
-  users(where: { id: \$userId }) {
-    robots(where: { id: \$robotId }) {
-      sessions(where: { id: \$sessionId }) {
-        factors(where: { label: \$factorLabel }) {
-          ...factor_skeleton_fields
-          ...factor_summary_fields @include(if: \$fields_summary)
-          ...factor_full_fields @include(if: \$fields_full)
-        }
-      }
-    }
+  factors(where: { id: \$facId }) {
+    ...factor_skeleton_fields
+    ...factor_summary_fields @include(if: \$fields_summary)
+    ...factor_full_fields @include(if: \$fields_full)
   }
 }
 """
@@ -66,41 +57,18 @@ mutation sdk_add_factors(\$factorsToCreate: [FactorCreateInput!]!) {
 }
 """
 
-GQL_GET_FACTORS_BY_LABEL = """
-$(GQL_FRAGMENT_FACTORS)
-query sdk_get_factors_by_label (
-      \$sessionId: ID!,
-      \$factorLabels: [String!]!,
-      \$fields_summary: Boolean! = false, 
-      \$fields_full: Boolean! = false) {
-  factors (
-      where: {session: {id: \$sessionId}, label_IN: \$factorLabels},
-      options: { sort: [{ label: ASC } ]}) {
-      ...factor_skeleton_fields
-      ...factor_summary_fields @include(if: \$fields_summary)
-      ...factor_full_fields @include(if: \$fields_full)
-  }
-}
-"""
-
 GQL_GET_FACTORS = """
 $(GQL_FRAGMENT_FACTORS)
 query sdk_get_factors(
-  \$userId: ID!
-  \$robotId: ID!
-  \$sessionId: ID!
+  \$fgId: ID!
   \$fields_summary: Boolean! = true
   \$fields_full: Boolean! = true
 ) {
-  users(where: { id: \$userId }) {
-    robots(where: { id: \$robotId }) {
-      sessions(where: { id: \$sessionId }) {
-        factors {
-          ...factor_skeleton_fields
-          ...factor_summary_fields @include(if: \$fields_summary)
-          ...factor_full_fields @include(if: \$fields_full)
-        }
-      }
+  factorgraphs(where: { id: \$fgId }) {
+    factors {
+      ...factor_skeleton_fields
+      ...factor_summary_fields @include(if: \$fields_summary)
+      ...factor_full_fields @include(if: \$fields_full)
     }
   }
 }
@@ -129,35 +97,9 @@ query sdk_get_factors_filtered(
 """
 
 GQL_LISTFACTORS = """
-query sdk_list_factors(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!) {
-  users(where: { id: \$userId }) {
-    robots(where: { id: \$robotId }) {
-      sessions(where: { id: \$sessionId }) {
-        factors {
-          label
-        }
-      }
-    }
-  }
-}
-"""
-
-GQL_LIST_FACTOR_NEIGHBORS = GQL.gql"""
-query listFactorNeighbors(
-  $userLabel: String!
-  $robotLabel: String!
-  $sessionLabel: String!
-  $factorLabel: String!
-) {
-  factors(
-    where: {
-      userLabel: $userLabel
-      robotLabel: $robotLabel
-      sessionLabel: $sessionLabel
-      label: $factorLabel
-    }
-  ) {
-    variables {
+query sdk_list_factors(\$fgId: ID!) {
+  factorgraphs(where: { id: \$fgId }) {
+    factors {
       label
     }
   }

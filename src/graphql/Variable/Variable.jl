@@ -45,43 +45,28 @@ fragment variable_full_fields on Variable {
 GQL_GET_VARIABLE = """
 $(GQL_FRAGMENT_VARIABLES)
 query get_variable(
-  \$userId: ID!
-  \$robotId: ID!
-  \$sessionId: ID!
-  \$variableLabel: String!
+  \$varId: ID!
   \$fields_summary: Boolean! = true
   \$fields_full: Boolean! = true
 ) {
-  users(where: { id: \$userId }) {
-    robots(where: { id: \$robotId }) {
-      sessions(where: { id: \$sessionId }) {
-        variables(where: { label: \$variableLabel }) {
-          ...variable_skeleton_fields
-          ...variable_summary_fields @include(if: \$fields_summary)
-          ...variable_full_fields @include(if: \$fields_full)
-        }
-      }
+    variables(where: { id: \$varId }) {
+      ...variable_skeleton_fields
+      ...variable_summary_fields @include(if: \$fields_summary)
+      ...variable_full_fields @include(if: \$fields_full)
     }
-  }
 }
 """
 
-GQL_GET_VARIABLES_BY_LABELS = """
+GQL_GET_VARIABLES_BY_IDS = """
 $(GQL_FRAGMENT_VARIABLES)
 query get_variables(
-  \$userLabel: String!
-  \$robotLabel: String!
-  \$sessionLabel: String!
-  \$variableLabels: [String!]!
+  \$variableIds: [ID!]!
   \$fields_summary: Boolean! = true
   \$fields_full: Boolean! = true
   ) {
     variables(
       where: {
-        userLabel: \$userLabel
-        robotLabel: \$robotLabel
-        sessionLabel: \$sessionLabel
-        label_IN: \$variableLabels
+        id_IN: \$variableIds
       }
     ) {
       ...variable_skeleton_fields
@@ -94,25 +79,24 @@ query get_variables(
 GQL_GET_VARIABLES = """
 $(GQL_FRAGMENT_VARIABLES)
 query get_variables(
-  \$userId: ID!
-  \$robotId: ID!
-  \$sessionId: ID!
+  \$fgId: ID!
   \$fields_summary: Boolean! = true
   \$fields_full: Boolean! = true
 ) {
-  users(where: { id: \$userId }) {
-    robots(where: { id: \$robotId }) {
-      sessions(where: { id: \$sessionId }) {
-        variables {
-          ...variable_skeleton_fields
-          ...variable_summary_fields @include(if: \$fields_summary)
-          ...variable_full_fields @include(if: \$fields_full)
-        }
+    factorgraphs(where: { id: \$fgId }) {
+      variables {
+        ...variable_skeleton_fields
+        ...variable_summary_fields @include(if: \$fields_summary)
+        ...variable_full_fields @include(if: \$fields_full)
       }
-    }
   }
 }
 """
+# TODO profile 
+# factorgraphs(where: { id: \$fgId }) {
+#   variables {
+# vs
+# variables(where: {fg: {id: \$fgId}}) {
 
 GQL_ADD_VARIABLES = """
 $(GQL_FRAGMENT_VARIABLES)
@@ -127,33 +111,23 @@ mutation sdk_add_variables(\$variablesToCreate: [VariableCreateInput!]!) {
 }
 """
 
-GQL_LIST_VARIABLES = """
-query list_variables(\$userId: ID!, \$robotId: ID!, \$sessionId: ID!) {
-  users(where: { id: \$userId }) {
-    robots(where: { id: \$robotId }) {
-      sessions(where: { id: \$sessionId }) {
-        variables {
-          label
-        }
-      }
+GQL_LIST_VARIABLES = GQL.gql"""
+query list_variables($fgId: ID!, $varwhere: VariableWhere = {}) {
+  factorgraphs(where: { id: $fgId }) {
+    variables (where: $varwhere){
+      label
     }
   }
 }
 """
 
 GQL_EXISTS_VARIABLE_FACTOR_LABEL = GQL.gql"""
-query($userId: ID!, $robotId: ID!, $sessionId: ID!, $label: String!) {
-  users(where: { id: $userId }) {
-    robots(where: { id: $robotId }) {
-      sessions(where: { id: $sessionId }) {
-        variables(where: { label: $label }) {
-          label
-        }
-        factors(where: { label: $label }) {
-          label
-        }
-      }
-    }
+query($id: ID!) {
+  variables(where: { id: $id }) {
+    label
+  }
+  factors(where: { id: $id }) {
+    label
   }
 }
 """
@@ -161,38 +135,39 @@ query($userId: ID!, $robotId: ID!, $sessionId: ID!, $label: String!) {
 ##
 
 #TODO not used yet # also eg. (where :{AND:[{tags_INCLUDES: "POSE"}, {tags_INCLUDES:"VARIABLE"}]})
-GQL_GET_VARIABLES_FILTERED = """
-$(GQL_FRAGMENT_VARIABLES)
-query sdk_get_variables_filtered(
-  \$userId: ID!
-  \$robotId: ID!
-  \$sessionId: ID!
-  \$variable_label_regexp: String = ".*"
-  \$variable_tags: [String] = ["VARIABLE"]
-  \$solvable: Int! = 0
-  \$fields_summary: Boolean! = false
-  \$fields_full: Boolean! = false
-) {
-  users(where: { id: \$userId }) {
-    robots(where: { id: \$robotId }) {
-      sessions(where: { id: \$sessionId }) {
-        variables(
-          where: {
-            label_MATCHES: \$variable_label_regexp
-            tags: \$variable_tags
-            solvable_GTE: \$solvable
-          }
-          options: { sort: [{ label: ASC }] }
-        ) {
-          ...variable_skeleton_fields
-          ...variable_summary_fields @include(if: \$fields_summary)
-          ...variable_full_fields @include(if: \$fields_full)
-        }
-      }
-    }
-  }
-}
-"""
+# also update to org-fg
+# GQL_GET_VARIABLES_FILTERED = """
+# $(GQL_FRAGMENT_VARIABLES)
+# query sdk_get_variables_filtered(
+#   \$userId: ID!
+#   \$robotId: ID!
+#   \$sessionId: ID!
+#   \$variable_label_regexp: String = ".*"
+#   \$variable_tags: [String] = ["VARIABLE"]
+#   \$solvable: Int! = 0
+#   \$fields_summary: Boolean! = false
+#   \$fields_full: Boolean! = false
+# ) {
+#   users(where: { id: \$userId }) {
+#     robots(where: { id: \$robotId }) {
+#       sessions(where: { id: \$sessionId }) {
+#         variables(
+#           where: {
+#             label_MATCHES: \$variable_label_regexp
+#             tags: \$variable_tags
+#             solvable_GTE: \$solvable
+#           }
+#           options: { sort: [{ label: ASC }] }
+#         ) {
+#           ...variable_skeleton_fields
+#           ...variable_summary_fields @include(if: \$fields_summary)
+#           ...variable_full_fields @include(if: \$fields_full)
+#         }
+#       }
+#     }
+#   }
+# }
+# """
 
 GQL_DELETE_VARIABLE = GQL.gql"""
 mutation deleteVariable($variableId: ID!) {
@@ -206,134 +181,29 @@ mutation deleteVariable($variableId: ID!) {
         where: { node: { variableConnection: { node: { id: $variableId } } } }
       }
       blobEntries: {
-        where: {
-          node: { parentConnection: {Variable: {node: {id: $variableId } } } }
-        }
+        where: { node: { parentConnection: {Variable: {node: {id: $variableId } } } } }
+      }
+      factors: {
+        where: { node: { variablesConnection_SOME: {node: {id: $variableId } } } } 
       }
     }
   ) {
     nodesDeleted
     relationshipsDeleted
-  }
-}
-"""
-
-GQL_DELETE_VARIABLE_BY_LABEL = GQL.gql"""
-mutation deleteVariable(
-  $userLabel: String!
-  $robotLabel: String!
-  $sessionLabel: String!
-  $variableLabel: String!
-) {
-  deleteVariables(
-    where: {
-      userLabel: $userLabel
-      robotLabel: $robotLabel
-      sessionLabel: $sessionLabel
-      label: $variableLabel
-    }
-    delete: {
-      ppes: {
-        where: {
-          node: {
-            variableConnection: {
-              node: {
-                userLabel: $userLabel
-                robotLabel: $robotLabel
-                sessionLabel: $sessionLabel
-                label: $variableLabel
-              }
-            }
-          }
-        }
-      }
-      solverData: {
-        where: {
-          node: {
-            variableConnection: {
-              node: {
-                userLabel: $userLabel
-                robotLabel: $robotLabel
-                sessionLabel: $sessionLabel
-                label: $variableLabel
-              }
-            }
-          }
-        }
-      }
-      blobEntries: {
-        where: {
-          node: {
-            parentConnection: {
-              Variable: {
-                node: {
-                  userLabel: $userLabel
-                  robotLabel: $robotLabel
-                  sessionLabel: $sessionLabel
-                  label: $variableLabel
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  ) {
-    nodesDeleted
-    relationshipsDeleted
-  }
-}
-"""
-
-GQL_LIST_VARIABLE_NEIGHBORS = GQL.gql"""
-query listVariableNeighbors(
-  $userLabel: String!
-  $robotLabel: String!
-  $sessionLabel: String!
-  $variableLabel: String!
-) {
-  variables(
-    where: {
-      userLabel: $userLabel
-      robotLabel: $robotLabel
-      sessionLabel: $sessionLabel
-      label: $variableLabel
-    }
-  ) {
-    factors {
-      label
-    }
   }
 }
 """
 
 GQL_LIST_NEIGHBORS = GQL.gql"""
 query listNeighbors(
-  $userLabel: String!
-  $robotLabel: String!
-  $sessionLabel: String!
-  $nodeLabel: String!
+  $id: ID!
 ) {
-  variables(
-    where: {
-      userLabel: $userLabel
-      robotLabel: $robotLabel
-      sessionLabel: $sessionLabel
-      label: $nodeLabel
-    }
-  ) {
+  variables( where: {id: $id}) {
     factors {
       label
     }
   }
-  factors(
-    where: {
-      userLabel: $userLabel
-      robotLabel: $robotLabel
-      sessionLabel: $sessionLabel
-      label: $nodeLabel
-    }
-  ) {
+  factors( where: {id: $id}) {
     variables {
       label
     }
@@ -343,21 +213,18 @@ query listNeighbors(
 
 GQL_FIND_VARIABLES_NEAR_TIMESTAMP = GQL.gql"""
 query findVariablesNearTime(
-  $userLabel: String!
-  $robotLabel: String!
-  $sessionLabel: String!
+  $fgId: ID!
   $fromTime: DateTime!
   $toTime: DateTime!
 ) {
-  variables(
-    where: {
-      userLabel: $userLabel
-      robotLabel: $robotLabel
-      sessionLabel: $sessionLabel
-      AND: [{ timestamp_GT: $fromTime }, { timestamp_LT: $toTime }]
+  factorgraphs(where: { id: $fgId }) {
+    variables(
+      where: {
+        AND: [{ timestamp_GT: $fromTime }, { timestamp_LT: $toTime }]
+      }
+    ) {
+      label
     }
-  ) {
-    label
   }
 }
 """

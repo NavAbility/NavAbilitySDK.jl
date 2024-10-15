@@ -1,59 +1,149 @@
+QUERY_GET_FACTORGRAPH = """
+query QUERY_GET_FACTORGRAPH(\$fgId: ID!) {
+  factorgraphs (where: {id: \$fgId}) {
+    label
+    createdTimestamp
+    namespace
+  }
+}
+"""
 
-function listVariableNeighbors(fgclient::DFGClient, variableLabel::Symbol)
-    variables = Dict(
-        "userLabel" => fgclient.user.label,
-        "robotLabel" => fgclient.robot.label,
-        "sessionLabel" => fgclient.session.label,
-        "variableLabel" => variableLabel,
-    )
+function getFg(client::NavAbilityClient, label::Symbol)
+    fgId = getId(client.id, label)
+    variables = Dict("fgId" => fgId)
 
-    T = Vector{Dict{String, Vector{NamedTuple{(:label,), Tuple{Symbol}}}}}
+    T = Vector{NvaNode{Factorgraph}}
 
     response = GQL.execute(
-        fgclient.client,
-        GQL_LIST_VARIABLE_NEIGHBORS,
+        client.client,
+        QUERY_GET_FACTORGRAPH,
         T;
         variables,
         throw_on_execution_error = true,
     )
-    return last.(response.data["variables"][1]["factors"])
+
+    return handleQuery(response, "factorgraphs", label)
+
 end
 
-function listFactorNeighbors(fgclient::DFGClient, factorLabel::Symbol)
+GQL_ADD_FACTORGRAPH = GQL.gql"""
+mutation addFactorGraph(
+    $orgId: ID = ""
+    $id: ID = "",
+    $label: String = "",
+    $description: String = "",
+    $metadata: String = "",
+    $_version: String = "",
+) {
+  addFactorgraphs(
+    input: {id: $id, label: $label, _version: $_version, description: $description, metadata: $metadata, org: {connect: {where: {node: {id: $orgId}}}}}
+  ) {
+    factorgraphs {
+        label
+        createdTimestamp
+        namespace
+    }
+  }
+}
+"""
+
+function addFg!(client::NavAbilityClient, label::Symbol)
+    @assert isValidLabel(label) "Factor graph label ($Label) is not a valid label"
+
     variables = Dict(
-        "userLabel" => fgclient.user.label,
-        "robotLabel" => fgclient.robot.label,
-        "sessionLabel" => fgclient.session.label,
-        "factorLabel" => factorLabel,
+        "orgId" => client.id,
+        "id" => getId(client.id, label),
+        "label" => label,
+        "_version" => DFG._getDFGVersion(),
     )
 
-    T = Vector{Dict{String, Vector{NamedTuple{(:label,), Tuple{Symbol}}}}}
+    # FactorGraphRemoteResponse
+    T = @NamedTuple{factorgraphs::Vector{NvaNode{Factorgraph}}}
+
+    response =
+        GQL.execute(client.client, GQL_ADD_FACTORGRAPH, T; variables, throw_on_execution_error = true)
+
+    return handleMutate(response, "addFactorgraphs", :factorgraphs)[1]
+end
+
+GQL_DELETE_FG = GQL.gql"""
+mutation deleteFG($id: ID!) {
+  deleteFactorgraph(
+    where: { id: $id }
+    delete: {
+      blobEntries: {
+        where: { node: { parentConnection: {Factorgraph: {node: {id: $id } } } } }
+      }
+    }
+  ) {
+    nodesDeleted
+    relationshipsDeleted
+  }
+}
+"""
+
+function deleteFg!(fgclient::NavAbilityDFG)
+    
+    id = getId(fgclient.fg)
+    variables = Dict("id" => id)
+
+    nvars = length(listVariables(fgclient))
+    nvars > 0 && error(
+        "Only empty sessions can be deleted, $(fgclient.session.label) still has $nvars variables.",
+    )
+
+    nfacts = length(listFactors(fgclient))
+    nfacts > 0 && error(
+        "Only empty sessions can be deleted, $(fgclient.session.label) still has $nfacts factors.",
+    )
+
+    variables = Dict("sessionId" => fgclient.session.id)
+
+    fgId = getId(client.id, label)
+    variables = Dict("fgId" => fgId)
 
     response = GQL.execute(
-        fgclient.client,
-        GQL_LIST_FACTOR_NEIGHBORS,
-        T;
+        fgclient.client.client,
+        GQL_DELETE_FG;
         variables,
         throw_on_execution_error = true,
     )
-    return last.(response.data["factors"][1]["variables"])
+
+    return response.data
 end
 
-#TODO should getNeighbors be listNeighbors
-DFG.getNeighbors(fgclient::DFGClient, nodeLabel::Symbol) = listNeighbors(fgclient, nodeLabel)
+QUERY_LIST_FACTORGRAPHS = GQL.gql"""
+query listFgs($id: ID!) {
+    orgs(where: {id: $id}) {
+        fgs {
+            label
+        }
+    }
+}
+"""
 
-function listNeighbors(fgclient::DFGClient, nodeLabel::Symbol)
-    variables = Dict(
-        "userLabel" => fgclient.user.label,
-        "robotLabel" => fgclient.robot.label,
-        "sessionLabel" => fgclient.session.label,
-        "nodeLabel" => nodeLabel,
+function listFgs(client::NavAbilityClient)
+
+    T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
+
+    response = GQL.execute(
+            client.client,
+            QUERY_LIST_FACTORGRAPHS,
+            T;
+            variables = (id=client.id,),
+            throw_on_execution_error = true,
     )
+
+    return last.(handleQuery(response, "orgs", Symbol(client.id))["fgs"])
+end
+
+function DFG.listNeighbors(fgclient::NavAbilityDFG, label::Symbol)
+    variables = (id=getId(fgclient.fg, label),)
 
     T = Vector{Dict{String, Vector{NamedTuple{(:label,), Tuple{Symbol}}}}}
 
     response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_LIST_NEIGHBORS,
         T;
         variables,
@@ -69,23 +159,63 @@ function listNeighbors(fgclient::DFGClient, nodeLabel::Symbol)
     return union(flbls, vlbls)
 end
 
-function exists(fgclient::DFGClient, label::Symbol)
-    variables = Dict(
-        "userId" => fgclient.user.id,
-        "robotId" => fgclient.robot.id,
-        "sessionId" => fgclient.session.id,
-        "label" => label,
-    )
+function exists(fgclient::NavAbilityDFG, label::Symbol)
+    variables = (id=getId(fgclient.fg, label),)
 
     response = GQL.execute(
-        fgclient.client,
+        fgclient.client.client,
         GQL_EXISTS_VARIABLE_FACTOR_LABEL;
         variables,
         throw_on_execution_error = true,
     )
 
-    hasvar = !isempty(response.data["users"][1]["robots"][1]["sessions"][1]["variables"])
-    hasfac = !isempty(response.data["users"][1]["robots"][1]["sessions"][1]["factors"])
+    hasvar = !isempty(response.data["variables"])
+    hasfac = !isempty(response.data["factors"])
 
     return hasvar || hasfac
+end
+
+#TODO update to standard pattern
+function DFG.getFgMetadata(fgclient::NavAbilityDFG)
+    gql = """
+    {
+        factorgraphs(where: {id: "$(getId(fgclient.fg))"}) {
+            metadata
+        }
+    }
+    """
+    response = GQL.execute(fgclient.client.client, gql; throw_on_execution_error = true)
+    b64data = response.data["factorgraphs"][1]["metadata"]
+
+    if isnothing(b64data) || b64data == ""
+        return Dict{Symbol, DFG.SmallDataTypes}()
+    else
+        return JSON3.read(
+            base64decode(b64data),
+            Dict{Symbol, DFG.SmallDataTypes},
+        )
+    end
+end
+
+function DFG.setFgMetadata!(fgclient::NavAbilityDFG, smallData::Dict{Symbol, DFG.SmallDataTypes})
+    meta = base64encode(JSON3.write(smallData))
+
+    gql = """
+    mutation {
+      updateFactorgraphs(
+        where: { id: "$(getId(fgclient.fg))" }
+        update: { metadata: "$(meta)" }
+      ) {
+        factorgraphs {
+          metadata
+        }
+      }
+    }
+    """
+    response = GQL.execute(fgclient.client.client, gql; throw_on_execution_error = true)
+
+    return JSON3.read(
+        base64decode(response.data["updateFactorgraphs"]["factorgraphs"][1]["metadata"]),
+        Dict{Symbol, DFG.SmallDataTypes},
+    )
 end

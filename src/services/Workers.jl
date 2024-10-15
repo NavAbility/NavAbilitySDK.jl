@@ -4,7 +4,7 @@ mutation startWorker(\$input: JSON = "", \$workerLabel: mutationInput_post_start
   startWorker(input: \$input, workerLabel: \$workerLabel)
 }
 """
-function startWorker(fgclient::DFGClient, workerLabel::String, payload)
+function startWorker(fgclient::NavAbilityDFG, workerLabel::String, payload)
     response = NvaSDK.GQL.execute(
         fgclient.client,
         GQL_START_WORKER,

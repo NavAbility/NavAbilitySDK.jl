@@ -7,28 +7,33 @@ using Random
 using UUIDs
 
 apiUrl = get(ENV, "API_URL", "https://api.navability.io")
+apiUrl = get(ENV, "API_URL", "http://localhost:4141/graphql")
+
 userLabel = get(ENV, "USER_ID", "guest@navability.io")
 robotLabel = get(ENV, "ROBOT_ID", "TestRobot")
 sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
+agentLabel = Symbol(get(ENV, "AGENT_LABEL", "TestRobot"))
+fgLabel = Symbol("TestSession_" * randstring(7))
+
 # sessionLabel = "TestSession_RG94"
 
 @testset "Create fg client" begin
-    global client = NavAbilityClient(apiUrl)
-    global fgclient = DFGClient(
+    global client = NavAbilityClient(orgId, apiUrl)
+    global fgclient = NavAbilityDFG(
         client,
-        userLabel,
-        robotLabel,
-        sessionLabel;
-        addRobotIfNotExists = true,
-        addSessionIfNotExists = true,
+        fgLabel,
+        agentLabel;
+        addAgentIfAbsent = true,
+        addFgIfAbsent = true,
     )
     #just trigger show to check for error
     display(fgclient)
 
     # test easy constructor
-    fgclient2 = DFGClient(userLabel, robotLabel, sessionLabel; apiUrl)
-    @test fgclient.session == fgclient2.session
-
+    fgclient2 = NavAbilityDFG(orgId, fgLabel, agentLabel; apiUrl)
+    @test fgclient.fg == fgclient2.fg
+    @test fgclient.agent == fgclient2.agent
+    @test fgclient.client.id == fgclient2.client.id
 end
 
 @testset "User Robot Session" begin
@@ -51,7 +56,7 @@ end
 
     context = NvaSDK.Context(user, robot, session)
 
-    tmp_fgclient = DFGClient(client, userLabel, temp_robotLabel, temp_sessionLabel)
+    tmp_fgclient = NavAbilityDFG(client, userLabel, temp_robotLabel, temp_sessionLabel)
     deleteSession!(tmp_fgclient)
 
     deleteRobot!(client, userLabel, temp_robotLabel)
@@ -128,9 +133,9 @@ end
     global fgclient,v1,v2,f1
     @test getVariable(fgclient, v1.label) == v1
     @test getFactor(fgclient, f1.label) == f1
-    @test_throws Exception getVariable(fgclient, :nope)
+    @test_throws KeyError getVariable(fgclient, :nope)
     @test_throws Exception getVariable(fgclient, "nope")
-    @test_throws Exception getFactor(fgclient, :nope)
+    @test_throws KeyError getFactor(fgclient, :nope)
     @test_throws Exception getFactor(fgclient, "nope")
 
     #spot check summaries and skeleton
@@ -172,10 +177,10 @@ end
 
     # change some things and update
     push!(par_vnd.covar, 1.1)
-    u_par_vnd = updateVariableSolverData!(fgclient, par_vnd)
+    u_par_vnd = updateVariableSolverData!(fgclient, :a, par_vnd)
     @test u_par_vnd.covar == [1.1]
 
-    d_vnd = deleteVariableSolverData!(fgclient, par_vnd)
+    d_vnd = deleteVariableSolverData!(fgclient, :a, par_vnd)
 
     @test listVariableSolverData(fgclient, :a) == [:default]
 
@@ -191,7 +196,8 @@ end
         hash = "",
         origin = "",
         description = "",
-        mimeType = ""
+        mimeType = "",
+        size = 10,
     )
 
     de2 = BlobEntry(
@@ -202,7 +208,8 @@ end
         hash = "",
         origin = "",
         description = "",
-        mimeType = ""
+        mimeType = "",
+        size=100,
     )
 
     de2_update = BlobEntry(
@@ -213,7 +220,8 @@ end
         hash = "",
         origin = "",
         description = "",
-        mimeType = "image/jpg"
+        mimeType = "image/jpg",
+        size=101,
     )
 
     #add
@@ -225,10 +233,10 @@ end
     @test a_de2 == getBlobEntry(fgclient, :a, :key2)
     @test a_de2 in getBlobEntries(fgclient, :a)
 
-    # FIXME should not throw bounds error but KeyError
-    @test_throws Exception getBlobEntry(fgclient, :b, :key1)
+    @test_throws KeyError getBlobEntry(fgclient, :b, :key1)
 
     #update
+    #TODO updateBlobEntry! not implemented
     @test_broken updateBlobEntry!(fgclient, :a, de2_update) == de2_update
     
     #list
@@ -240,14 +248,14 @@ end
     
     #delete
     # @test deleteBlobEntry!(fgclient, :a, :key1) == a_de1
-    @test_broken deleteBlobEntry!(fgclient, :a, :key1)
-    @test_broken listBlobEntries(fgclient, :a) == Symbol[:key2]
+    @test deleteBlobEntry!(fgclient, :a, :key1).label == :key1
+    @test listBlobEntries(fgclient, :a) == Symbol[:key2]
     #delete from ddfg
-    @test_broken deleteBlobEntry!(fgclient, :a, :key2)
-    @test_broken listBlobEntries(fgclient, :a) == Symbol[]
+    @test deleteBlobEntry!(fgclient, :a, :key2).label == :key2
+    @test listBlobEntries(fgclient, :a) == Symbol[]
 
     #Testing session blob entries
-    a_de = addSessionBlobEntries!(fgclient, [de1])[1]
+    a_de = NvaSDK.addFgBlobEntries!(fgclient, [de1])[1]
     g_de = getSessionBlobEntry(fgclient, :key1)
     @test a_de == g_de
     @test listSessionBlobEntries(fgclient) == [:key1]
@@ -287,7 +295,7 @@ end
     # modify ppe2 
     ppe2.mean[] = 5.5
     # they are no longer the same because of updated timestamp
-    @test ppe2 != updatePPE!(fgclient, ppe2)
+    @test ppe2 != updatePPE!(fgclient, :a, ppe2)
 
 end
 
@@ -358,8 +366,8 @@ a_facts = addFactor!.(fgclient, facts)
     neighbors = listNeighbors(fgclient, facts[1].label)
     @test issetequal(neighbors, [:x1, :x2])
 
-    @test listVariableNeighbors(fgclient, :x1) == [facts[1].label]
-    neighbors = listFactorNeighbors(fgclient, facts[1].label)
+    @test listNeighbors(fgclient, :x1) == [facts[1].label]
+    neighbors = listNeighbors(fgclient, facts[1].label)
     @test issetequal(neighbors, [:x1, :x2])
 
     # Testing aliases
