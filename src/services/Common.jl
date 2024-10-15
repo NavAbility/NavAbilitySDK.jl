@@ -1,13 +1,3 @@
-# type builder for JSON3 deserialization of chain of 
-# user[] - robot[] - session[] - variable - T[]
-function user_robot_session_variable_T(T)
-    Vector{
-        Dict{
-            String,
-            Vector{Dict{String, Vector{Dict{String, Vector{Dict{String, Vector{T}}}}}}},
-        },
-    }
-end
 
 # exists(client, context, label::Symbol) = 
 function getCommonProperties(::Type{T}, from::F, exclude = Symbol[]) where {T, F}
@@ -50,28 +40,23 @@ function handleMutate(response, mutation::String, return_node::Symbol)
     end
 end
 
-#TODO wip
+"""
+    getId
+Get the deterministic identifier (uuid v5) for a node.
+"""
 getId(ns::UUID, labels...) = uuid5(ns, string(labels...))
-
-function getId(node::Union{NvaFactorGraph, NvaAgent, NvaModel, NvaBlobStore}, labels...)
-    namespace = node.namespace
-    return getId(namespace, node.label, labels...)
-end
-#TODO consolidate further
-getId(::NavAbilityDFG, parent::NvaFactorGraph, label::Symbol) = getId(parent, label)
-getId(::NavAbilityDFG, parent::NvaAgent, label::Symbol) = getId(parent, label)
-getId(::NavAbilityDFG, parent::NvaModel, label::Symbol) = getId(parent, label)
+getId(node::NvaNode, labels...) = getId(node.namespace, node.label, labels...)
+getId(fgclient::NavAbilityDFG, parent::NvaNode, label::Symbol) = getId(parent, label)
 getId(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGVariable, label::Symbol) = getId(fgclient.fg, parent.label, label)
 getId(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGFactor, label::Symbol) = getId(fgclient.fg, parent.label, label)
 
-
-function createConnect(id::UUID)
-    # return Dict("connect" => Dict("where" => Dict("node" => Dict("id" => string(id)))))
-    return (connect = (where = (node = (id = string(id),),),),)
-end
-
-createConnect(fgclient::NavAbilityDFG, parent::NvaFactorGraph) = (Factorgraph=createConnect(getId(parent)),)
-createConnect(fgclient::NavAbilityDFG, parent::NvaAgent) = (Agent=createConnect(getId(parent)),)
-createConnect(fgclient::NavAbilityDFG, parent::NvaModel) = (Model=createConnect(getId(parent)),)
+"""
+    createConnect
+Create a connection gql query to a node.
+"""
+createConnect(id::UUID) = (connect = (where = (node = (id = string(id),),),),)
+createConnect(fgclient::NavAbilityDFG, parent::NvaNode{Factorgraph}) = (Factorgraph=createConnect(getId(parent)),)
+createConnect(fgclient::NavAbilityDFG, parent::NvaNode{Agent}) = (Agent=createConnect(getId(parent)),)
+createConnect(fgclient::NavAbilityDFG, parent::NvaNode{Model}) = (Model=createConnect(getId(parent)),)
 createConnect(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGVariable) = (Variable=createConnect(getId(fgclient.fg, parent.label)),)
 createConnect(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGFactor) = (Factor=createConnect(getId(fgclient.fg, parent.label)),)

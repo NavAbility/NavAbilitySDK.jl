@@ -13,7 +13,7 @@ function getAgent(client::NavAbilityClient, label::Symbol)
     agentId = getId(client.id, label)
     variables = (agentId = agentId,)
 
-    T = Vector{NvaAgent}
+    T = Vector{NvaNode{Agent}}
 
     response = GQL.execute(
         client.client,
@@ -39,6 +39,7 @@ mutation addAgents($input: [AgentCreateInput!]!) {
 """
 
 function addAgent!(client::NavAbilityClient, label::Symbol, agent = nothing; agentKwargs...)
+    @assert isValidLabel(label) "Agent label ($agentLabel) is not a valid label"
     input = [
         AgentCreateInput(;
             id = getId(client.id, label),
@@ -52,7 +53,7 @@ function addAgent!(client::NavAbilityClient, label::Symbol, agent = nothing; age
     variables = (input = input,)
 
     # AgentRemoteResponse
-    T = @NamedTuple{agents::Vector{NvaAgent}}
+    T = @NamedTuple{agents::Vector{NvaNode{Agent}}}
 
     response = GQL.execute(
         client.client,

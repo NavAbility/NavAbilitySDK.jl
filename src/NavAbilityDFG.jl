@@ -1,8 +1,8 @@
 ##
 struct NavAbilityDFG{VT<:AbstractDFGVariable, FT<:AbstractDFGFactor} <: AbstractDFG{AbstractParams}
     client::NavAbilityClient
-    fg::NvaFactorGraph
-    agent::NvaAgent
+    fg::NvaNode{Factorgraph}
+    agent::NvaNode{Agent}
     blobStores::Dict{Symbol, DFG.AbstractBlobStore}
 end
 
@@ -52,6 +52,10 @@ function NavAbilityDFG(
     addRobotIfNotExists = nothing,
     addSessionIfNotExists = nothing,
 )
+    @assert isValidLabel(fgLabel) "fgLabel: `$fgLabel` is not a valid label"
+    @assert isValidLabel(agentLabel) "agentLabel: `$agentLabel` is not a valid label"
+    @assert isValidLabel(storeLabel) "storeLabel: `$storeLabel` is not a valid label"
+    
     #TODO remove Deprecated in v0.8
     if !isnothing(addRobotIfNotExists)
         @warn "addRobotIfNotExists is deprecated, use addAgentIfAbsent instead"

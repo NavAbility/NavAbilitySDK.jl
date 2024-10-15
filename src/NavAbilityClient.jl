@@ -31,12 +31,12 @@ function NavAbilityClient(
     return NavAbilityClient(id, client)
 end
 
-function NavAbilityClient(
-    apiUrl::String = "https://api.navability.io";
+function NavAbilityClient(;
     auth_token::String = "",
     authorize::Bool = 0 !== length(auth_token),
     kwargs...,
 ) 
+    apiUrl = "https://api.navability.io"
     @warn "Deprecated: NavAbilityClient kwarg `auth_token` is now a required parameter"
     return NavAbilityClient(auth_token, apiUrl; kwargs...)  
 end

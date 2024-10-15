@@ -17,20 +17,11 @@ using DistributedFactorGraphs.ProgressMeter
 
 import GraphQLClient as GQL
 
-import DistributedFactorGraphs as DFG
-using DistributedFactorGraphs:
-    Variable,
-    PackedVariableNodeData,
-    MeanMaxPPE,
-    BlobEntry,
-    PackedFactor,
-    hasBlob,
-    getBlobStore,
-    AbstractDFGVariable,
-    AbstractDFGFactor,
-    AbstractParams,
-    AbstractDFG,
-    FactorData
+using DistributedFactorGraphs
+
+#
+using DistributedFactorGraphs: 
+    Agent
 
 import DistributedFactorGraphs:
     getFactor,
@@ -110,6 +101,7 @@ include("entities/Factor.jl")
 
 include("NavAbilityClient.jl")
 include("NavAbilityDFG.jl")
+include("NavAbilityModel.jl")
 
 include("services/Common.jl")
 include("services/PPE.jl")
@@ -211,8 +203,9 @@ export addRobot!,
 export NvaDFG
 const NvaDFG = NavAbilityDFG
 
-# TODO NvaModel vs NavAbilityModel
-#  NavAbilityModel
+#TODO 
+# export NavAbilityModel, NvaModel
+const NvaModel = NavAbilityModel
 
 #old exports
 # export Distribution, Normal, Rayleigh, FullNormal, Uniform, Categorical

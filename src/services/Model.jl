@@ -3,7 +3,7 @@ function getModel(client::NavAbilityClient, label::Symbol)
     id = getId(client.id, label)
     variables = Dict("modelId" => id)
 
-    T = Vector{NvaModel}
+    T = Vector{NvaNode{Model}}
 
     response = GQL.execute(
         client.client,
@@ -43,7 +43,7 @@ function addModel!(client::NavAbilityClient, label::Symbol, model=nothing; model
     variables = (input=input,)
 
     # AgentRemoteResponse
-    T = @NamedTuple{models::Vector{NvaModel}}
+    T = @NamedTuple{models::Vector{NvaNode{Model}}}
 
     response =
         GQL.execute(client.client, GQL_ADD_MODELS, T; variables, throw_on_execution_error = true)
@@ -100,7 +100,7 @@ function addModel!(client::GQL.Client, modelLabel::String; status = "", descript
     return response.data["addModels"]["models"][1]
 end
 
-function addFg!(client::GQL.Client, model::NvaModel, fg::NvaFactorGraph)
+function addFg!(client::GQL.Client, model::NvaNode{Model}, fg::NvaNode{Factorgraph})
     variables = Dict("modelId" => modelId, "sessionId" => sessionId)
 
     response = GQL.execute(
@@ -125,7 +125,7 @@ mutation addModel(
   $status: String = "",
   $tags: [String!] = "",
   $description: String = "",
-  $metadata: Metadata = "",
+  $metadata: String = "",
   $namespace: ID! = ""
 ) 
 {

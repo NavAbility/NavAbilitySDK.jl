@@ -170,7 +170,7 @@ end
 
 function addBlobEntries!(
     fgclient::NavAbilityDFG,
-    parent::Union{NvaFactorGraph, NvaAgent, NvaModel, DFG.AbstractDFGVariable, DFG.AbstractDFGFactor},
+    parent::Union{NvaNode, DFG.AbstractDFGVariable, DFG.AbstractDFGFactor},
     entries::Vector{DFG.BlobEntry}
 )  
     input = map(entries) do entry

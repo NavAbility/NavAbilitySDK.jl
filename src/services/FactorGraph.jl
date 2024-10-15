@@ -8,12 +8,11 @@ query QUERY_GET_FACTORGRAPH(\$fgId: ID!) {
 }
 """
 
-
 function getFg(client::NavAbilityClient, label::Symbol)
     fgId = getId(client.id, label)
     variables = Dict("fgId" => fgId)
 
-    T = Vector{NvaFactorGraph}
+    T = Vector{NvaNode{Factorgraph}}
 
     response = GQL.execute(
         client.client,
@@ -33,7 +32,7 @@ mutation addFactorGraph(
     $id: ID = "",
     $label: String = "",
     $description: String = "",
-    $metadata: Metadata = "",
+    $metadata: String = "",
     $_version: String = "",
 ) {
   addFactorgraphs(
@@ -49,6 +48,8 @@ mutation addFactorGraph(
 """
 
 function addFg!(client::NavAbilityClient, label::Symbol)
+    @assert isValidLabel(label) "Factor graph label ($Label) is not a valid label"
+
     variables = Dict(
         "orgId" => client.id,
         "id" => getId(client.id, label),
@@ -57,12 +58,58 @@ function addFg!(client::NavAbilityClient, label::Symbol)
     )
 
     # FactorGraphRemoteResponse
-    T = @NamedTuple{factorgraphs::Vector{NvaFactorGraph}}
+    T = @NamedTuple{factorgraphs::Vector{NvaNode{Factorgraph}}}
 
     response =
         GQL.execute(client.client, GQL_ADD_FACTORGRAPH, T; variables, throw_on_execution_error = true)
 
     return handleMutate(response, "addFactorgraphs", :factorgraphs)[1]
+end
+
+GQL_DELETE_FG = GQL.gql"""
+mutation deleteFG($id: ID!) {
+  deleteFactorgraph(
+    where: { id: $id }
+    delete: {
+      blobEntries: {
+        where: { node: { parentConnection: {Factorgraph: {node: {id: $id } } } } }
+      }
+    }
+  ) {
+    nodesDeleted
+    relationshipsDeleted
+  }
+}
+"""
+
+function deleteFg!(fgclient::NavAbilityDFG)
+    
+    id = getId(fgclient.fg)
+    variables = Dict("id" => id)
+
+    nvars = length(listVariables(fgclient))
+    nvars > 0 && error(
+        "Only empty sessions can be deleted, $(fgclient.session.label) still has $nvars variables.",
+    )
+
+    nfacts = length(listFactors(fgclient))
+    nfacts > 0 && error(
+        "Only empty sessions can be deleted, $(fgclient.session.label) still has $nfacts factors.",
+    )
+
+    variables = Dict("sessionId" => fgclient.session.id)
+
+    fgId = getId(client.id, label)
+    variables = Dict("fgId" => fgId)
+
+    response = GQL.execute(
+        fgclient.client.client,
+        GQL_DELETE_FG;
+        variables,
+        throw_on_execution_error = true,
+    )
+
+    return response.data
 end
 
 QUERY_LIST_FACTORGRAPHS = GQL.gql"""

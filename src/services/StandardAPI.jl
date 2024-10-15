@@ -37,12 +37,6 @@ end
 # function addVariableEvent end
 # function addVariableAsync end
 
-function assembleFactorName(xisyms::Union{Vector{String}, Vector{Symbol}})
-    return Symbol(xisyms..., "f_", string(uuid4())[1:4])
-end
-
-getFncTypeName(fnc::InferenceType) = split(string(typeof(fnc)), ".")[end]
-
 function addFactor!(
     fgclient::NavAbilityDFG,
     variables::Vector{String},

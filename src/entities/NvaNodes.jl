@@ -8,22 +8,11 @@ struct Org
     # users::Vector{Symbol}#!
 end
 
-#TODO consider using Remote{T}
-# abstract type AbstractAgent end
-# abstract type AbstractModel end
-# abstract type AbstractFactorGraph end
+# struct BlobStore end
+struct Model end
+struct Factorgraph end
 
-# struct Remote{T}
-#     namespace::UUID
-#     label::Symbol
-# end
-
-"""
-    NvaAgent
-A struct representing a reference to an Agent.
-#TODO Naming
-"""
-@kwdef struct NvaAgent
+struct NvaNode{T}
     namespace::UUID
     label::Symbol
 end
@@ -46,18 +35,6 @@ end
 
 StructTypes.omitempties(::Type{AgentCreateInput}) = (:blobEntries,)
 
-
-"""
-    NvaModel
-A struct representing a reference to a Model.
-Models are representations of some subject matter, such as a map, a car, a city, a supply chain, or a factory and its surroundings.
-#TODO Naming
-"""
-@kwdef struct NvaModel
-    namespace::UUID
-    label::Symbol
-end
-
 @kwdef struct ModelCreateInput
     id::UUID
     label::Symbol
@@ -73,16 +50,6 @@ end
 end
 
 StructTypes.omitempties(::Type{ModelCreateInput}) = (:blobEntries,)
-
-"""
-    NvaFactorGraph
-A struct representing a reference to a Factor Graph.
-#TODO Naming
-"""
-@kwdef struct NvaFactorGraph
-    namespace::UUID 
-    label::Symbol#!
-end
 
 @kwdef struct FactorGraphCreateInput
     id::UUID#!
@@ -103,11 +70,7 @@ end
     blobEntries::Any = nothing #TODO VariableBlobEntriesFieldInput
 end
 
-struct NvaBlobStore <: DFG.AbstractBlobStore{UInt8}
-    namespace::UUID
-    label::String#!
-end
-  
+ 
 struct BlobStoreCreateInput
     id::UUID#!
     label::String#!
