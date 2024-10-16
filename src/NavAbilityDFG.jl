@@ -19,7 +19,7 @@ function NavAbilityDFG(
     authorize = nothing,
     storeLabel = :default,
     addAgentIfAbsent = false,
-    addFgIfAbsent = false,
+    addGraphIfAbsent = false,
     addRobotIfNotExists = nothing,
     addSessionIfNotExists = nothing,
     kwargs...
@@ -36,7 +36,7 @@ function NavAbilityDFG(
         agentLabel;
         storeLabel,
         addAgentIfAbsent,
-        addFgIfAbsent,
+        addGraphIfAbsent,
         addRobotIfNotExists,
         addSessionIfNotExists
     )
@@ -48,7 +48,7 @@ function NavAbilityDFG(
     agentLabel::Symbol;
     storeLabel = :default,
     addAgentIfAbsent = false,
-    addFgIfAbsent = false,
+    addGraphIfAbsent = false,
     addRobotIfNotExists = nothing,
     addSessionIfNotExists = nothing,
 )
@@ -62,8 +62,8 @@ function NavAbilityDFG(
         addAgentIfAbsent = addRobotIfNotExists
     end
     if !isnothing(addSessionIfNotExists)
-        @warn "addSessionIfNotExists is deprecated, use addFgIfAbsent instead"
-        addFgIfAbsent = addSessionIfNotExists
+        @warn "addSessionIfNotExists is deprecated, use addGraphIfAbsent instead"
+        addGraphIfAbsent = addSessionIfNotExists
     end
 
     if addAgentIfAbsent && !in(agentLabel, listAgents(client))
@@ -71,10 +71,10 @@ function NavAbilityDFG(
     else
         agent = getAgent(client, agentLabel)
     end
-    if addFgIfAbsent && !in(fgLabel, listFgs(client))
-        fg = addFg!(client, fgLabel)
+    if addGraphIfAbsent && !in(fgLabel, listGraphs(client))
+        fg = addGraph!(client, fgLabel)
     else
-        fg = getFg(client, fgLabel)
+        fg = getGraph(client, fgLabel)
     end
 
     return NavAbilityDFG{DFG.Variable, DFG.PackedFactor}(

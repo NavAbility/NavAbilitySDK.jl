@@ -19,7 +19,7 @@ fgLabel = Symbol("TestSession_" * randstring(7))
         fgLabel,
         agentLabel;
         addAgentIfAbsent = true,
-        addFgIfAbsent = true,
+        addGraphIfAbsent = true,
     )
 
     a_var = NvaSDK.addVariable!(fgclient, :x0, "Pose2")
@@ -102,7 +102,7 @@ fgLabel = Symbol("TestSession_" * randstring(7))
     @test length(listFactors(fgclient)) == 10
 
     @test exists(fgclient, :x1)
-    x0_neigh = getNeighbors(fgclient, :x0)
+    x0_neigh = listNeighbors(fgclient, :x0)
     @test length(x0_neigh) == 3
     @test exists(fgclient, x0_neigh[1])
 

@@ -75,7 +75,7 @@ query listBlobEntries(\$id: ID!) {
 """
 
 GQL_LIST_FACTORGRAPH_BLOBENTRIES = GQL.gql"""
-query listFgBlobEntries($id: ID!) {
+query listGraphBlobEntries($id: ID!) {
   factorgraphs(where: { id: $id }) {
     blobEntries {
       label
@@ -106,7 +106,7 @@ query listModelBlobEntries($id: ID!) {
 
 GQL_GET_FG_BLOBENTRIES = """
 $(GQL_FRAGMENT_BLOBENTRY)
-query getFgBlobEntries(\$id: ID!) {
+query getGraphBlobEntries(\$id: ID!) {
   factorgraphs(where: { id: \$id }) {
     blobEntries {
       ...blobEntry_fields
