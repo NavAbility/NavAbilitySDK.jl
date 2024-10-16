@@ -118,7 +118,7 @@ end
 # BlobEntry CRUD on other nodes
 # =========================================================================================
 
-function DFG.getFgBlobEntry(fgclient::NavAbilityDFG, label::Symbol)
+function DFG.getGraphBlobEntry(fgclient::NavAbilityDFG, label::Symbol)
     id = getId(fgclient.fg, label)
 
     T = Vector{DFG.BlobEntry}
@@ -134,7 +134,7 @@ function DFG.getFgBlobEntry(fgclient::NavAbilityDFG, label::Symbol)
     return handleQuery(response, "blobEntries", label)
 end
 
-function DFG.getFgBlobEntries(fgclient::NavAbilityDFG, startwith::Union{Nothing,String}=nothing)
+function DFG.getGraphBlobEntries(fgclient::NavAbilityDFG, startwith::Union{Nothing,String}=nothing)
 
     id = getId(fgclient.fg)
     T = Vector{@NamedTuple{blobEntries::Vector{DFG.BlobEntry}}}
@@ -195,7 +195,7 @@ function addBlobEntries!(
 
 end
 
-function addFgBlobEntries!(fgclient::NavAbilityDFG, entries::Vector{DFG.BlobEntry})
+function addGraphBlobEntries!(fgclient::NavAbilityDFG, entries::Vector{DFG.BlobEntry})
     return addBlobEntries!(fgclient, fgclient.fg, entries)
 end
 function addAgentBlobEntries!(fgclient::NavAbilityDFG, entries::Vector{DFG.BlobEntry})
@@ -205,7 +205,7 @@ function addModelBlobEntries!(fgclient::NavAbilityDFG, entries::Vector{DFG.BlobE
     error("Not implemented")
 end
 
-function DFG.listFgBlobEntries(fgclient::NavAbilityDFG)
+function DFG.listGraphBlobEntries(fgclient::NavAbilityDFG)
 
     variables = (id=getId(fgclient.fg),)
 

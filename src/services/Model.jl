@@ -100,7 +100,7 @@ function addModel!(client::GQL.Client, modelLabel::String; status = "", descript
     return response.data["addModels"]["models"][1]
 end
 
-function addFg!(client::GQL.Client, model::NvaNode{Model}, fg::NvaNode{Factorgraph})
+function addGraph!(client::GQL.Client, model::NvaNode{Model}, fg::NvaNode{Factorgraph})
     variables = Dict("modelId" => modelId, "sessionId" => sessionId)
 
     response = GQL.execute(

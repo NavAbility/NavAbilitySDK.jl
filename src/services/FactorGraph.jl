@@ -8,7 +8,7 @@ query QUERY_GET_FACTORGRAPH(\$fgId: ID!) {
 }
 """
 
-function getFg(client::NavAbilityClient, label::Symbol)
+function getGraph(client::NavAbilityClient, label::Symbol)
     fgId = getId(client.id, label)
     variables = Dict("fgId" => fgId)
 
@@ -47,7 +47,7 @@ mutation addFactorGraph(
 }
 """
 
-function addFg!(client::NavAbilityClient, label::Symbol)
+function addGraph!(client::NavAbilityClient, label::Symbol)
     @assert isValidLabel(label) "Factor graph label ($Label) is not a valid label"
 
     variables = Dict(
@@ -82,7 +82,7 @@ mutation deleteFG($id: ID!) {
 }
 """
 
-function deleteFg!(fgclient::NavAbilityDFG)
+function deleteGraph!(fgclient::NavAbilityDFG)
     
     id = getId(fgclient.fg)
     variables = Dict("id" => id)
@@ -113,7 +113,7 @@ function deleteFg!(fgclient::NavAbilityDFG)
 end
 
 QUERY_LIST_FACTORGRAPHS = GQL.gql"""
-query listFgs($id: ID!) {
+query listGraphs($id: ID!) {
     orgs(where: {id: $id}) {
         fgs {
             label
@@ -122,7 +122,7 @@ query listFgs($id: ID!) {
 }
 """
 
-function listFgs(client::NavAbilityClient)
+function listGraphs(client::NavAbilityClient)
 
     T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
 
@@ -176,7 +176,7 @@ function exists(fgclient::NavAbilityDFG, label::Symbol)
 end
 
 #TODO update to standard pattern
-function DFG.getFgMetadata(fgclient::NavAbilityDFG)
+function DFG.getGraphMetadata(fgclient::NavAbilityDFG)
     gql = """
     {
         factorgraphs(where: {id: "$(getId(fgclient.fg))"}) {
@@ -197,7 +197,7 @@ function DFG.getFgMetadata(fgclient::NavAbilityDFG)
     end
 end
 
-function DFG.setFgMetadata!(fgclient::NavAbilityDFG, smallData::Dict{Symbol, DFG.SmallDataTypes})
+function DFG.setGraphMetadata!(fgclient::NavAbilityDFG, smallData::Dict{Symbol, DFG.SmallDataTypes})
     meta = base64encode(JSON3.write(smallData))
 
     gql = """
