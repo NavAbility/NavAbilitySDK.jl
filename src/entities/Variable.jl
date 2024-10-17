@@ -82,18 +82,11 @@ Base.@kwdef struct BlobEntryCreateInput
     _version::String
     timestamp::ZonedDateTime
     size::Int
-
-    # userLabel::String
-    # robotLabel::String = ""
-    # sessionLabel::String = ""
-    # variableLabel::String = ""
-    # factorLabel::String = ""
-
-    parent::Any = nothing# BlobEntryParentFieldInput
+    parent::Any
 end
 
 function StructTypes.omitempties(::Type{BlobEntryCreateInput})
-    return (:blobId, :size)
+    return (:originId, :size)
 end
 
 # Variables

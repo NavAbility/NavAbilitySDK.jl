@@ -134,7 +134,7 @@ function DFG.getGraphBlobEntry(fgclient::NavAbilityDFG, label::Symbol)
     return handleQuery(response, "blobEntries", label)
 end
 
-function DFG.getGraphBlobEntries(fgclient::NavAbilityDFG, startwith::Union{Nothing,String}=nothing)
+function DFG.getGraphBlobEntries(fgclient::NavAbilityDFG)
 
     id = getId(fgclient.fg)
     T = Vector{@NamedTuple{blobEntries::Vector{DFG.BlobEntry}}}
@@ -167,6 +167,25 @@ function DFG.getAgentBlobEntry(fgclient::NavAbilityDFG, label::Symbol)
     return handleQuery(response, "blobEntries", label)
 end
 
+function DFG.getAgentBlobEntries(client::NavAbilityClient, agent::NvaNode{Agent})
+    id = getId(agent)
+
+    T = Vector{@NamedTuple{blobEntries::Vector{DFG.BlobEntry}}}
+
+    response = GQL.execute(
+        client.client,
+        GQL_GET_AGENT_BLOBENTRIES,
+        T;
+        variables = (id=id,),
+        throw_on_execution_error = true,
+    )
+
+    return handleQuery(response, "agents", :blobEntries)[1]
+end
+
+function DFG.getAgentBlobEntries(client::NavAbilityClient, label::Symbol)
+    return getAgentBlobEntries(client, getAgent(client, label))
+end
 
 function addBlobEntries!(
     fgclient::NavAbilityDFG,
