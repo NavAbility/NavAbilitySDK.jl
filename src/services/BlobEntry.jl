@@ -8,13 +8,7 @@ function getBlobEntry(fgclient::NavAbilityDFG, variableLabel::Symbol, label::Sym
 
     T = Vector{DFG.BlobEntry}
 
-    response = GQL.execute(
-        fgclient.client.client,
-        GQL_GET_BLOBENTRY,
-        T;
-        variables=(id=id,),
-        throw_on_execution_error = true,
-    )
+    response = executeGql(fgclient, GQL_GET_BLOBENTRY, (id=id,), T)
 
     return handleQuery(response, "blobEntries", label)
 end
@@ -202,14 +196,8 @@ function addBlobEntries!(
 
     T = @NamedTuple{blobEntries::Vector{BlobEntry}}
 
-    response = GQL.execute(
-        fgclient.client.client,
-        GQL_ADD_BLOBENTRIES,
-        T; #FIXME BlobEntryResponse
-        # BlobEntryResponse;
-        variables = (blobEntries=input,),
-        throw_on_execution_error = true,
-    )
+    response = executeGql(fgclient, GQL_ADD_BLOBENTRIES, (blobEntries=input,), T)
+
     return handleMutate(response, "addBlobEntries", :blobEntries)
 
 end
@@ -230,33 +218,25 @@ function DFG.listGraphBlobEntries(fgclient::NavAbilityDFG)
 
     T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
 
-    response = GQL.execute(
-        fgclient.client.client,
-        GQL_LIST_FACTORGRAPH_BLOBENTRIES,
-        T;
-        variables,
-        throw_on_execution_error = true,
-    )
+    response = executeGql(fgclient, GQL_LIST_FACTORGRAPH_BLOBENTRIES, variables, T)
 
     return last.(handleQuery(response, "factorgraphs", fgclient.fg.label)["blobEntries"])
 
 end
 
 function DFG.listAgentBlobEntries(fgclient::NavAbilityDFG)
+    getAgentBlobEntries(fgclient.client, fgclient.agent)
+end
 
-    variables = (id=getId(fgclient.agent),)
+function DFG.listAgentBlobEntries(client::NavAbilityClient, agent::NvaNode{Agent})
+
+    variables = (id=getId(agent),)
 
     T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
 
-    response = GQL.execute(
-        fgclient.client.client,
-        GQL_LIST_AGENT_BLOBENTRIES,
-        T;
-        variables,
-        throw_on_execution_error = true,
-    )
+    response = executeGql(client, GQL_LIST_AGENT_BLOBENTRIES, variables, T)
 
-    return last.(handleQuery(response, "agents", fgclient.agent.label)["blobEntries"])
+    return last.(handleQuery(response, "agents", agent.label)["blobEntries"])
 
 end
 

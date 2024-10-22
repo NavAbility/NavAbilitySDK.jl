@@ -15,13 +15,7 @@ function getAgent(client::NavAbilityClient, label::Symbol)
 
     T = Vector{NvaNode{Agent}}
 
-    response = GQL.execute(
-        client.client,
-        QUERY_GET_AGENT,
-        T;
-        variables,
-        throw_on_execution_error = true,
-    )
+    response = executeGql(client, QUERY_GET_AGENT, variables, T)
 
     return handleQuery(response, "agents", label)
 end
@@ -55,13 +49,7 @@ function addAgent!(client::NavAbilityClient, label::Symbol, agent = nothing; age
     # AgentRemoteResponse
     T = @NamedTuple{agents::Vector{NvaNode{Agent}}}
 
-    response = GQL.execute(
-        client.client,
-        GQL_ADD_AGENTS,
-        T;
-        variables,
-        throw_on_execution_error = true,
-    )
+    response = executeGql(client, GQL_ADD_AGENTS, variables, T)
 
     return handleMutate(response, "addAgents", :agents)[1]
 end
@@ -81,13 +69,7 @@ function listAgents(client::NavAbilityClient)
 
     T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
 
-    response = GQL.execute(
-        client.client,
-        QUERY_LIST_AGENTS,
-        T;
-        variables,
-        throw_on_execution_error = true,
-    )
+    response = executeGql(client, QUERY_LIST_AGENTS, variables, T)
 
     return last.(handleQuery(response, "orgs", Symbol(client.id))["agents"])
 end
@@ -102,12 +84,9 @@ query getAgentMetadata($id: ID!) {
 
 function DFG.getAgentMetadata(fgclient::NavAbilityDFG)
     variables = (id = getId(fgclient.agent),)
-    response = GQL.execute(
-        fgclient.client.client,
-        QUERY_GET_AGENT_METADATA;
-        variables,
-        throw_on_execution_error = true,
-    ) 
+
+    response = executeGql(fgclient, QUERY_GET_AGENT_METADATA, variables, Any)
+    
     b64data = handleQuery(response, "agents", fgclient.agent.label)["metadata"]
     if isnothing(b64data)
         return Dict{Symbol, DFG.SmallDataTypes}()
