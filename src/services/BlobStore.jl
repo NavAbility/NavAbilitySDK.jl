@@ -192,7 +192,7 @@ end
 ##
 
 
-function addBlobMultipart!(
+function addBlob!(
     store::NavAbilityBlobStore,
     filepath::AbstractString,
     blobId::UUID;
