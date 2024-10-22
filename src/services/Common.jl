@@ -6,6 +6,21 @@ function getCommonProperties(::Type{T}, from::F, exclude = Symbol[]) where {T, F
     return (k => getproperty(from, k) for k in commonfields)
 end
 
+#TODO update all GQL.execute calls to use this
+function executeGql(cfg::NavAbilityDFG, query::AbstractString, variables,  T::Type; kwargs...)
+    executeGql(cfg.client, query, variables, T; kwargs...)
+end
+
+function executeGql(client::NavAbilityClient, query::AbstractString, variables,  T::Type; throw_on_execution_error = true, kwargs...)
+    return GQL.execute(
+        client.client,
+        query,
+        T;
+        variables,
+        throw_on_execution_error,
+    )
+end
+
 function handleQuery(response, nodeName::String, label::Symbol)
     res = isnothing(response.data) ? nothing : get(response.data, nodeName, nothing)
     if isnothing(res)
