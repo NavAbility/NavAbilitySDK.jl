@@ -1,3 +1,6 @@
+
+const UPLOAD_CHUNK_SIZE_HASH = 5*1024*1024
+
 #TODO we can also extend the blobstore
 struct NavAbilityBlobStore <: DFG.AbstractBlobStore{Vector{UInt8}}
     client::NavAbilityClient
@@ -134,6 +137,42 @@ end
 
 ## Complete the upload
 
+function completeUpload(
+    client::GQL.Client,
+    blobId::UUID,
+    uploadId::AbstractString,
+    eTags::AbstractVector{<:AbstractString},
+)
+    # FIXME where to get CompletedUploadPartInput CompletedUploadInput
+
+    parts = Vector{CompletedUploadPartInput}()
+    for (pn,eTag) in enumerate(eTags)
+        push!(parts,
+            CompletedUploadPartInput(
+                pn,
+                eTag,
+            )
+        )
+    end
+
+    cui = CompletedUploadInput(
+        uploadId,
+        parts
+    )
+
+    response = GQL.execute(
+        client,
+        GQL_COMPLETEUPLOAD;
+        variables = Dict(
+            "blobId" => blobId, 
+            "completedUpload" => cui, 
+        ),
+        throw_on_execution_error = true,
+    )
+
+    return response.data["completeUpload"]
+end
+
 function completeUploadSingle(
     client::GQL.Client,
     blobId::UUID,
@@ -151,6 +190,54 @@ function completeUploadSingle(
 end
 
 ##
+
+function uploadFile(
+    nvacl::NavAbilityClient,
+    filepath::AbstractString,
+    blobId::UUID;
+    blobstore::AbstractString = "default",
+    chunkSize::Integer = UPLOAD_CHUNK_SIZE_HASH,
+)
+    # locate large file on fs, ready to read in chunks
+    fid = open(filepath,'r')
+
+    # calculate number or parts necessary
+    nparts = ceil(Int, filesize / chunkSize)
+
+    # request CreateUpload with nparts
+    resp = createUpload(
+        NavAbilityBlobStore(
+            nvacl,
+            blobstore,
+        ),
+        blobId,
+        nparts
+    )
+
+    # recover uploadId for later completion
+    uploadId::UUID = resp["uploadId"]
+    # recover nparts-many urls from API response
+    
+    eTags = Vector{String}()
+    for (np,url) in enumerate(urls)
+        # read chunk from file
+        # upload each chunk with header CONTENT_LENGTH
+        # recover eTag from each successful upload
+        # push!(eTags, eTag)
+    end
+
+    # close file
+    close(fid)
+
+    # complete upload
+    completeUpload(
+        nvacl.client,
+        blobId,
+        uploadId,
+        eTags
+    )
+end
+
 
 function addBlob!(
     store::NavAbilityBlobStore,
