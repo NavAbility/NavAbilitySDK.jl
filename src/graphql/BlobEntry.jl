@@ -15,6 +15,7 @@ fragment blobEntry_fields on BlobEntry {
   createdTimestamp
   lastUpdatedTimestamp
   _version
+  _type
 }
 """
 
