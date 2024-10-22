@@ -112,12 +112,8 @@ mutation sdk_add_variables(\$variablesToCreate: [VariableCreateInput!]!) {
 """
 
 GQL_LIST_VARIABLES = GQL.gql"""
-query list_variables($fgId: ID!, $varwhere: VariableWhere = {}) {
-  factorgraphs(where: { id: $fgId }) {
-    variables (where: $varwhere){
-      label
-    }
-  }
+query list_variables($fgId: ID!, $varwhere: ListWhere = {}) {
+  listVariables(fgId: $fgId, where: $varwhere)
 }
 """
 

@@ -187,38 +187,50 @@ end
 function listVariables(fgclient::NavAbilityDFG,
     regexFilter::Union{Nothing, Regex} = nothing;
     tags::Vector{Symbol} = Symbol[],
-    solvable::Int = 0
+    solvable::Union{Int, Nothing} = nothing,
+    solvableFilter::Union{Nothing, Base.Fix2} = isnothing(solvable) ? nothing : >=(solvable),
+    typeFilter::Union{Nothing, Type{<:InferenceVariable}} = nothing,
 )
+    #TODO deprecate solvable "solvable::Int is deprecated, use solvableFilter = >=(solvable) instead"
+    !isnothing(typeFilter) && @warn("typeFilter is not implemented yet")
+    
     fgId = NvaSDK.getId(fgclient.fg)
-
     variables = Dict(
         "fgId" => fgId,
-        "varwhere" => Dict{String,Union{Int, Symbol}}(
-            "solvable_GTE" => solvable,
+        "varwhere" => Dict{String,Union{Int, Vector{Int}, Symbol}}(
         ),
     )
 
     if !isempty(tags)
-        @assert length(tags) == 1 "Only one tag is supported in tags filter"
+        @assert length(tags) == 1 "Only one tag is currently supported in tags filter"
         variables["varwhere"]["tags_INCLUDES"]=tags[1]
     end
 
-    T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
-
-    response = GQL.execute(
-        fgclient.client.client,
-        GQL_LIST_VARIABLES,
-        T;
-        variables,
-        throw_on_execution_error = true,
-    )
-
-    labels =  last.(handleQuery(response, "factorgraphs", fgclient.fg.label)["variables"])
-    if isnothing(regexFilter)
-        return labels
-    else
-        return filter!(x -> occursin(regexFilter, string(x)), labels)
+    if !isnothing(solvableFilter)
+        if solvableFilter.f == >=
+            variables["varwhere"]["solvable_GTE"] = solvableFilter.x
+        elseif solvableFilter.f == >
+            variables["varwhere"]["solvable_GT"] = solvableFilter.x
+        elseif solvableFilter.f == <=
+            variables["varwhere"]["solvable_LTE"] = solvableFilter.x
+        elseif solvableFilter.f == <
+            variables["varwhere"]["solvable_LT"] = solvableFilter.x
+        elseif solvableFilter.f == ==
+            variables["varwhere"]["solvable"] = solvableFilter.x
+        elseif solvableFilter.f == in
+            variables["varwhere"]["solvable_IN"] = solvableFilter.x
+        else
+            error("Unsupported solvableFilter function: $(solvableFilter.f)")
+        end
     end
+
+    response = executeGql(fgclient, GQL_LIST_VARIABLES_DIRECT, variables, Vector{Symbol})
+    labels = handleQuery(response, "listVariables")
+
+    !isnothing(regexFilter) &&
+        filter!(x -> occursin(regexFilter, string(x)), labels)
+
+    return labels
 end
 
 function getVariable(fgclient::NavAbilityDFG{VT, <:AbstractDFGFactor}, label::Symbol) where VT
