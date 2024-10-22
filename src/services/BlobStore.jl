@@ -143,21 +143,21 @@ function completeUpload(
     uploadId::AbstractString,
     eTags::AbstractVector{<:AbstractString},
 )
-    # FIXME where to get CompletedUploadPartInput CompletedUploadInput
-
-    parts = Vector{CompletedUploadPartInput}()
+    # CompletedUploadPartInput 
+    parts = Vector{Dict{String,Any}}()
     for (pn,eTag) in enumerate(eTags)
         push!(parts,
-            CompletedUploadPartInput(
-                pn,
-                eTag,
+            Dict{String,Any}(
+                "partNumber" => pn,
+                "eTag" => eTag,
             )
         )
     end
 
-    cui = CompletedUploadInput(
-        uploadId,
-        parts
+    # CompletedUploadInput
+    cui = Dict{String,Any}(
+        "uploadId" => uploadId,
+        "parts" => parts
     )
 
     response = GQL.execute(
@@ -195,20 +195,20 @@ end
 function addBlob!(
     store::NavAbilityBlobStore,
     filepath::AbstractString,
-    blobId::UUID;
+    blobId::UUID = uuid4();
     chunkSize::Integer = UPLOAD_CHUNK_SIZE_HASH,
 )
     # locate large file on fs, ready to read in chunks
-    fid = open(filepath,'r')
+    fid = open(filepath,"r")
 
     # calculate number or parts necessary
-    nparts = ceil(Int, filesize / chunkSize)
+    nparts = ceil(Int, filesize(filepath) / chunkSize)
 
     # create the upload url destination
     crUp = createUpload(store, blobId, nparts)
 
     # recover uploadId for later completion
-    uploadId = UUID(crUp["uploadId"])
+    uploadId = crUp["uploadId"]
     
     # custom header for pushing the file up
     headers_ = [
@@ -247,7 +247,7 @@ function addBlob!(
 
     # close out the upload
     res = completeUpload(
-        store.client,
+        store.client.client,
         blobId,
         uploadId,
         eTags
