@@ -1,3 +1,6 @@
+
+const UPLOAD_CHUNK_SIZE_HASH = 5*1024*1024
+
 #TODO we can also extend the blobstore
 struct NavAbilityBlobStore <: DFG.AbstractBlobStore{Vector{UInt8}}
     client::NavAbilityClient
@@ -134,6 +137,42 @@ end
 
 ## Complete the upload
 
+function completeUpload(
+    client::GQL.Client,
+    blobId::UUID,
+    uploadId::AbstractString,
+    eTags::AbstractVector{<:AbstractString},
+)
+    # CompletedUploadPartInput 
+    parts = Vector{Dict{String,Any}}()
+    for (pn,eTag) in enumerate(eTags)
+        push!(parts,
+            Dict{String,Any}(
+                "partNumber" => pn,
+                "eTag" => eTag,
+            )
+        )
+    end
+
+    # CompletedUploadInput
+    cui = Dict{String,Any}(
+        "uploadId" => uploadId,
+        "parts" => parts
+    )
+
+    response = GQL.execute(
+        client,
+        GQL_COMPLETEUPLOAD;
+        variables = Dict(
+            "blobId" => blobId, 
+            "completedUpload" => cui, 
+        ),
+        throw_on_execution_error = true,
+    )
+
+    return response.data["completeUpload"]
+end
+
 function completeUploadSingle(
     client::GQL.Client,
     blobId::UUID,
@@ -151,6 +190,74 @@ function completeUploadSingle(
 end
 
 ##
+
+
+function addBlob!(
+    store::NavAbilityBlobStore,
+    filepath::AbstractString,
+    blobId::UUID = uuid4();
+    chunkSize::Integer = UPLOAD_CHUNK_SIZE_HASH,
+)
+    # locate large file on fs, ready to read in chunks
+    fid = open(filepath,"r")
+
+    # calculate number or parts necessary
+    nparts = ceil(Int, filesize(filepath) / chunkSize)
+
+    # create the upload url destination
+    crUp = createUpload(store, blobId, nparts)
+
+    # recover uploadId for later completion
+    uploadId = crUp["uploadId"]
+    
+    # custom header for pushing the file up
+    headers_ = [
+        # "Content-Length" => filesize,
+        "Accept" => "application/json, text/plain, */*",
+        "Accept-Encoding" => "gzip, deflate, br",
+        "Sec-Fetch-Dest" => "empty",
+        "Sec-Fetch-Mode" => "cors",
+        "Sec-Fetch-Site" => "cross-site",
+        "Sec-GPC" => 1,
+        "Connection" => "keep-alive",
+    ]
+    
+    # recover all the eTags for later completion of upload
+    eTags = Vector{String}()
+    for (np,url_) in enumerate(crUp["parts"])
+        # recover nparts-many urls from API response
+        url = url_["url"]
+        # read chunk from file
+        chunk = Vector{UInt8}()
+        sz = readbytes!(fid,chunk,chunkSize)
+        # upload each chunk with header CONTENT_LENGTH
+        headers = vcat(
+            "Content-Length" => sz,
+            headers_
+        )
+        # recover eTag from each successful upload
+        resp = HTTP.put(url, headers, chunk)
+        # Extract eTag
+        eTag = match(r"[a-zA-Z0-9]+", resp["eTag"]).match
+        push!(eTags, eTag)
+    end
+
+    # close file
+    close(fid)
+
+    # close out the upload
+    res = completeUpload(
+        store.client.client,
+        blobId,
+        uploadId,
+        eTags
+    )
+
+    res == "Accepted" ? nothing : @error("Unable to upload blob, $res")
+
+    blobId
+end
+
 
 function addBlob!(
     store::NavAbilityBlobStore,
