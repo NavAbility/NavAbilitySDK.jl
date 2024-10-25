@@ -96,13 +96,9 @@ query sdk_get_factors_filtered(
 }
 """
 
-GQL_LISTFACTORS = """
-query sdk_list_factors(\$fgId: ID!) {
-  factorgraphs(where: { id: \$fgId }) {
-    factors {
-      label
-    }
-  }
+GQL_LIST_FACTORS = GQL.gql"""
+query listFactors($fgId: ID!, $where: ListWhere = {}) {
+  listFactors(fgId: $fgId, where: $where)
 }
 """
 

@@ -17,7 +17,7 @@ function VariableCreateInput(fgclient::NavAbilityDFG, v::Variable)
                 "node" => BlobEntryCreateInput(;
                     getCommonProperties(BlobEntryCreateInput, entry)...,
                     id = getId(fgclient.fg, variableLabel, entry.label),
-                    parent = (Variable=createConnect(varId),),
+                    parent = (Variable = createConnect(varId),),
                     blobId = if isnothing(entry.blobId)
                         entry.originId
                     else
@@ -108,63 +108,37 @@ function addVariable!(fgclient::NavAbilityDFG, v::Variable)
     return handleMutate(response, "addVariables", :variables)[1]
 end
 
-function addVariables!(fgclient::NavAbilityDFG, vars::Vector{Variable}; chunksize=20)
+function DFG.addVariables!(fgclient::NavAbilityDFG, vars::Vector{Variable}; chunksize = 20)
     #
     addvars = VariableCreateInput.(fgclient, vars)
 
-    # Chunk it at around 20 per call
+    # Chunk it at chunksize per call
     chunks = collect(Iterators.partition(addvars, chunksize))
-    length(chunks) > 1 && @info "Adding variables in $(length(chunks)) batches"
 
     T = @NamedTuple{variables::Vector{Variable}}
 
-    newVarReturns = Variable[]
-    # p = Progress(length(chunks))
-    Threads.@threads for c in chunks
-        # ProgressMeter.next!(p; showvalues = [("adding", "$(c[1].label)...$(c[end].label)")])
-
-        variables = Dict("variablesToCreate" => c)
-
-        response = GQL.execute(
-            fgclient.client.client,
-            GQL_ADD_VARIABLES,
-            T;
-            # VariableResponse;
-            variables,
-            throw_on_execution_error = true,
-        )
-        append!(newVarReturns, response.data["addVariables"].variables)
+    newVarReturns = asyncmap(chunks) do c
+        response =
+            executeGql(fgclient, GQL_ADD_VARIABLES, Dict("variablesToCreate" => c), T;)
+        handleMutate(response, "addVariables", :variables)
     end
 
-    return newVarReturns
+    return reduce(vcat, newVarReturns)
 end
 
 function getVariables(fgclient::NavAbilityDFG)
-    
     fgId = NvaSDK.getId(fgclient.fg)
 
-    variables = Dict(
-        "fgId" => fgId,
-        "fields_summary" => true,
-        "fields_full" => true,
-    )
+    variables = Dict("fgId" => fgId, "fields_summary" => true, "fields_full" => true)
 
     T = Vector{Dict{String, Vector{Variable}}}
 
-    response = GQL.execute(
-        fgclient.client.client,
-        GQL_GET_VARIABLES,
-        T;
-        variables,
-        throw_on_execution_error = true,
-    )
+    response = executeGql(fgclient, GQL_GET_VARIABLES, variables, T)
 
     return handleQuery(response, "factorgraphs", fgclient.fg.label)["variables"]
-
 end
 
 function getVariables(fgclient::NavAbilityDFG, labels::Vector{Symbol})
-
     namespace = fgclient.fg.namespace
     fgLabel = fgclient.fg.label
 
@@ -184,26 +158,25 @@ function getVariables(fgclient::NavAbilityDFG, labels::Vector{Symbol})
     return handleQuery(response, "variables")
 end
 
-function listVariables(fgclient::NavAbilityDFG,
+function listVariables(
+    fgclient::NavAbilityDFG,
     regexFilter::Union{Nothing, Regex} = nothing;
     tags::Vector{Symbol} = Symbol[],
     solvable::Union{Int, Nothing} = nothing,
-    solvableFilter::Union{Nothing, Base.Fix2} = isnothing(solvable) ? nothing : >=(solvable),
+    solvableFilter::Union{Nothing, Base.Fix2} = isnothing(solvable) ? nothing :
+                                                >=(solvable),
     typeFilter::Union{Nothing, Type{<:InferenceVariable}} = nothing,
 )
     #TODO deprecate solvable "solvable::Int is deprecated, use solvableFilter = >=(solvable) instead"
     !isnothing(typeFilter) && @warn("typeFilter is not implemented yet")
-    
+
     fgId = NvaSDK.getId(fgclient.fg)
-    variables = Dict(
-        "fgId" => fgId,
-        "varwhere" => Dict{String,Union{Int, Vector{Int}, Symbol}}(
-        ),
-    )
+    variables =
+        Dict("fgId" => fgId, "varwhere" => Dict{String, Union{Int, Vector{Int}, Symbol}}())
 
     if !isempty(tags)
         @assert length(tags) == 1 "Only one tag is currently supported in tags filter"
-        variables["varwhere"]["tags_INCLUDES"]=tags[1]
+        variables["varwhere"]["tags_INCLUDES"] = tags[1]
     end
 
     if !isnothing(solvableFilter)
@@ -224,24 +197,21 @@ function listVariables(fgclient::NavAbilityDFG,
         end
     end
 
-    response = executeGql(fgclient, GQL_LIST_VARIABLES_DIRECT, variables, Vector{Symbol})
+    response = executeGql(fgclient, GQL_LIST_VARIABLES, variables, Vector{Symbol})
     labels = handleQuery(response, "listVariables")
 
-    !isnothing(regexFilter) &&
-        filter!(x -> occursin(regexFilter, string(x)), labels)
+    !isnothing(regexFilter) && filter!(x -> occursin(regexFilter, string(x)), labels)
 
     return labels
 end
 
-function getVariable(fgclient::NavAbilityDFG{VT, <:AbstractDFGFactor}, label::Symbol) where VT
-
+function getVariable(
+    fgclient::NavAbilityDFG{VT, <:AbstractDFGFactor},
+    label::Symbol,
+) where {VT}
     varId = NvaSDK.getId(fgclient.fg, label)
 
-    variables = Dict(
-        "varId" => varId,
-        "fields_summary" => true,
-        "fields_full" => true,
-    )
+    variables = Dict("varId" => varId, "fields_summary" => true, "fields_full" => true)
 
     T = Vector{Variable}
 
@@ -256,14 +226,9 @@ function getVariable(fgclient::NavAbilityDFG{VT, <:AbstractDFGFactor}, label::Sy
 end
 
 function getVariableSummary(fgclient::NavAbilityDFG, label::Symbol)
-
     varId = NvaSDK.getId(fgclient.fg, label)
 
-    variables = Dict(
-        "varId" => varId,
-        "fields_summary" => true,
-        "fields_full" => false,
-    )
+    variables = Dict("varId" => varId, "fields_summary" => true, "fields_full" => false)
 
     T = Vector{DFG.DFGVariableSummary}
 
@@ -279,14 +244,9 @@ function getVariableSummary(fgclient::NavAbilityDFG, label::Symbol)
 end
 
 function getVariableSkeleton(fgclient::NavAbilityDFG, label::Symbol)
-
     varId = NvaSDK.getId(fgclient.fg, label)
 
-    variables = Dict(
-        "varId" => varId,
-        "fields_summary" => false,
-        "fields_full" => false,
-    )
+    variables = Dict("varId" => varId, "fields_summary" => false, "fields_full" => false)
 
     T = Vector{DFG.SkeletonDFGVariable}
 
@@ -297,21 +257,16 @@ function getVariableSkeleton(fgclient::NavAbilityDFG, label::Symbol)
         variables,
         throw_on_execution_error = true,
     )
-    
+
     return handleQuery(response, "variables", label)
 end
 
 ##
 function getVariablesSkeleton(fgclient::NavAbilityDFG)#, label::Symbol)
-
     fgId = NvaSDK.getId(fgclient.fg)
-    
-    variables = Dict(
-        "fgId" => fgId,
-        "fields_summary" => false,
-        "fields_full" => false,
-    )
-    
+
+    variables = Dict("fgId" => fgId, "fields_summary" => false, "fields_full" => false)
+
     T = Vector{@NamedTuple{variables::Vector{DFG.SkeletonDFGVariable}}}
 
     response = GQL.execute(
@@ -323,19 +278,13 @@ function getVariablesSkeleton(fgclient::NavAbilityDFG)#, label::Symbol)
     )
 
     return handleQuery(response, "factorgraphs", :variables)[1]
-
 end
 
 function getVariablesSummary(fgclient::NavAbilityDFG)#, label::Symbol)
- 
     fgId = NvaSDK.getId(fgclient.fg)
-    
-    variables = Dict(
-        "fgId" => fgId,
-        "fields_summary" => true,
-        "fields_full" => false,
-    )
-    
+
+    variables = Dict("fgId" => fgId, "fields_summary" => true, "fields_full" => false)
+
     T = Vector{@NamedTuple{variables::Vector{DFG.DFGVariableSummary}}}
 
     response = GQL.execute(
@@ -351,12 +300,9 @@ end
 
 # delete variable and its satelites (by variable id)
 function deleteVariable!(fgclient::NavAbilityDFG, variable::DFG.AbstractDFGVariable)
-
     varId = NvaSDK.getId(fgclient.fg, variable.label)
 
-    variables = Dict(
-        "variableId" => varId,
-    )
+    variables = Dict("variableId" => varId)
 
     response = GQL.execute(
         fgclient.client.client,
@@ -389,12 +335,8 @@ function findVariableNearTimestamp(
     totime = timestamp + window
 
     fgId = NvaSDK.getId(fgclient.fg)
-    
-    variables = Dict(
-        "fgId" => fgId,
-        "fromTime" => fromtime,
-        "toTime" => totime,
-    )
+
+    variables = Dict("fgId" => fgId, "fromTime" => fromtime, "toTime" => totime)
 
     response = GQL.execute(
         fgclient.client.client,
@@ -403,13 +345,7 @@ function findVariableNearTimestamp(
         throw_on_execution_error = true,
     )
 
-    return Symbol.(
-        get.(
-            response.data["factorgraphs"][1]["variables"],
-            "label",
-            missing,
-        )
-    )
+    return Symbol.(get.(response.data["factorgraphs"][1]["variables"], "label", missing))
 end
 
 # findVariableNearTimestamp(fgclient, ZonedDateTime("2018-08-10T13:06:18.622Z"), Millisecond(100))

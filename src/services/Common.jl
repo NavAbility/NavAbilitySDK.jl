@@ -7,11 +7,11 @@ function getCommonProperties(::Type{T}, from::F, exclude = Symbol[]) where {T, F
 end
 
 #TODO update all GQL.execute calls to use this
-function executeGql(cfg::NavAbilityDFG, query::AbstractString, variables,  T::Type; kwargs...)
+function executeGql(cfg::NavAbilityDFG, query::AbstractString, variables,  T::Type = Any; kwargs...)
     executeGql(cfg.client, query, variables, T; kwargs...)
 end
 
-function executeGql(client::NavAbilityClient, query::AbstractString, variables,  T::Type; throw_on_execution_error = true, kwargs...)
+function executeGql(client::NavAbilityClient, query::AbstractString, variables,  T::Type = Any; throw_on_execution_error = true, kwargs...)
     return GQL.execute(
         client.client,
         query,
@@ -62,14 +62,16 @@ Get the deterministic identifier (uuid v5) for a node.
 getId(ns::UUID, labels...) = uuid5(ns, string(labels...))
 getId(node::NvaNode, labels...) = getId(node.namespace, node.label, labels...)
 getId(fgclient::NavAbilityDFG, parent::NvaNode, label::Symbol) = getId(parent, label)
-getId(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGVariable, label::Symbol) = getId(fgclient.fg, parent.label, label)
-getId(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGFactor, label::Symbol) = getId(fgclient.fg, parent.label, label)
+getId(fgclient::NavAbilityDFG, parent::DFG.DFGNode, labels...) = getId(fgclient.fg, parent.label, labels...)
 
 """
     createConnect
 Create a connection gql query to a node.
 """
 createConnect(id::UUID) = (connect = (where = (node = (id = string(id),),),),)
+createConnect(ids::Vector{UUID}) = (connect = map(id->(where = (node = (id = string(id),),),), ids),)
+
+# Create Parent connections for BlobEntry
 createConnect(fgclient::NavAbilityDFG, parent::NvaNode{Factorgraph}) = (Factorgraph=createConnect(getId(parent)),)
 createConnect(fgclient::NavAbilityDFG, parent::NvaNode{Agent}) = (Agent=createConnect(getId(parent)),)
 createConnect(fgclient::NavAbilityDFG, parent::NvaNode{Model}) = (Model=createConnect(getId(parent)),)
