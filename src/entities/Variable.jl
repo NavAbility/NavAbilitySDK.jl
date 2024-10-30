@@ -81,7 +81,7 @@ Base.@kwdef struct BlobEntryCreateInput
     metadata::String
     _version::String
     timestamp::ZonedDateTime
-    size::Int
+    size::Union{String, Nothing} #FIXME 
     parent::Any
 end
 

@@ -19,10 +19,11 @@ function NavAbilityClient(
     auth_token::String,
     apiUrl::String = "https://api.navability.io";
     orgLabel::Union{Symbol, Nothing} = nothing,
+    introspect::Bool = false,
     kwargs...,
 )
     headers = Dict("Authorization" => "Bearer $auth_token")
-    client = GQL.Client(apiUrl; headers, kwargs...)
+    client = GQL.Client(apiUrl; headers, introspect, kwargs...)
     if isnothing(orgLabel)
         id = getOrgs(client)[1].id
     else

@@ -219,3 +219,74 @@ function DFG.setGraphMetadata!(fgclient::NavAbilityDFG, smallData::Dict{Symbol, 
         Dict{Symbol, DFG.SmallDataTypes},
     )
 end
+
+
+## =======================================================================================
+## Connect Factorgraph to other nodes
+## =======================================================================================
+
+
+GQL_CONNECT_GRAPH_TO_MODEL = GQL.gql"""
+mutation connectGraphModel($modelId: ID!, $fgId: ID!) {
+  updateModels(
+    where: { id: $modelId }
+    update: { fgs: { connect: { where: { node: { id: $fgId } } } } }
+  ) {
+    info {
+      relationshipsCreated
+    }
+  }
+}
+"""
+
+function connect!(client, model::NvaNode{Model}, fg::NvaNode{Factorgraph})
+    variables = Dict("modelId" => getId(model), "fgId" => getId(fg))
+
+    response = executeGql(client, GQL_CONNECT_GRAPH_TO_MODEL, variables)
+
+    return response.data["updateModels"]["info"]["relationshipsCreated"]
+end
+
+
+GQL_CONNECT_GRAPH_TO_AGENT = GQL.gql"""
+mutation connectGraphModel($agentId: ID!, $fgId: ID!) {
+  updateAgents(
+    where: { id: $agentId }
+    update: { fgs: { connect: { where: { node: { id: $fgId } } } } }
+  ) {
+    info {
+      relationshipsCreated
+    }
+  }
+}
+"""
+
+function connect!(client, agent::NvaNode{Agent}, fg::NvaNode{Factorgraph})
+    variables = Dict("agentId" => getId(agent), "fgId" => getId(fg))
+
+    response = executeGql(client, GQL_CONNECT_GRAPH_TO_AGENT, variables)
+
+    return response.data["updateAgents"]["info"]["relationshipsCreated"]
+end
+
+
+QUERY_GET_GRAPHS_AGENTS = GQL.gql"""
+query getAgents_Graph($id: ID!) {
+  factorgraphs(where: {id: $id}) {
+    agents {
+      label
+      namespace
+    }
+  }
+}
+"""
+
+function getAgents(client::NavAbilityClient, fg::NvaNode{Factorgraph})
+    response = executeGql(
+        client,
+        QUERY_GET_GRAPHS_AGENTS,
+        Dict("id" => getId(fg)),
+        Vector{Dict{Symbol, Vector{NvaNode{Agent}}}},
+    )
+    return handleQuery(response, "factorgraphs")[1][:agents]
+end

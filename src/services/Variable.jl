@@ -23,6 +23,7 @@ function VariableCreateInput(fgclient::NavAbilityDFG, v::Variable)
                     else
                         entry.blobId
                     end,
+                    size = isnothing(entry.size) ? "" : entry.size,
                 ),
             )
         end
@@ -108,7 +109,12 @@ function addVariable!(fgclient::NavAbilityDFG, v::Variable)
     return handleMutate(response, "addVariables", :variables)[1]
 end
 
-function DFG.addVariables!(fgclient::NavAbilityDFG, vars::Vector{Variable}; chunksize = 20)
+function DFG.addVariables!(
+    fgclient::NavAbilityDFG,
+    vars::Vector{Variable};
+    chunksize::Int = 20,
+    showprogress::Bool = length(vars) > 1000,
+)
     #
     addvars = VariableCreateInput.(fgclient, vars)
 
@@ -117,7 +123,7 @@ function DFG.addVariables!(fgclient::NavAbilityDFG, vars::Vector{Variable}; chun
 
     T = @NamedTuple{variables::Vector{Variable}}
 
-    newVarReturns = asyncmap(chunks) do c
+    newVarReturns = @showprogress enabled = showprogress asyncmap(chunks) do c
         response =
             executeGql(fgclient, GQL_ADD_VARIABLES, Dict("variablesToCreate" => c), T;)
         handleMutate(response, "addVariables", :variables)
