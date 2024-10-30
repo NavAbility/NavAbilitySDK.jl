@@ -9,6 +9,6 @@ Documentation for [NavAbilitySDK](https://github.com/NavAbility/NavAbilitySDK.jl
 ```@index
 ```
 
-<!-- ```@autodocs
+```@autodocs
 Modules = [NavAbilitySDK]
-``` -->
+``` 
