@@ -5,11 +5,10 @@
 #TODO replace sesssion
 # $GQL_FRAGMENT_SESSION
 # sessions { ...session_fields }
+# $GQL_FRAGMENT_BLOBENTRY
 FRAGMENT_MODEL = """
-$GQL_FRAGMENT_BLOBENTRY
 fragment FRAGMENT_MODEL on Model {
   label
-  createdTimestamp
   namespace
 }
 """
@@ -23,27 +22,39 @@ QUERY_GET_MODEL = """
 query QUERY_GET_MODEL(\$modelId: ID!) {
   models (where: {id: \$modelId}) {
     label
-    createdTimestamp
     namespace
   }
 }
 """
 
+# $FRAGMENT_MODEL
+# ...FRAGMENT_MODEL
 QUERY_GET_MODELS_ALL = """
-$FRAGMENT_MODEL
 {
-    models {
-        ...FRAGMENT_MODEL
-    }
+  models {
+    label
+    namespace
+  }
 }
 """
 
-GQL_ADD_MODEL = """
-$FRAGMENT_MODEL
-mutation addModel(\$label: String!, \$status: String = "", \$description: String = "") {
-  addModels(input: {label: \$label, status: \$status, description: \$description}) {
+GQL_ADD_MODELS = GQL.gql"""
+mutation addModels($input: [ModelCreateInput!]!) {
+  addModels(input: $input) {
     models {
-        ...FRAGMENT_MODEL
+        label
+        namespace
+    }
+  }
+}
+"""
+
+QUERY_GET_MODEL_GRAPHS = GQL.gql"""
+query getGraphs_Model($id: ID!) {
+  models(where: {id: $id}) {
+    fgs {
+      label
+      namespace
     }
   }
 }

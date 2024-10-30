@@ -191,6 +191,7 @@ function addBlobEntries!(
             getCommonProperties(BlobEntryCreateInput, entry)...,
             id = getId(fgclient, parent, entry.label),
             parent = createConnect(fgclient, parent),
+            size = isnothing(entry.size) ? "" : entry.size, #FIXME remove once size is "required"
         )
     end
 

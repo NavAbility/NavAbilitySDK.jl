@@ -6,6 +6,8 @@ struct NavAbilityDFG{VT<:AbstractDFGVariable, FT<:AbstractDFGFactor} <: Abstract
     blobStores::Dict{Symbol, DFG.AbstractBlobStore}
 end
 
+DFG.getLabel(dfg::NavAbilityDFG) = dfg.fg.label
+
 DFG.getTypeDFGVariables(::NavAbilityDFG{T, <:AbstractDFGFactor}) where {T} = T
 DFG.getTypeDFGFactors(::NavAbilityDFG{<:AbstractDFGVariable, T}) where {T} = T
 
@@ -76,6 +78,8 @@ function NavAbilityDFG(
     else
         fg = getGraph(client, fgLabel)
     end
+
+    connect!(client, agent, fg)
 
     return NavAbilityDFG{DFG.Variable, DFG.PackedFactor}(
         client,

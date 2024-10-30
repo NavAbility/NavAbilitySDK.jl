@@ -11,9 +11,13 @@ function executeGql(cfg::NavAbilityDFG, query::AbstractString, variables,  T::Ty
     executeGql(cfg.client, query, variables, T; kwargs...)
 end
 
-function executeGql(client::NavAbilityClient, query::AbstractString, variables,  T::Type = Any; throw_on_execution_error = true, kwargs...)
+function executeGql(cfg::NavAbilityClient, query::AbstractString, variables,  T::Type = Any; kwargs...)
+    executeGql(cfg.client, query, variables, T; kwargs...)
+end
+
+function executeGql(client::GQL.Client, query::AbstractString, variables,  T::Type = Any; throw_on_execution_error = true, kwargs...)
     return GQL.execute(
-        client.client,
+        client,
         query,
         T;
         variables,

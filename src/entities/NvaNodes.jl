@@ -17,6 +17,8 @@ struct NvaNode{T}
     label::Symbol
 end
 
+DFG.getLabel(node::NvaNode) = node.label
+
 @kwdef struct AgentCreateInput
     # Interface
     id::UUID#!
