@@ -9,7 +9,7 @@ query QUERY_GET_AGENT(\$agentId: ID!) {
 }
 """
 
-function getAgent(client::NavAbilityClient, label::Symbol)
+function DFG.getAgent(client::NavAbilityClient, label::Symbol)
     agentId = getId(client.id, label)
     variables = (agentId = agentId,)
 

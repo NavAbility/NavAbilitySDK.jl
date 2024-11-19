@@ -63,10 +63,10 @@ end
     getId
 Get the deterministic identifier (uuid v5) for a node.
 """
-getId(ns::UUID, labels...) = uuid5(ns, string(labels...))
-getId(node::NvaNode, labels...) = getId(node.namespace, node.label, labels...)
-getId(fgclient::NavAbilityDFG, parent::NvaNode, label::Symbol) = getId(parent, label)
-getId(fgclient::NavAbilityDFG, parent::DFG.DFGNode, labels...) = getId(fgclient.fg, parent.label, labels...)
+DFG.getId(ns::UUID, labels...) = uuid5(ns, string(labels...))
+DFG.getId(node::NvaNode, labels...) = getId(node.namespace, node.label, labels...)
+DFG.getId(fgclient, parent::NvaNode, label::Symbol) = getId(parent, label)
+DFG.getId(fgclient::NavAbilityDFG, parent::DFG.DFGNode, labels...) = getId(fgclient.fg, parent.label, labels...)
 
 """
     createConnect
@@ -76,8 +76,8 @@ createConnect(id::UUID) = (connect = (where = (node = (id = string(id),),),),)
 createConnect(ids::Vector{UUID}) = (connect = map(id->(where = (node = (id = string(id),),),), ids),)
 
 # Create Parent connections for BlobEntry
-createConnect(fgclient::NavAbilityDFG, parent::NvaNode{Factorgraph}) = (Factorgraph=createConnect(getId(parent)),)
-createConnect(fgclient::NavAbilityDFG, parent::NvaNode{Agent}) = (Agent=createConnect(getId(parent)),)
-createConnect(fgclient::NavAbilityDFG, parent::NvaNode{Model}) = (Model=createConnect(getId(parent)),)
+createConnect(fgclient, parent::NvaNode{Factorgraph}) = (Factorgraph=createConnect(getId(parent)),)
+createConnect(fgclient, parent::NvaNode{Agent}) = (Agent=createConnect(getId(parent)),)
+createConnect(fgclient, parent::NvaNode{Model}) = (Model=createConnect(getId(parent)),)
 createConnect(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGVariable) = (Variable=createConnect(getId(fgclient.fg, parent.label)),)
 createConnect(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGFactor) = (Factor=createConnect(getId(fgclient.fg, parent.label)),)

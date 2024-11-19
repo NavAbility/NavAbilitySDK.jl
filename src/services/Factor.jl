@@ -1,6 +1,6 @@
 #TODO factor does not have blobs yet
 
-function addFactor!(fgclient::NavAbilityDFG, pacfac::PackedFactor)
+function DFG.addFactor!(fgclient::NavAbilityDFG, pacfac::PackedFactor)
     return addFactors!(fgclient, [pacfac])[1]
 end
 
@@ -30,7 +30,7 @@ function DFG.addFactors!(
     return reduce(vcat, newfacs)
 end
 
-function getFactors(fgclient::NavAbilityDFG)
+function DFG.getFactors(fgclient::NavAbilityDFG)
     fgId = getId(fgclient.fg)
 
     variables = Dict("fgId" => fgId, "fields_summary" => true, "fields_full" => true)
@@ -42,7 +42,7 @@ function getFactors(fgclient::NavAbilityDFG)
     return handleQuery(response, "factorgraphs", fgclient.fg.label)["factors"]
 end
 
-function getFactorsSkeleton(fgclient::NavAbilityDFG)
+function DFG.getFactorsSkeleton(fgclient::NavAbilityDFG)
     fgId = getId(fgclient.fg)
 
     variables = Dict("fgId" => fgId, "fields_summary" => false, "fields_full" => false)
@@ -54,7 +54,7 @@ function getFactorsSkeleton(fgclient::NavAbilityDFG)
     return handleQuery(response, "factorgraphs", fgclient.fg.label)["factors"]
 end
 
-function getFactor(
+function DFG.getFactor(
     fgclient::NavAbilityDFG{<:AbstractDFGVariable, FT},
     label::Symbol,
 ) where {FT}
@@ -67,7 +67,7 @@ function getFactor(
     return FT(handleQuery(response, "factors", label))
 end
 
-function listFactors(
+function DFG.listFactors(
     fgclient::NavAbilityDFG,
     regexFilter::Union{Nothing, Regex} = nothing;
     tags::Vector{Symbol} = Symbol[],
@@ -111,7 +111,7 @@ function listFactors(
 end
 
 # delete factor and its satelites (by factor id)
-function deleteFactor!(fgclient::NavAbilityDFG, factor::DFG.AbstractDFGFactor)
+function DFG.deleteFactor!(fgclient::NavAbilityDFG, factor::DFG.AbstractDFGFactor)
     facId = getId(fgclient.fg, factor.label)
 
     variables = (factorId = facId,)
@@ -123,7 +123,7 @@ function deleteFactor!(fgclient::NavAbilityDFG, factor::DFG.AbstractDFGFactor)
     return factor
 end
 
-function deleteFactor!(fgclient::NavAbilityDFG, label::Symbol)
+function DFG.deleteFactor!(fgclient::NavAbilityDFG, label::Symbol)
     f = getFactor(fgclient, label)
     return deleteFactor!(fgclient, f)
 end
