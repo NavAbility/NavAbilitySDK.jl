@@ -2,7 +2,7 @@
 # BlobEntry CRUD
 # =========================================================================================
 
-function getBlobEntry(fgclient::NavAbilityDFG, variableLabel::Symbol, label::Symbol)
+function DFG.getBlobEntry(fgclient::NavAbilityDFG, variableLabel::Symbol, label::Symbol)
 
     id = getId(fgclient.fg, variableLabel, label)
 
@@ -13,7 +13,7 @@ function getBlobEntry(fgclient::NavAbilityDFG, variableLabel::Symbol, label::Sym
     return handleQuery(response, "blobEntries", label)
 end
 
-function getBlobEntries(fgclient::NavAbilityDFG, variableLabel::Symbol)
+function DFG.getBlobEntries(fgclient::NavAbilityDFG, variableLabel::Symbol)
 
     id = getId(fgclient.fg, variableLabel)
     T = Vector{@NamedTuple{blobEntries::Vector{DFG.BlobEntry}}}
@@ -30,11 +30,11 @@ function getBlobEntries(fgclient::NavAbilityDFG, variableLabel::Symbol)
 
 end
 
-function addBlobEntry!(fgclient::NavAbilityDFG, variableLabel::Symbol, entry::DFG.BlobEntry)
+function DFG.addBlobEntry!(fgclient::NavAbilityDFG, variableLabel::Symbol, entry::DFG.BlobEntry)
     return addBlobEntries!(fgclient, variableLabel, [entry])[1]
 end
 
-function addBlobEntries!(
+function DFG.addBlobEntries!(
     fgclient::NavAbilityDFG,
     variableLabel::Symbol,
     entries::Vector{DFG.BlobEntry},
@@ -67,7 +67,7 @@ end
 # another way would be like this:
 # GQL.mutate(client, "addBlobEntries", Dict("input"=>input), NVA.BlobEntryResponse; output_fields=#TODO, verbose=2)
 
-function listBlobEntries(fgclient::NavAbilityDFG, variableLabel::Symbol)
+function DFG.listBlobEntries(fgclient::NavAbilityDFG, variableLabel::Symbol)
 
     id = getId(fgclient.fg, variableLabel)
     variables = (id=id,)
@@ -88,7 +88,7 @@ end
 
 #TODO delete and update
 
-function deleteBlobEntry!(fgclient::NavAbilityDFG, varLabel::Symbol, entry::BlobEntry)
+function DFG.deleteBlobEntry!(fgclient::NavAbilityDFG, varLabel::Symbol, entry::BlobEntry)
 
     id = getId(fgclient.fg, varLabel, entry.label)
     variables = (id=id,)
@@ -103,7 +103,7 @@ function deleteBlobEntry!(fgclient::NavAbilityDFG, varLabel::Symbol, entry::Blob
     return entry
 end
 
-function deleteBlobEntry!(fgclient::NavAbilityDFG, varLabel::Symbol, label::Symbol)
+function DFG.deleteBlobEntry!(fgclient::NavAbilityDFG, varLabel::Symbol, label::Symbol)
     entry = getBlobEntry(fgclient, varLabel, label)
     return deleteBlobEntry!(fgclient, varLabel, entry)
 end
@@ -181,8 +181,8 @@ function DFG.getAgentBlobEntries(client::NavAbilityClient, label::Symbol)
     return getAgentBlobEntries(client, getAgent(client, label))
 end
 
-function addBlobEntries!(
-    fgclient::NavAbilityDFG,
+function DFG.addBlobEntries!(
+    fgclient,
     parent::Union{NvaNode, DFG.AbstractDFGVariable, DFG.AbstractDFGFactor},
     entries::Vector{DFG.BlobEntry}
 )  
@@ -203,14 +203,14 @@ function addBlobEntries!(
 
 end
 
-function addGraphBlobEntries!(fgclient::NavAbilityDFG, entries::Vector{DFG.BlobEntry})
+function DFG.addGraphBlobEntries!(fgclient::NavAbilityDFG, entries::Vector{DFG.BlobEntry})
     return addBlobEntries!(fgclient, fgclient.fg, entries)
 end
-function addAgentBlobEntries!(fgclient::NavAbilityDFG, entries::Vector{DFG.BlobEntry})
+function DFG.addAgentBlobEntries!(fgclient::NavAbilityDFG, entries::Vector{DFG.BlobEntry})
     return addBlobEntries!(fgclient, fgclient.agent, entries)
 end
-function addModelBlobEntries!(fgclient::NavAbilityDFG, entries::Vector{DFG.BlobEntry})
-    error("Not implemented")
+function DFG.addModelBlobEntries!(nva::NavAbilityModel, entries::Vector{DFG.BlobEntry})
+    return addBlobEntries!(nva.client, nva.model, entries)
 end
 
 function DFG.listGraphBlobEntries(fgclient::NavAbilityDFG)

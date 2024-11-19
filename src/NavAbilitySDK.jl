@@ -21,7 +21,8 @@ using DistributedFactorGraphs
 
 #
 using DistributedFactorGraphs: 
-    Agent
+    Agent,
+    getAgent
 
 import DistributedFactorGraphs:
     getFactor,

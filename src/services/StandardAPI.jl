@@ -7,7 +7,7 @@ Example
 addVariable!(fgclient, "x0", NvaSDK.Pose2)
 ```
 """
-function addVariable!(
+function DFG.addVariable!(
     fgclient::NavAbilityDFG,
     label::Union{<:AbstractString, Symbol},
     variableType::Union{<:AbstractString, Symbol, Type{<:VariableType}};
@@ -37,7 +37,7 @@ end
 # function addVariableEvent end
 # function addVariableAsync end
 
-function addFactor!(
+function DFG.addFactor!(
     fgclient::NavAbilityDFG,
     variables::Vector{String},
     fnc::InferenceType;
@@ -46,7 +46,7 @@ function addFactor!(
     return addFactor!(fgclient, Symbol.(variables), fnc; kwargs...)
 end
 
-function addFactor!(
+function DFG.addFactor!(
     fgclient::NavAbilityDFG,
     xisyms::Vector{Symbol},
     fnc::InferenceType;

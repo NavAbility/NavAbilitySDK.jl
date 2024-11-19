@@ -37,3 +37,6 @@ NavAbilityClient(args...; kwargs...) = error("Deprecated: NavAbilityClient requi
 # FIXME DEPRECATED
 struct Context end
 Context(a...; ka...) = error("deprecated")
+
+listBlobsMeta(args...) = error("listBlobsMeta is deprecated, use BlobEntries")
+listBlobsId(args...) = error("listBlobsId is deprecated, use listBlobs")

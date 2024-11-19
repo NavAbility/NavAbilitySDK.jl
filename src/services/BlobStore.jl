@@ -55,14 +55,14 @@ function createDownload(store::NavAbilityBlobStore, blobId::UUID)
     return response.data["createDownload"]
 end
 
-function getBlob(blobstore::NavAbilityBlobStore, blobId::UUID)
+function DFG.getBlob(blobstore::NavAbilityBlobStore, blobId::UUID)
     url = createDownload(blobstore, blobId)
     io = PipeBuffer()
     Downloads.download(url, io)
     return io |> take!
 end
 
-function getBlob(blobstore::NavAbilityCachedBlobStore, blobId::UUID)
+function DFG.getBlob(blobstore::NavAbilityCachedBlobStore, blobId::UUID)
     if hasBlob(blobstore.localstore, blobId)
         blob = getBlob(blobstore.localstore, blobId)
     else
@@ -100,10 +100,6 @@ function DFG.hasBlob(store::NavAbilityBlobStore, blobId::UUID)
     )
     return response.data["hasBlob"]
 end
-
-listBlobsMeta(args...) = error("listBlobsMeta is deprecated, use BlobEntries")
-listBlobsId(args...) = error("listBlobsId is deprecated, use listBlobs")
-
 
 ## =========================================================================
 ## Upload
@@ -192,7 +188,7 @@ end
 ##
 
 
-function addBlob!(
+function DFG.addBlob!(
     store::NavAbilityBlobStore,
     filepath::AbstractString,
     blobId::UUID = uuid4();
@@ -259,7 +255,7 @@ function addBlob!(
 end
 
 
-function addBlob!(
+function DFG.addBlob!(
     store::NavAbilityBlobStore,
     blobId::UUID,
     blob::Vector{UInt8},
@@ -301,7 +297,7 @@ function addBlob!(
     return UUID(blobId)
 end
 
-function addBlob!(
+function DFG.addBlob!(
     blobstore::NavAbilityCachedBlobStore,
     blob::Vector{UInt8},
     filename::String,

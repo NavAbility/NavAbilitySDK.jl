@@ -8,7 +8,7 @@ query QUERY_GET_FACTORGRAPH(\$fgId: ID!) {
 }
 """
 
-function getGraph(client::NavAbilityClient, label::Symbol)
+function DFG.getGraph(client::NavAbilityClient, label::Symbol)
     fgId = getId(client.id, label)
     variables = Dict("fgId" => fgId)
 
@@ -159,7 +159,7 @@ function DFG.listNeighbors(fgclient::NavAbilityDFG, label::Symbol)
     return union(flbls, vlbls)
 end
 
-function exists(fgclient::NavAbilityDFG, label::Symbol)
+function DFG.exists(fgclient::NavAbilityDFG, label::Symbol)
     variables = (id=getId(fgclient.fg, label),)
 
     response = GQL.execute(

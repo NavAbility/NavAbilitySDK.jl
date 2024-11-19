@@ -91,7 +91,7 @@ function VariableCreateInput(fgclient::NavAbilityDFG, v::Variable)
     return addvar
 end
 
-function addVariable!(fgclient::NavAbilityDFG, v::Variable)
+function DFG.addVariable!(fgclient::NavAbilityDFG, v::Variable)
     addvar = VariableCreateInput(fgclient, v)
 
     variables = Dict("variablesToCreate" => [addvar])
@@ -132,7 +132,7 @@ function DFG.addVariables!(
     return reduce(vcat, newVarReturns)
 end
 
-function getVariables(fgclient::NavAbilityDFG)
+function DFG.getVariables(fgclient::NavAbilityDFG)
     fgId = NvaSDK.getId(fgclient.fg)
 
     variables = Dict("fgId" => fgId, "fields_summary" => true, "fields_full" => true)
@@ -144,7 +144,7 @@ function getVariables(fgclient::NavAbilityDFG)
     return handleQuery(response, "factorgraphs", fgclient.fg.label)["variables"]
 end
 
-function getVariables(fgclient::NavAbilityDFG, labels::Vector{Symbol})
+function DFG.getVariables(fgclient::NavAbilityDFG, labels::Vector{Symbol})
     namespace = fgclient.fg.namespace
     fgLabel = fgclient.fg.label
 
@@ -164,7 +164,7 @@ function getVariables(fgclient::NavAbilityDFG, labels::Vector{Symbol})
     return handleQuery(response, "variables")
 end
 
-function listVariables(
+function DFG.listVariables(
     fgclient::NavAbilityDFG,
     regexFilter::Union{Nothing, Regex} = nothing;
     tags::Vector{Symbol} = Symbol[],
@@ -211,7 +211,7 @@ function listVariables(
     return labels
 end
 
-function getVariable(
+function DFG.getVariable(
     fgclient::NavAbilityDFG{VT, <:AbstractDFGFactor},
     label::Symbol,
 ) where {VT}
@@ -231,7 +231,7 @@ function getVariable(
     return VT(handleQuery(response, "variables", label))
 end
 
-function getVariableSummary(fgclient::NavAbilityDFG, label::Symbol)
+function DFG.getVariableSummary(fgclient::NavAbilityDFG, label::Symbol)
     varId = NvaSDK.getId(fgclient.fg, label)
 
     variables = Dict("varId" => varId, "fields_summary" => true, "fields_full" => false)
@@ -249,7 +249,7 @@ function getVariableSummary(fgclient::NavAbilityDFG, label::Symbol)
     return handleQuery(response, "variables", label)
 end
 
-function getVariableSkeleton(fgclient::NavAbilityDFG, label::Symbol)
+function DFG.getVariableSkeleton(fgclient::NavAbilityDFG, label::Symbol)
     varId = NvaSDK.getId(fgclient.fg, label)
 
     variables = Dict("varId" => varId, "fields_summary" => false, "fields_full" => false)
@@ -268,7 +268,7 @@ function getVariableSkeleton(fgclient::NavAbilityDFG, label::Symbol)
 end
 
 ##
-function getVariablesSkeleton(fgclient::NavAbilityDFG)#, label::Symbol)
+function DFG.getVariablesSkeleton(fgclient::NavAbilityDFG)#, label::Symbol)
     fgId = NvaSDK.getId(fgclient.fg)
 
     variables = Dict("fgId" => fgId, "fields_summary" => false, "fields_full" => false)
@@ -286,7 +286,7 @@ function getVariablesSkeleton(fgclient::NavAbilityDFG)#, label::Symbol)
     return handleQuery(response, "factorgraphs", :variables)[1]
 end
 
-function getVariablesSummary(fgclient::NavAbilityDFG)#, label::Symbol)
+function DFG.getVariablesSummary(fgclient::NavAbilityDFG)#, label::Symbol)
     fgId = NvaSDK.getId(fgclient.fg)
 
     variables = Dict("fgId" => fgId, "fields_summary" => true, "fields_full" => false)
@@ -305,7 +305,7 @@ function getVariablesSummary(fgclient::NavAbilityDFG)#, label::Symbol)
 end
 
 # delete variable and its satelites (by variable id)
-function deleteVariable!(fgclient::NavAbilityDFG, variable::DFG.AbstractDFGVariable)
+function DFG.deleteVariable!(fgclient::NavAbilityDFG, variable::DFG.AbstractDFGVariable)
     varId = NvaSDK.getId(fgclient.fg, variable.label)
 
     variables = Dict("variableId" => varId)
@@ -323,7 +323,7 @@ function deleteVariable!(fgclient::NavAbilityDFG, variable::DFG.AbstractDFGVaria
     return variable, neigfacs
 end
 
-function deleteVariable!(fgclient::NavAbilityDFG, label::Symbol)
+function DFG.deleteVariable!(fgclient::NavAbilityDFG, label::Symbol)
     v = getVariable(fgclient, label)
     return deleteVariable!(fgclient, v)
 end
@@ -332,7 +332,7 @@ end
 ## Utilities
 ## ====================
 #FIXME findVariable**s**NearTimestamp
-function findVariableNearTimestamp(
+function DFG.findVariableNearTimestamp(
     fgclient::NavAbilityDFG,
     timestamp::ZonedDateTime,
     window::TimePeriod,
