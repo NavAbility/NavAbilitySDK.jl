@@ -73,6 +73,7 @@ function DFG.getBlob(blobstore::NavAbilityCachedBlobStore, blobId::UUID)
     return blob
 end
 
+#FIXME use executeGql
 function DFG.listBlobs(store::NavAbilityBlobStore)
     query_args = Dict("store"=>(label=store.label,))
     response = GQL.query(
@@ -88,6 +89,7 @@ function DFG.listBlobs(store::NavAbilityBlobStore)
     return UUID.(last.(split.(list, '/')))
 end
 
+#FIXME use executeGql
 function DFG.hasBlob(store::NavAbilityBlobStore, blobId::UUID)
     query_args = Dict("store"=>(label=store.label,), "blobId"=>string(blobId))
     response = GQL.query(
@@ -349,12 +351,15 @@ function DFG.addBlob!(store::NavAbilityOnPremBlobStore, blobId::UUID, blob::Vect
     return blobId
 end
 
+GQL_GET_BLOB = GQL.gql"""
+query getBlob($id: String!) {
+    getBlob(blobId: $id)
+}
+"""
+
 function DFG.getBlob(store::NavAbilityOnPremBlobStore, blobId::UUID)
-    response = GQL.query(
-        store.client,
-        "getBlob";
-        query_args = Dict("blobId" => string(blobId)),
-        throw_on_execution_error = true,
-    )
+    
+    response = executeGql(store.client, GQL_GET_BLOB, (id = string(blobId),))
+
     return base64decode(response.data["getBlob"])
 end
