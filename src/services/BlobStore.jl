@@ -332,18 +332,18 @@ struct NavAbilityOnPremBlobStore <: DFG.AbstractBlobStore{Vector{UInt8}}
 end
 
 function NavAbilityOnPremBlobStore(fgclient::NavAbilityDFG, label=:default)
-    NavAbilityOnPremBlobStore(fgclient.client, label)
+    NavAbilityOnPremBlobStore(fgclient.client.client, label)
 end
 
 function DFG.addBlob!(store::NavAbilityOnPremBlobStore, blobId::UUID, blob::Vector{UInt8})
     b64blob = base64encode(blob)
     response = NvaSDK.GQL.mutate(
         store.client,
-        "addBlob",
+        "addBlobFS",
         Dict("blobId" => string(blobId), "input" => b64blob);
         throw_on_execution_error = true,
     )
-    blobId_str = response.data["addBlob"]
+    blobId_str = response.data["addBlobFS"]
     blobId = tryparse(UUID, blobId_str)
     isnothing(blobId) && error(blobId_str)
     return blobId
