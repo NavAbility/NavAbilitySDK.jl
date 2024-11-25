@@ -45,6 +45,7 @@ import DistributedFactorGraphs:
     getPPE,
     getPPEs,
     addPPE!,
+    addPPEs!,
     updatePPE!,
     deletePPE!,
     getVariableSolverData,
