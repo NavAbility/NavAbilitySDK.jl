@@ -68,18 +68,27 @@ function NavAbilityDFG(
         addGraphIfAbsent = addSessionIfNotExists
     end
 
-    if addAgentIfAbsent && !in(agentLabel, listAgents(client))
-        agent = addAgent!(client, agentLabel)
-    else
-        agent = getAgent(client, agentLabel)
-    end
-    if addGraphIfAbsent && !in(fgLabel, listGraphs(client))
-        fg = addGraph!(client, fgLabel)
-    else
-        fg = getGraph(client, fgLabel)
+    agent_tsk = @async begin
+        if addAgentIfAbsent && !in(agentLabel, listAgents(client))
+            addAgent!(client, agentLabel)
+        else
+            # getAgent(client, agentLabel)
+            NvaNode{Agent}(client.id, agentLabel)
+        end
     end
 
-    connect!(client, agent, fg)
+    fg_tsk = @async begin
+        if addGraphIfAbsent && !in(fgLabel, listGraphs(client))
+            addGraph!(client, fgLabel)
+        else
+            # getGraph(client, fgLabel)
+            NvaNode{Factorgraph}(client.id, fgLabel)
+        end
+    end
+
+    agent = fetch(agent_tsk)
+    fg = fetch(fg_tsk)
+    @async connect!(client, agent, fg)
 
     return NavAbilityDFG{DFG.Variable, DFG.PackedFactor}(
         client,
