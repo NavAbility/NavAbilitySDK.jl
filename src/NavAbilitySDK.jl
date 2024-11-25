@@ -19,10 +19,10 @@ import GraphQLClient as GQL
 
 using DistributedFactorGraphs
 
-#
 using DistributedFactorGraphs: 
     Agent,
-    getAgent
+    getAgent,
+    getGraph
 
 import DistributedFactorGraphs:
     getFactor,
@@ -48,6 +48,7 @@ import DistributedFactorGraphs:
     updatePPE!,
     deletePPE!,
     getVariableSolverData,
+    getVariableSolverDataAll,
     addVariableSolverData!,
     updateVariableSolverData!,
     deleteVariableSolverData!,
@@ -64,11 +65,21 @@ import DistributedFactorGraphs:
     getGraphBlobEntries,
     addGraphBlobEntry!,
     addGraphBlobEntries!,
+    getModelBlobEntries,
+    listModelBlobEntries,
     listGraphBlobEntries,
     listAgentBlobEntries,
     exists,
     listNeighbors,
-    findVariableNearTimestamp
+    findVariableNearTimestamp,
+    Agent,
+    getAgent,
+    getGraph,
+    getVariablesSkeleton,
+    getVariableSkeleton,
+    getVariableSummary,
+    getVariablesSummary,
+    getFactorsSkeleton
 # To consider implementing 
 # setSolverParams!,
 # getSolverParams,
@@ -136,7 +147,6 @@ export NavAbilityClient,
     Factor,
     MeanMaxPPE,
     BlobEntry,
-    FactorData,
     PackedVariableNodeData,
     PackedFactor
 

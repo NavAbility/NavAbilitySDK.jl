@@ -63,10 +63,11 @@ end
     getId
 Get the deterministic identifier (uuid v5) for a node.
 """
-DFG.getId(ns::UUID, labels...) = uuid5(ns, string(labels...))
-DFG.getId(node::NvaNode, labels...) = getId(node.namespace, node.label, labels...)
-DFG.getId(fgclient, parent::NvaNode, label::Symbol) = getId(parent, label)
-DFG.getId(fgclient::NavAbilityDFG, parent::DFG.DFGNode, labels...) = getId(fgclient.fg, parent.label, labels...)
+DFG.getId(ns::UUID, labels::Symbol...) = uuid5(ns, string(labels...))
+DFG.getId(client::NavAbilityClient, labels::Symbol...) = getId(client.id, labels...)
+DFG.getId(node::NvaNode, labels::Symbol...) = getId(node.namespace, node.label, labels...)
+DFG.getId(fgclient::Union{NavAbilityDFG, NavAbilityClient}, parent::NvaNode, label::Symbol) = getId(parent, label)
+DFG.getId(fgclient::NavAbilityDFG, parent::DFG.DFGNode, labels::Symbol...) = getId(fgclient.fg, parent.label, labels...)
 
 """
     createConnect

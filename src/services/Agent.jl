@@ -54,6 +54,34 @@ function addAgent!(client::NavAbilityClient, label::Symbol, agent = nothing; age
     return handleMutate(response, "addAgents", :agents)[1]
 end
 
+GQL_DELETE_AGENT = GQL.gql"""
+mutation deleteAgent($id: ID!) {
+  deleteAgents(
+    where: { id: $id }
+    delete: {
+      blobEntries: {
+        where: { node: { parentConnection: {Agent: {node: {id: $id } } } } }
+      }
+    }
+  ) {
+    nodesDeleted
+    relationshipsDeleted
+  }
+}
+"""
+
+function deleteAgent!(client::NavAbilityClient, label::Symbol)
+  
+  response = executeGql(
+      client,
+      GQL_DELETE_AGENT,
+      (id = getId(client, label),)
+  )
+
+  return response.data
+end
+
+
 QUERY_LIST_AGENTS = GQL.gql"""
 query listAgents($id: ID!) {
   orgs(where: {id: $id}) {
