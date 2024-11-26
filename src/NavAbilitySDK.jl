@@ -22,7 +22,10 @@ using DistributedFactorGraphs
 using DistributedFactorGraphs: 
     Agent,
     getAgent,
-    getGraph
+    getGraph,
+    assembleFactorName,
+    FactorData,
+    getFncTypeName
 
 import DistributedFactorGraphs:
     getFactor,
