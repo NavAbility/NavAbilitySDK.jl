@@ -14,7 +14,7 @@ DFG.getTypeDFGFactors(::NavAbilityDFG{<:AbstractDFGVariable, T}) where {T} = T
 function NavAbilityDFG(
     token::String,
     fgLabel::Symbol,
-    agentLabel::Symbol;
+    agentLabel::Union{Nothing, Symbol} = nothing;
     apiUrl::String = "https://api.navability.io",
     orgLabel::Union{Symbol, Nothing} = nothing,
     auth_token = nothing,
@@ -47,7 +47,7 @@ end
 function NavAbilityDFG(
     client::NavAbilityClient,
     fgLabel::Symbol,
-    agentLabel::Symbol;
+    agentLabel::Union{Nothing, Symbol} = nothing;
     storeLabel = :default,
     addAgentIfAbsent = false,
     addGraphIfAbsent = false,
@@ -55,7 +55,7 @@ function NavAbilityDFG(
     addSessionIfNotExists = nothing,
 )
     @assert isValidLabel(fgLabel) "fgLabel: `$fgLabel` is not a valid label"
-    @assert isValidLabel(agentLabel) "agentLabel: `$agentLabel` is not a valid label"
+    @assert isnothing(agentLabel) || isValidLabel(agentLabel) "agentLabel: `$agentLabel` is not a valid label"
     @assert isValidLabel(storeLabel) "storeLabel: `$storeLabel` is not a valid label"
     
     #TODO remove Deprecated in v0.8
@@ -68,21 +68,27 @@ function NavAbilityDFG(
         addGraphIfAbsent = addSessionIfNotExists
     end
 
-    agent_tsk = @async begin
-        if addAgentIfAbsent && !in(agentLabel, listAgents(client))
-            addAgent!(client, agentLabel)
-        else
-            # getAgent(client, agentLabel)
-            NvaNode{Agent}(client.id, agentLabel)
-        end
-    end
-
     fg_tsk = @async begin
         if addGraphIfAbsent && !in(fgLabel, listGraphs(client))
             addGraph!(client, fgLabel)
         else
             # getGraph(client, fgLabel)
             NvaNode{Factorgraph}(client.id, fgLabel)
+        end
+    end
+
+    agent_tsk = @async begin
+        if isnothing(agentLabel)
+            fg = fetch(fg_tsk)
+            agents = getAgents(client, fg)
+            isempty(agents) && error("No agents linked to graph $fgLabel, please provide an agentLabel")
+            length(agents) > 1 && error("Multiple agents linked to graph $fgLabel, please provide an agentLabel")
+            agents[1]
+        elseif addAgentIfAbsent && !in(agentLabel, listAgents(client))
+            addAgent!(client, agentLabel)
+        else
+            # getAgent(client, agentLabel)
+            NvaNode{Agent}(client.id, agentLabel)
         end
     end
 
