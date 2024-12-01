@@ -79,6 +79,8 @@ import DistributedFactorGraphs:
     Agent,
     getAgent,
     getGraph,
+    getGraphMetadata,
+    getAgentMetadata,
     getVariablesSkeleton,
     getVariableSkeleton,
     getVariableSummary,

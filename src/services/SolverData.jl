@@ -75,7 +75,7 @@ function DFG.addVariableSolverData!(
         throw_on_execution_error = true,
     )
     
-    return handleMutate(response, "createSolverData", :solverData)
+    return handleMutate(response, "addSolverData", :solverData)
 end
 
 #TODO add if not exist, should now be easy as the id is deterministic
