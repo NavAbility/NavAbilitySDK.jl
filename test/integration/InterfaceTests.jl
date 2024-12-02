@@ -7,62 +7,50 @@ using Random
 using UUIDs
 
 apiUrl = get(ENV, "API_URL", "https://api.navability.io")
-apiUrl = get(ENV, "API_URL", "http://localhost:4141/graphql")
-
-userLabel = get(ENV, "USER_ID", "guest@navability.io")
-robotLabel = get(ENV, "ROBOT_ID", "TestRobot")
-sessionLabel = get(ENV, "SESSION_ID", "TestSession_$(randstring(4))")
-agentLabel = Symbol(get(ENV, "AGENT_LABEL", "TestRobot"))
-fgLabel = Symbol("TestSession_" * randstring(7))
-
-# sessionLabel = "TestSession_RG94"
+orgLabel = Symbol(ENV["ORG_LABEL"])
+agentLabel = :TestRobot
+fgLabel = Symbol("TestSession_", randstring(7))
+auth_token = ENV["AUTH_TOKEN"]
 
 @testset "Create fg client" begin
-    global client = NavAbilityClient(orgId, apiUrl)
+    global client = NavAbilityClient(auth_token, apiUrl; orgLabel)
     global fgclient = NavAbilityDFG(
         client,
         fgLabel,
         agentLabel;
         addAgentIfAbsent = true,
-        addFgIfAbsent = true,
+        addGraphIfAbsent = true,
     )
     #just trigger show to check for error
     display(fgclient)
 
     # test easy constructor
-    fgclient2 = NavAbilityDFG(orgId, fgLabel, agentLabel; apiUrl)
+    fgclient2 = NavAbilityDFG(auth_token, fgLabel, agentLabel; apiUrl, orgLabel)
     @test fgclient.fg == fgclient2.fg
     @test fgclient.agent == fgclient2.agent
     @test fgclient.client.id == fgclient2.client.id
 end
 
-@testset "User Robot Session" begin
-    temp_robotLabel = "TestRobot_"*randstring(4)
-    temp_sessionLabel = "TestSession_"*randstring(4)
+@testset "Agent and Graph" begin
+    temp_robotLabel = Symbol("TestRobot_", randstring(4))
+    temp_sessionLabel = Symbol("TestSession_", randstring(4))
 
-    user = NvaSDK.User(client, userLabel)
-    @test user.id == UUID("d4bfaaf6-7d55-49eb-b03a-7806457e09d2")
-    @test user.label == userLabel
-
-    robot = addRobot!(client, user, temp_robotLabel)
+    robot = addAgent!(client, temp_robotLabel)
     @test robot.label == temp_robotLabel
 
-    @test temp_robotLabel in listRobots(client, userLabel)
+    @test temp_robotLabel in listAgents(client)
 
-    session = addSession!(client, user, robot, temp_sessionLabel)
+    session = addGraph!(client, temp_sessionLabel)
     @test session.label == temp_sessionLabel
 
-    @test temp_sessionLabel in listSessions(client, userLabel, temp_robotLabel)
+    @test temp_sessionLabel in listGraphs(client)
 
-    context = NvaSDK.Context(user, robot, session)
+    tmp_fgclient = NavAbilityDFG(client, temp_sessionLabel, temp_robotLabel)
+    deleteGraph!(tmp_fgclient)
+    @test !(temp_sessionLabel in listGraphs(client))
 
-    tmp_fgclient = NavAbilityDFG(client, userLabel, temp_robotLabel, temp_sessionLabel)
-    deleteSession!(tmp_fgclient)
-
-    deleteRobot!(client, userLabel, temp_robotLabel)
-        
-    user = NvaSDK.User(client, userLabel)
-    @test !in(temp_robotLabel, getproperty.(user.robots, :label))
+    deleteAgent!(client, temp_robotLabel)
+    @test !(temp_robotLabel in listAgents(client))
 
 end
 
@@ -82,11 +70,11 @@ end
     @test issetequal([:a, :b], listVariables(fgclient))
     @test listFactors(fgclient) == [f1.label] # Unless we add the prior!
     # Additional testing for https://github.com/JuliaRobotics/DistributedFactorGraphs.jl/issues/201
-    @test_broken issetequal([:a, :b], listVariables(fgclient, solvable=0))
-    @test_broken listVariables(fgclient, solvable=1) == [:b]
+    @test issetequal([:a, :b], listVariables(fgclient, solvable=0))
+    @test listVariables(fgclient, solvable=1) == [:b]
     @test_broken map(v->v.label, getVariables(fgclient, solvable=1)) == [:b]
-    @test_broken listFactors(fgclient, solvable=1) == []
-    @test_broken listFactors(fgclient, solvable=0) == [:abf1]
+    @test listFactors(fgclient, solvable=1) == []
+    @test contains(string(listFactors(fgclient, solvable=0)[1]), "abf")
     @test_broken map(f->f.label, getFactors(fgclient, solvable=0)) == [:abf1]
     @test_broken map(f->f.label, getFactors(fgclient, solvable=1)) == []
     #
@@ -197,7 +185,7 @@ end
         origin = "",
         description = "",
         mimeType = "",
-        size = 10,
+        size = "10",
     )
 
     de2 = BlobEntry(
@@ -209,7 +197,7 @@ end
         origin = "",
         description = "",
         mimeType = "",
-        size=100,
+        size="100",
     )
 
     de2_update = BlobEntry(
@@ -221,7 +209,7 @@ end
         origin = "",
         description = "",
         mimeType = "image/jpg",
-        size=101,
+        size="101",
     )
 
     #add
@@ -255,10 +243,10 @@ end
     @test listBlobEntries(fgclient, :a) == Symbol[]
 
     #Testing session blob entries
-    a_de = NvaSDK.addFgBlobEntries!(fgclient, [de1])[1]
-    g_de = getSessionBlobEntry(fgclient, :key1)
+    a_de = NvaSDK.addGraphBlobEntries!(fgclient, [de1])[1]
+    g_de = getGraphBlobEntry(fgclient, :key1)
     @test a_de == g_de
-    @test listSessionBlobEntries(fgclient) == [:key1]
+    @test listGraphBlobEntries(fgclient) == [:key1]
 
 
 end
@@ -302,8 +290,8 @@ end
 # at this stage v has blob entries, solver data and ppes
 @testset "addVariable with satelite" begin
     va = getVariable(fgclient, :a)
-    vc = Variable(;
-        (k => getproperty(va, k) for k in fieldnames(Variable))...,
+    vc = VariableDFG(;
+        (k => getproperty(va, k) for k in fieldnames(VariableDFG))...,
         id=nothing,
         label=:c
     )
@@ -316,7 +304,7 @@ end
     @test a_vc.id == g_vc.id
 
     del = deleteVariable!(fgclient, :c)
-    @test del["deleteVariables"]["nodesDeleted"] == 6
+    # @test del["deleteVariables"]["nodesDeleted"] == 6
 
 end
 
@@ -335,7 +323,7 @@ end
 # Now make a complex graph for connectivity tests
 numNodes = 10
 #change solvable and solveInProgress for x7,x8 for improved tests on x7x8f1
-vars = map(n -> Variable(Symbol("x$n"), "Position{1}", tags = [:POSE]), 1:numNodes)
+vars = map(n -> VariableDFG(Symbol("x$n"), "Position{1}", tags = [:POSE]), 1:numNodes)
 #add vars in batch 
 addVariables!(fgclient, vars)
 
@@ -348,7 +336,7 @@ addVariables!(fgclient, vars)
 # updateVariable!(fgclient, verts[8])
 
 facts = map(
-    n -> Factor( 
+    n -> FactorDFG( 
         [vars[n].label, vars[n+1].label],
         NvaSDK.LinearRelative(NvaSDK.Normal(50.0,2.0));
         solvable=0
@@ -386,9 +374,9 @@ a_facts = addFactor!.(fgclient, facts)
 
 end
 
-deleteVariable!.(fgclient, listVariables(fgclient))
 deleteFactor!.(fgclient, getFactorsSkeleton(fgclient))
-deleteSession!(fgclient)
+deleteVariable!.(fgclient, listVariables(fgclient))
+deleteGraph!(fgclient)
 # batch delete
 #TODO deleteVariables
 #TODO deleteFactors

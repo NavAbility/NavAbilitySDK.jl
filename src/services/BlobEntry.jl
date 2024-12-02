@@ -207,6 +207,11 @@ end
 function DFG.addGraphBlobEntries!(fgclient::NavAbilityDFG, entries::Vector{DFG.BlobEntry})
     return addBlobEntries!(fgclient, fgclient.fg, entries)
 end
+
+function DFG.addGraphBlobEntry!(fgclient::NavAbilityDFG, entry::DFG.BlobEntry)
+    return addBlobEntries!(fgclient, fgclient.fg, [entry])[1]
+end
+
 function DFG.addAgentBlobEntries!(fgclient::NavAbilityDFG, entries::Vector{DFG.BlobEntry})
     return addBlobEntries!(fgclient, fgclient.agent, entries)
 end

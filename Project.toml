@@ -21,6 +21,7 @@ TimeZones = "f269a46b-ccf7-5d73-abea-4c690281aa53"
 UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [compat]
+Aqua = "0.8"
 Base64 = "1.10"
 Dates = "1.10"
 DistributedFactorGraphs = "0.25.2"
@@ -39,8 +40,9 @@ UUIDs = "1.10"
 julia = "1.10"
 
 [extras]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 TensorCast = "02d47bb6-7ce6-556a-be16-bb1710789e2b"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["TensorCast", "Test"]
+test = ["Aqua", "TensorCast", "Test"]

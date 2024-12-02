@@ -6,13 +6,14 @@ using Random
 using UUIDs
 
 apiUrl = get(ENV, "API_URL", "https://api.navability.io")
-apiUrl = get(ENV, "API_URL", "http://localhost:4141/graphql")
-orgId = UUID(get(ENV, "ORG_ID", "6e7009af-7d9b-4353-85e1-891bfa21c937"))
-agentLabel = Symbol(get(ENV, "AGENT_LABEL", "TestRobot"))
+orgLabel = Symbol(ENV["ORG_LABEL"])
+agentLabel = :TestRobot
 fgLabel = Symbol("TestSession_" * randstring(7))
+auth_token = ENV["AUTH_TOKEN"]
+
 
 @testset "nva-sdk-standard-api-testset" begin
-    client = NavAbilityClient(orgId, apiUrl)
+    client = NavAbilityClient(auth_token, apiUrl; orgLabel)
 
     fgclient = NvaSDK.NavAbilityDFG(
         client,
@@ -22,7 +23,7 @@ fgLabel = Symbol("TestSession_" * randstring(7))
         addGraphIfAbsent = true,
     )
 
-    a_var = NvaSDK.addVariable!(fgclient, :x0, "Pose2")
+    a_var = NvaSDK.addVariable!(fgclient, :x0, "RoME.Pose2")
 
     g_var = getVariable(fgclient, :x0)
 
