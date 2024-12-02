@@ -1,12 +1,12 @@
 #TODO factor does not have blobs yet
 
-function DFG.addFactor!(fgclient::NavAbilityDFG, pacfac::PackedFactor)
+function DFG.addFactor!(fgclient::NavAbilityDFG, pacfac::FactorDFG)
     return addFactors!(fgclient, [pacfac])[1]
 end
 
 function DFG.addFactors!(
     fgclient::NavAbilityDFG,
-    pacfactors::Vector{PackedFactor};
+    pacfactors::Vector{FactorDFG};
     chunksize::Int = 20,
 )
     addfactors = map(pacfactors) do pacfac
@@ -20,7 +20,7 @@ function DFG.addFactors!(
         )
     end
 
-    T = @NamedTuple{factors::Vector{PackedFactor}}
+    T = @NamedTuple{factors::Vector{FactorDFG}}
     newfacs = @showprogress asyncmap(Iterators.partition(addfactors, chunksize)) do chunk
         response =
             executeGql(fgclient, GQL_ADD_FACTORS, Dict("factorsToCreate" => chunk), T)
@@ -35,7 +35,7 @@ function DFG.getFactors(fgclient::NavAbilityDFG)
 
     variables = Dict("fgId" => fgId, "fields_summary" => true, "fields_full" => true)
 
-    T = Vector{Dict{String, Vector{PackedFactor}}}
+    T = Vector{Dict{String, Vector{FactorDFG}}}
 
     response = executeGql(fgclient, GQL_GET_FACTORS, variables, T)
 
@@ -63,7 +63,7 @@ function DFG.getFactor(
 
     variables = Dict("facId" => facId, "fields_summary" => true, "fields_full" => true)
 
-    response = executeGql(fgclient, GQL_GET_FACTOR, variables, Vector{PackedFactor};)
+    response = executeGql(fgclient, GQL_GET_FACTOR, variables, Vector{FactorDFG};)
     return FT(handleQuery(response, "factors", label))
 end
 

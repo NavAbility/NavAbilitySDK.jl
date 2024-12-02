@@ -10,7 +10,6 @@ Base.@kwdef struct FactorCreateInput
     solvable::Int
     data::String #
     metadata::String
-    _type::String = "PackedFactor"
     _version::String #
 
     variables::Any # TODO FactorVariablesFieldInput
@@ -23,7 +22,7 @@ StructTypes.omitempties(::Type{FactorCreateInput}) = (:blobEntries,)
 # Factors
 # Used by create and update
 struct FactorResponse
-    factors::Vector{PackedFactor}
+    factors::Vector{FactorDFG}
 end
 #FIXME use named tuple
-# FactorResponse = @NamedTuple{factors::Vector{PackedFactor}}
+# FactorResponse = @NamedTuple{factors::Vector{FactorDFG}}

@@ -93,7 +93,7 @@ end
 # Used by create and update
 #FIXME use named tuple
 struct VariableResponse
-    variables::Vector{Variable}
+    variables::Vector{VariableDFG}
 end
 # VariableResponse = @NamedTuple{variables::Vector{Variable}}
 

@@ -22,7 +22,6 @@ fragment factor_full_fields on Factor {
   solvable
   data
   metadata
-  _type
   _version
 }
 """
