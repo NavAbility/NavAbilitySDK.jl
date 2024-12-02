@@ -2,7 +2,7 @@
 # Variable CRUD
 # =======================================================================================
 
-function VariableCreateInput(fgclient::NavAbilityDFG, v::Variable)
+function VariableCreateInput(fgclient::NavAbilityDFG, v::VariableDFG)
     # copy from a packed variable
     variableLabel = v.label
 
@@ -91,12 +91,12 @@ function VariableCreateInput(fgclient::NavAbilityDFG, v::Variable)
     return addvar
 end
 
-function DFG.addVariable!(fgclient::NavAbilityDFG, v::Variable)
+function DFG.addVariable!(fgclient::NavAbilityDFG, v::VariableDFG)
     addvar = VariableCreateInput(fgclient, v)
 
     variables = Dict("variablesToCreate" => [addvar])
 
-    T = @NamedTuple{variables::Vector{Variable}}
+    T = @NamedTuple{variables::Vector{VariableDFG}}
 
     response = GQL.execute(
         fgclient.client.client,
@@ -111,7 +111,7 @@ end
 
 function DFG.addVariables!(
     fgclient::NavAbilityDFG,
-    vars::Vector{Variable};
+    vars::Vector{VariableDFG};
     chunksize::Int = 20,
     showprogress::Bool = length(vars) > 1000,
 )
@@ -121,7 +121,7 @@ function DFG.addVariables!(
     # Chunk it at chunksize per call
     chunks = collect(Iterators.partition(addvars, chunksize))
 
-    T = @NamedTuple{variables::Vector{Variable}}
+    T = @NamedTuple{variables::Vector{VariableDFG}}
 
     newVarReturns = @showprogress enabled = showprogress asyncmap(chunks) do c
         response =
@@ -137,7 +137,7 @@ function DFG.getVariables(fgclient::NavAbilityDFG)
 
     variables = Dict("fgId" => fgId, "fields_summary" => true, "fields_full" => true)
 
-    T = Vector{Dict{String, Vector{Variable}}}
+    T = Vector{Dict{String, Vector{VariableDFG}}}
 
     response = executeGql(fgclient, GQL_GET_VARIABLES, variables, T)
 
@@ -157,7 +157,7 @@ function DFG.getVariables(fgclient::NavAbilityDFG, labels::Vector{Symbol})
     response = GQL.execute(
         fgclient.client.client,
         GQL_GET_VARIABLES_BY_IDS,
-        Vector{Variable};
+        Vector{VariableDFG};
         variables,
         throw_on_execution_error = true,
     )
@@ -219,7 +219,7 @@ function DFG.getVariable(
 
     variables = Dict("varId" => varId, "fields_summary" => true, "fields_full" => true)
 
-    T = Vector{Variable}
+    T = Vector{VariableDFG}
 
     response = GQL.execute(
         fgclient.client.client,

@@ -19,7 +19,7 @@ function DFG.addVariable!(
 )
     union!(tags, [:VARIABLE])
 
-    pacvar = Variable(;
+    pacvar = VariableDFG(;
         id = nothing,
         label = Symbol(label),
         variableType = string(variableType),
@@ -67,7 +67,7 @@ function DFG.addFactor!(
 
     union!(tags, [:FACTOR])
     # create factor 
-    factor = PackedFactor(;
+    factor = FactorDFG(;
         label,
         tags,
         _variableOrderSymbols = xisyms,

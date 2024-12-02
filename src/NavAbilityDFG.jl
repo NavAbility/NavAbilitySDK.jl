@@ -96,7 +96,7 @@ function NavAbilityDFG(
     fg = fetch(fg_tsk)
     @async connect!(client, agent, fg)
 
-    return NavAbilityDFG{DFG.Variable, DFG.PackedFactor}(
+    return NavAbilityDFG{DFG.VariableDFG, DFG.FactorDFG}(
         client,
         fg,
         agent,

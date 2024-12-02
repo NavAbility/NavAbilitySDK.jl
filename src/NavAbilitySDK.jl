@@ -143,18 +143,17 @@ export I, diagm, norm
 export UUID, uuid4
 
 # DFG pass through exports
-export getBlobStore
+export DFG
 
 # Type exports
 export NavAbilityClient,
     NavAbilityDFG,
     NavAbilityBlobStore,
-    Variable,
-    Factor,
+    VariableDFG,
     MeanMaxPPE,
     BlobEntry,
     PackedVariableNodeData,
-    PackedFactor
+    FactorDFG
 
 # Function exports
 export addAgent!,
@@ -171,6 +170,7 @@ export addAgent!,
     updateFactor!,
     deleteFactor!,
     listFactors,
+    lsf,
     getVariable,
     getVariableSummary,
     getVariableSkeleton,
@@ -182,6 +182,7 @@ export addAgent!,
     updateVariable!,
     deleteVariable!,
     listVariables,
+    ls,
     listBlobEntries,
     listPPEs,
     listVariableSolverData,
@@ -211,7 +212,8 @@ export addAgent!,
     getNeighbors,
     listNeighbors,
     findVariableNearTimestamp,
-    startWorker
+    startWorker,
+    getBlobStore
 
 # Alias exports
 export NvaDFG
@@ -227,8 +229,6 @@ const NvaModel = NavAbilityModel
 # export PriorPose3, Pose3Pose3
 # export SolveOptions
 # export SessionKey, SessionId, ExportSessionInput, ExportSessionOptions
-# export ls
-# export lsf
 # export initVariable
 # export solveSession, solveFederated
 # export getStatusMessages, getStatusLatest, getStatusesLatest
