@@ -1,12 +1,12 @@
 # NavAbilitySDK.jl
 
 
-| Stable Release | Dev branch | Documentation |
-|----------------|------------|---------------|
-| [![Unit tests stb][sdkjl-ci-std-img]][sdkjl-ci-url] | [![Unit tests dev][sdkjl-ci-dev-img]][sdkjl-ci-url] | [![Documentation][sdkjl-docs-img]][sdkjl-docs-url] |
+| Main branch | Documentation |
+|------------|---------------|
+| [![Unit tests dev][sdkjl-ci-dev-img]][sdkjl-ci-url] | [![Documentation][sdkjl-docs-img]][sdkjl-docs-url] |
 
 [sdkjl-ci-dev-img]: https://github.com/NavAbility/NavAbilitySDK.jl/actions/workflows/tests.yml/badge.svg?branch=main
-[sdkjl-ci-std-img]: https://github.com/NavAbility/NavAbilitySDK.jl/actions/workflows/tests.yml/badge.svg?branch=release%2Fv0.4
+[sdkjl-ci-std-img]: https://github.com/NavAbility/NavAbilitySDK.jl/actions/workflows/tests.yml/badge.svg?branch=release%2Fv0.8
 [sdkjl-ci-url]: https://github.com/NavAbility/NavAbilitySDK.jl/actions/workflows/tests.yml
 [sdkjl-docs-img]: https://img.shields.io/badge/docs-dev-blue.svg
 [sdkjl-docs-url]: https://navability.github.io/NavAbilitySDK.jl/dev/
@@ -25,8 +25,7 @@ Pkg.add("NavAbilitySDK")
 
 # Notes and FAQ
 
-- **Which user should I use?** The Guest user is open and free for everyone to use. We recommend testing with this user, because it doesn't require any authentication. Note though, that the data is cleared on a regular basis, and that everyone can see your test data (all Guest users are created equal), so don't put anything in there that is sensitive.
-- **I have sensitive data, how do I create a user?** Great question, the NavAbility services completely isolate data per user and you can create a user at any point. At the moment we create users on demand because the services are changing as we develop them, and we want to make sure we can let everyone know as they do. Send us an email at [info@navability.io](mailto:info@navability.io) and we'll create a user for you right away.
+- **Where do I get login credentials?** The NavAbility platform is currently in private beta and we create users on demand. Send us an email at [info@navability.io](mailto:info@navability.io) and we'll get in contact and create a user for you.
 - Otherwise for any questions, comments, or feedback please feel free to email us at [info@navability.io](mailto:info@navability.io) or write an issue on the repo.  
 
 # Example
