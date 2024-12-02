@@ -1,13 +1,13 @@
 function exampleGraph1D(fgclient; doSolve = false)
     variables = [
-        Variable(:x0, "ContinuousScalar"),
-        Variable(:x1, "ContinuousScalar"),
-        Variable(:x2, "ContinuousScalar"),
-        Variable(:x3, "ContinuousScalar"),
+        VariableDFG(:x0, "ContinuousScalar"),
+        VariableDFG(:x1, "ContinuousScalar"),
+        VariableDFG(:x2, "ContinuousScalar"),
+        VariableDFG(:x3, "ContinuousScalar"),
     ]
     factors = [
-        Factor([:x0], NvaSDK.Prior(NvaSDK.Normal(0, 1))),
-        Factor([:x0, :x1], NvaSDK.LinearRelative(NvaSDK.Normal(10, 0.1))),
+        FactorDFG([:x0], NvaSDK.Prior(NvaSDK.Normal(0, 1))),
+        FactorDFG([:x0, :x1], NvaSDK.LinearRelative(NvaSDK.Normal(10, 0.1))),
         #Factor(
         #    [:x1, :x2],
         #    Mixture(
@@ -17,8 +17,8 @@ function exampleGraph1D(fgclient; doSolve = false)
         #        2,
         #    ),
         #),
-        Factor([:x2, :x3],NvaSDK.LinearRelative(NvaSDK.Normal(-50, 1))),
-        Factor([:x3, :x0], NvaSDK.LinearRelative(NvaSDK.Normal(40, 1))),
+        FactorDFG([:x2, :x3],NvaSDK.LinearRelative(NvaSDK.Normal(-50, 1))),
+        FactorDFG([:x3, :x0], NvaSDK.LinearRelative(NvaSDK.Normal(40, 1))),
     ]
     # Variables
     @info "[Fixture] Adding variables, waiting for completion"

@@ -68,7 +68,7 @@ end
 
 GQL_DELETE_FG = GQL.gql"""
 mutation deleteFG($id: ID!) {
-  deleteFactorgraph(
+  deleteFactorgraphs(
     where: { id: $id }
     delete: {
       blobEntries: {
@@ -85,28 +85,21 @@ mutation deleteFG($id: ID!) {
 function deleteGraph!(fgclient::NavAbilityDFG)
     
     id = getId(fgclient.fg)
-    variables = Dict("id" => id)
 
     nvars = length(listVariables(fgclient))
     nvars > 0 && error(
-        "Only empty sessions can be deleted, $(fgclient.session.label) still has $nvars variables.",
+        "Only empty sessions can be deleted, $(getGraphLabel(fgclient)) still has $nvars variables.",
     )
 
     nfacts = length(listFactors(fgclient))
     nfacts > 0 && error(
-        "Only empty sessions can be deleted, $(fgclient.session.label) still has $nfacts factors.",
+        "Only empty sessions can be deleted, $(getGraphLabel(fgclient)) still has $nfacts factors.",
     )
 
-    variables = Dict("sessionId" => fgclient.session.id)
-
-    fgId = getId(client.id, label)
-    variables = Dict("fgId" => fgId)
-
-    response = GQL.execute(
-        fgclient.client.client,
-        GQL_DELETE_FG;
-        variables,
-        throw_on_execution_error = true,
+    response = executeGql(
+        fgclient,
+        GQL_DELETE_FG,
+        (id = string(id), )
     )
 
     return response.data

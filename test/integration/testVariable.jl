@@ -8,7 +8,7 @@ function testAddVariable(
 )
     resultIds = Task[]
     for (index, label) in enumerate(variableLabels)
-        resultId = addVariable!(client, context, Variable(label, variableTypes[index]))
+        resultId = addVariable!(client, context, VariableDFG(label, variableTypes[index]))
         @test resultId != "Error"
         push!(resultIds, resultId)
     end

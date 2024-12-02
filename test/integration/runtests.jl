@@ -8,10 +8,12 @@ include("./testFactor.jl")
 include("./testSolve.jl")
 include("./testExportSession.jl")
 
-apiUrl = get(ENV, "API_URL", "http://localhost:4141/graphql")
-userLabel = get(ENV, "USER_ID", "guest@navability.io")
-agentLabel = Symbol(get(ENV, "AGENT_ID", "IntegrationRobot"))
-fgLabel = Symbol("TestSession_" * randstring(7))
+apiUrl = get(ENV, "API_URL", "https://api.navability.io")
+orgLabel = Symbol(ENV["ORG_LABEL"])
+agentLabel = :TestRobot
+fgLabel = Symbol("TestSession_", randstring(7))
+auth_token = ENV["AUTH_TOKEN"]
+
 fgLabel1d = Symbol("TestSession1D_" * randstring(7))
 fgLabel2d = Symbol("TestSession2D_" * randstring(7))
 fgLabel3d = Symbol("TestSession3D_" * randstring(7))
@@ -21,8 +23,8 @@ fgLabel3d = Symbol("TestSession3D_" * randstring(7))
     client = NavAbilityClient(orgId, apiUrl)
 
     NvaSDK.addAgent!(client, agentLabel)
-    NvaSDK.addFg!(client, fgLabel1d)
-    NvaSDK.addFg!(client, fgLabel2d)
+    NvaSDK.addGraph!(client, fgLabel1d)
+    NvaSDK.addGraph!(client, fgLabel2d)
     fgclient_1D = NavAbilityDFG(client, fgLabel1d, agentLabel; addSessionIfNotExists=true)
     fgclient2D = NavAbilityDFG(client, fgLabel2d, agentLabel; addSessionIfNotExists=true)
 

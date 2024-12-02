@@ -12,7 +12,7 @@ function testAddFactor(
         resultId = addFactor(
             client,
             context,
-            Factor(label, factorTypes[index], factorVariables[index], factorData[index]),
+            FactorDFG(label, factorTypes[index], factorVariables[index], factorData[index]),
         )
         @test resultId != "Error"
         push!(resultIds, resultId)
@@ -49,7 +49,7 @@ function testDeleteFactor(client, context, factorLabels)
         addFactor(
             client,
             context,
-            Factor("x0x1f_oops", "Pose2Pose2", ["x0", "x1"], Pose2Pose2Data()),
+            FactorDFG("x0x1f_oops", "Pose2Pose2", ["x0", "x1"], Pose2Pose2Data()),
         ),
     )
     @test resultId != "Error"

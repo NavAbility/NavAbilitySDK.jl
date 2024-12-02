@@ -16,7 +16,7 @@ function runInitVariableTests(;
         @show context = NvaSDK.Client(userId, robotId, sessionId)
 
         resultId =
-            NvaSDK.addVariable!(client, context, NvaSDK.Variable("x0", :Pose2)) |> fetch
+            NvaSDK.addVariable!(client, context, NvaSDK.VariableDFG("x0", :Pose2)) |> fetch
         # Wait for them to be done before proceeding.
         @info "Wait on addVariable eventId" resultId
         NvaSDK.waitForCompletion(

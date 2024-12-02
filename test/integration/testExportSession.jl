@@ -12,7 +12,7 @@ function testExportSession(
     if buildNewGraph
         # build a graph
         resultId =
-            NvaSDK.addVariable!(client, context, NvaSDK.Variable("x0", :Pose2)) |> fetch
+            NvaSDK.addVariable!(client, context, NvaSDK.VariableDFG("x0", :Pose2)) |> fetch
         # Wait for them to be done before proceeding.
         @info "Wait on addVariable eventId" resultId
         NvaSDK.waitForCompletion(
@@ -26,7 +26,7 @@ function testExportSession(
             NvaSDK.addFactor(
                 client,
                 context,
-                NvaSDK.Factor("x0f1", "PriorPose2", ["x0"], NvaSDK.PriorPose2Data()),
+                NvaSDK.FactorDFG("x0f1", "PriorPose2", ["x0"], NvaSDK.PriorPose2Data()),
             ) |> fetch
         @info "Wait on addFactor eventId" resultId
 
