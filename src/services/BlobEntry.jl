@@ -230,7 +230,7 @@ function DFG.listGraphBlobEntries(fgclient::NavAbilityDFG)
 end
 
 function DFG.listAgentBlobEntries(fgclient::NavAbilityDFG)
-    getAgentBlobEntries(fgclient.client, fgclient.agent)
+    listAgentBlobEntries(fgclient.client, fgclient.agent)
 end
 
 function DFG.listAgentBlobEntries(client::NavAbilityClient, agent::NvaNode{Agent})
