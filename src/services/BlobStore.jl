@@ -342,7 +342,7 @@ function DFG.addBlob!(store::NavAbilityOnPremBlobStore, blobId::UUID, blob::Vect
     response = NvaSDK.GQL.mutate(
         store.client,
         "addBlobFS",
-        Dict("blobId" => string(blobId), "input" => b64blob);
+        Dict("storeLabel" => string(store.label), "blobId" => string(blobId), "input" => b64blob);
         throw_on_execution_error = true,
     )
     blobId_str = response.data["addBlobFS"]
@@ -352,14 +352,18 @@ function DFG.addBlob!(store::NavAbilityOnPremBlobStore, blobId::UUID, blob::Vect
 end
 
 GQL_GET_BLOB = GQL.gql"""
-query getBlob($id: String!) {
-    getBlob(blobId: $id)
+query getBlob($id: String!, $storeLabel: String = "default") {
+    getBlob(blobId: $id, storeLabel: $storeLabel)
 }
 """
 
 function DFG.getBlob(store::NavAbilityOnPremBlobStore, blobId::UUID)
     
-    response = executeGql(store.client, GQL_GET_BLOB, (id = string(blobId),))
+    response = executeGql(
+        store.client,
+        GQL_GET_BLOB,
+        (id = string(blobId), storeLabel = string(store.label))
+    )
 
     return base64decode(response.data["getBlob"])
 end
