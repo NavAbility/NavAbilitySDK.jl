@@ -72,7 +72,6 @@ StructTypes.omitempties(::Type{ModelCreateInput}) = (:blobEntries,)
     blobEntries::Any = nothing #TODO VariableBlobEntriesFieldInput
 end
 
- 
 struct BlobStoreCreateInput
     id::UUID#!
     label::String#!

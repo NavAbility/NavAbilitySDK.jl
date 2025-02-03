@@ -45,6 +45,7 @@ Args:
 """
 # function createDownload(client::GQL.Client, userLabel::AbstractString, blobId::UUID)
 function createDownload(store::NavAbilityBlobStore, blobId::UUID)
+    #TODO use executeGql with GQL_CREATE_DOWNLOAD
     type = "NVA_CLOUD"
     response = GQL.mutate(
         store.client.client,
@@ -310,6 +311,7 @@ function DFG.addBlob!(
     return blobId
 end
 
+#TODO use executeGql with GQL_DELETE_BLOB
 function DFG.deleteBlob!(
     blobstore::NavAbilityBlobStore,
     blobId::UUID
@@ -327,20 +329,19 @@ end
 ##==========================================================================================
 ## NavAbility™ Blob Store Deployed on Premise
 ##==========================================================================================
-
 struct NavAbilityOnPremBlobStore <: DFG.AbstractBlobStore{Vector{UInt8}}
-    client::NvaSDK.GQL.Client
+    client::NavAbilityClient
     label::Symbol
 end
 
 function NavAbilityOnPremBlobStore(fgclient::NavAbilityDFG, label=:default)
-    NavAbilityOnPremBlobStore(fgclient.client.client, label)
+    NavAbilityOnPremBlobStore(fgclient.client, label)
 end
 
 function DFG.addBlob!(store::NavAbilityOnPremBlobStore, blobId::UUID, blob::Vector{UInt8})
     b64blob = base64encode(blob)
     response = NvaSDK.GQL.mutate(
-        store.client,
+        store.client.client,
         "addBlobFS",
         Dict("storeLabel" => string(store.label), "blobId" => string(blobId), "input" => b64blob);
         throw_on_execution_error = true,

@@ -50,7 +50,7 @@ mutation addPpes(\$ppes: [PPECreateInput!]!) {
 """
 
 GQL_LIST_PPES = """
-query listBlobPPEs(\$id: ID!) {
+query listPPEs(\$id: ID!) {
   variables (
     where: {id: \$id}
   ) {

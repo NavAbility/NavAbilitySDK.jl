@@ -28,7 +28,7 @@ fragment factor_full_fields on Factor {
 
 GQL_GET_FACTOR = """
 $(GQL_FRAGMENT_FACTORS)
-query get_variable(
+query getFactor(
   \$facId: ID!
   \$fields_summary: Boolean! = true
   \$fields_full: Boolean! = true
@@ -43,7 +43,7 @@ query get_variable(
 
 GQL_ADD_FACTORS = """
 $(GQL_FRAGMENT_FACTORS)
-mutation sdk_add_factors(\$factorsToCreate: [FactorCreateInput!]!) {
+mutation addFactors(\$factorsToCreate: [FactorCreateInput!]!) {
   addFactors(
     input: \$factorsToCreate
   ) {
@@ -58,7 +58,7 @@ mutation sdk_add_factors(\$factorsToCreate: [FactorCreateInput!]!) {
 
 GQL_GET_FACTORS = """
 $(GQL_FRAGMENT_FACTORS)
-query sdk_get_factors(
+query getFactors(
   \$fgId: ID!
   \$fields_summary: Boolean! = true
   \$fields_full: Boolean! = true
@@ -75,7 +75,7 @@ query sdk_get_factors(
 
 GQL_GET_FACTORS_FILTERED = """
 $(GQL_FRAGMENT_FACTORS)
-query sdk_get_factors_filtered(
+query getFactors_filtered(
     \$sessionId: ID!,
     \$factor_label_regexp: String = ".*",
     \$factor_tags: [String] = ["FACTOR"],
@@ -134,4 +134,3 @@ mutation deleteFactor($factorId: ID!) {
 #   }
 # }
 # """
-

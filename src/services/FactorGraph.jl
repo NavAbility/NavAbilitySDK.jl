@@ -23,7 +23,6 @@ function DFG.getGraph(client::NavAbilityClient, label::Symbol)
     )
 
     return handleQuery(response, "factorgraphs", label)
-
 end
 
 GQL_ADD_FACTORGRAPH = GQL.gql"""
@@ -60,8 +59,13 @@ function addGraph!(client::NavAbilityClient, label::Symbol)
     # FactorGraphRemoteResponse
     T = @NamedTuple{factorgraphs::Vector{NvaNode{Factorgraph}}}
 
-    response =
-        GQL.execute(client.client, GQL_ADD_FACTORGRAPH, T; variables, throw_on_execution_error = true)
+    response = GQL.execute(
+        client.client,
+        GQL_ADD_FACTORGRAPH,
+        T;
+        variables,
+        throw_on_execution_error = true,
+    )
 
     return handleMutate(response, "addFactorgraphs", :factorgraphs)[1]
 end
@@ -83,7 +87,6 @@ mutation deleteFG($id: ID!) {
 """
 
 function deleteGraph!(fgclient::NavAbilityDFG)
-    
     id = getId(fgclient.fg)
 
     nvars = length(listVariables(fgclient))
@@ -96,11 +99,7 @@ function deleteGraph!(fgclient::NavAbilityDFG)
         "Only empty sessions can be deleted, $(getGraphLabel(fgclient)) still has $nfacts factors.",
     )
 
-    response = executeGql(
-        fgclient,
-        GQL_DELETE_FG,
-        (id = string(id), )
-    )
+    response = executeGql(fgclient, GQL_DELETE_FG, (id = string(id),))
 
     return response.data
 end
@@ -116,22 +115,21 @@ query listGraphs($id: ID!) {
 """
 
 function listGraphs(client::NavAbilityClient)
-
     T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
 
     response = GQL.execute(
-            client.client,
-            QUERY_LIST_FACTORGRAPHS,
-            T;
-            variables = (id=client.id,),
-            throw_on_execution_error = true,
+        client.client,
+        QUERY_LIST_FACTORGRAPHS,
+        T;
+        variables = (id = client.id,),
+        throw_on_execution_error = true,
     )
 
     return last.(handleQuery(response, "orgs", Symbol(client.id))["fgs"])
 end
 
 function DFG.listNeighbors(fgclient::NavAbilityDFG, label::Symbol)
-    variables = (id=getId(fgclient.fg, label),)
+    variables = (id = getId(fgclient.fg, label),)
 
     T = Vector{Dict{String, Vector{NamedTuple{(:label,), Tuple{Symbol}}}}}
 
@@ -153,7 +151,7 @@ function DFG.listNeighbors(fgclient::NavAbilityDFG, label::Symbol)
 end
 
 function DFG.exists(fgclient::NavAbilityDFG, label::Symbol)
-    variables = (id=getId(fgclient.fg, label),)
+    variables = (id = getId(fgclient.fg, label),)
 
     response = GQL.execute(
         fgclient.client.client,
@@ -183,14 +181,14 @@ function DFG.getGraphMetadata(fgclient::NavAbilityDFG)
     if isnothing(b64data) || b64data == ""
         return Dict{Symbol, DFG.SmallDataTypes}()
     else
-        return JSON3.read(
-            base64decode(b64data),
-            Dict{Symbol, DFG.SmallDataTypes},
-        )
+        return JSON3.read(base64decode(b64data), Dict{Symbol, DFG.SmallDataTypes})
     end
 end
 
-function DFG.setGraphMetadata!(fgclient::NavAbilityDFG, smallData::Dict{Symbol, DFG.SmallDataTypes})
+function DFG.setGraphMetadata!(
+    fgclient::NavAbilityDFG,
+    smallData::Dict{Symbol, DFG.SmallDataTypes},
+)
     meta = base64encode(JSON3.write(smallData))
 
     gql = """
@@ -213,11 +211,9 @@ function DFG.setGraphMetadata!(fgclient::NavAbilityDFG, smallData::Dict{Symbol, 
     )
 end
 
-
 ## =======================================================================================
 ## Connect Factorgraph to other nodes
 ## =======================================================================================
-
 
 GQL_CONNECT_GRAPH_TO_MODEL = GQL.gql"""
 mutation connectGraphModel($modelId: ID!, $fgId: ID!) {
@@ -240,7 +236,6 @@ function connect!(client, model::NvaNode{Model}, fg::NvaNode{Factorgraph})
     return response.data["updateModels"]["info"]["relationshipsCreated"]
 end
 
-
 GQL_CONNECT_GRAPH_TO_AGENT = GQL.gql"""
 mutation connectGraphModel($agentId: ID!, $fgId: ID!) {
   updateAgents(
@@ -261,7 +256,6 @@ function connect!(client, agent::NvaNode{Agent}, fg::NvaNode{Factorgraph})
 
     return response.data["updateAgents"]["info"]["relationshipsCreated"]
 end
-
 
 QUERY_GET_GRAPHS_AGENTS = GQL.gql"""
 query getAgents_Graph($id: ID!) {

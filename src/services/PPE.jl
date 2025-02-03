@@ -2,17 +2,21 @@
 # PPE CRUD
 # =========================================================================================
 
-function DFG.getPPE(fgclient::NavAbilityDFG, variableLabel::Symbol, solveKey::Symbol = :default)
-
+function DFG.getPPE(
+    fgclient::NavAbilityDFG,
+    variableLabel::Symbol,
+    solveKey::Symbol = :default,
+)
     id = getId(fgclient.fg, variableLabel, solveKey)
 
     T = Vector{DFG.MeanMaxPPE}
 
-    response = GQL.execute(fgclient.client.client,
+    response = GQL.execute(
+        fgclient.client.client,
         GQL_GET_PPE,
-        T; 
-        variables = (id=id,), 
-        throw_on_execution_error = true
+        T;
+        variables = (id = id,),
+        throw_on_execution_error = true,
     )
     return handleQuery(response, "ppes", solveKey)
 end
@@ -25,7 +29,7 @@ function DFG.getPPEs(fgclient::NavAbilityDFG, variableLabel::Symbol)
         fgclient.client.client,
         GQL_GET_PPES,
         T;
-        variables = (id=id,),
+        variables = (id = id,),
         throw_on_execution_error = true,
     )
 
@@ -36,8 +40,11 @@ function DFG.addPPE!(fgclient::NavAbilityDFG, variableLabel::Symbol, ppe::DFG.Me
     addPPEs!(fgclient, variableLabel, [ppe])[1]
 end
 
-function DFG.addPPEs!(fgclient::NavAbilityDFG, variableLabel::Symbol, ppes::Vector{DFG.MeanMaxPPE})
-
+function DFG.addPPEs!(
+    fgclient::NavAbilityDFG,
+    variableLabel::Symbol,
+    ppes::Vector{DFG.MeanMaxPPE},
+)
     varId = getId(fgclient.fg, variableLabel)
     connect = createConnect(varId)
 
@@ -57,7 +64,7 @@ function DFG.addPPEs!(fgclient::NavAbilityDFG, variableLabel::Symbol, ppes::Vect
         GQL_ADD_PPES,
         # PPEResponse;
         T;
-        variables = (ppes=input,),
+        variables = (ppes = input,),
         throw_on_execution_error = true,
     )
     return handleMutate(response, "addPpes", :ppes)
@@ -65,16 +72,13 @@ end
 
 #TODO add if not exist, should now be easy as the id is deterministic
 function DFG.updatePPE!(fgclient::NavAbilityDFG, varLabel::Symbol, ppe::MeanMaxPPE)
-
     varId = getId(fgclient.fg, varLabel)
 
     connect = createConnect(varId)
     id = getId(fgclient.fg, varLabel, ppe.solveKey)
 
-    request = (
-        getCommonProperties(PPECreateInput, ppe, [:id, :solveKey])...,
-        variable = connect,
-    )
+    request =
+        (getCommonProperties(PPECreateInput, ppe, [:id, :solveKey])..., variable = connect)
     # Make request
     response = GQL.execute(
         fgclient.client.client,
@@ -91,7 +95,7 @@ end
 
 function DFG.deletePPE!(fgclient::NavAbilityDFG, varLabel::Symbol, ppe::DFG.MeanMaxPPE)
     id = getId(fgclient.fg, varLabel, ppe.solveKey)
-    variables = (id=id,)
+    variables = (id = id,)
 
     response = GQL.execute(
         fgclient.client.client,
@@ -110,7 +114,7 @@ end
 
 function DFG.listPPEs(fgclient::NavAbilityDFG, variableLabel::Symbol)
     id = getId(fgclient.fg, variableLabel)
-    variables = (id=id,)
+    variables = (id = id,)
 
     # T = (NamedTuple{(:solveKey,), Tuple{Symbol}})
     T = Vector{Dict{String, Vector{@NamedTuple{solveKey::Symbol}}}}
