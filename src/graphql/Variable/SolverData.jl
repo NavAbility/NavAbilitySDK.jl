@@ -64,7 +64,7 @@ mutation addSolverData(\$solverData: [SolverDataCreateInput!]!) {
 """
 
 GQL_LIST_SOLVERDATA = """
-query listBlobSolverData(\$id: ID!) {
+query listSolverData(\$id: ID!) {
   variables (
     where: {id: \$id}
   ) {
@@ -108,4 +108,3 @@ mutation deleteSolverData($id: ID!) {
 #   }
 # }
 # """
-

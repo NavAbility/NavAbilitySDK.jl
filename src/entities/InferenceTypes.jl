@@ -1,4 +1,4 @@
-using  DistributedFactorGraphs: InferenceType
+using DistributedFactorGraphs: InferenceType
 
 """
     $SIGNATURES

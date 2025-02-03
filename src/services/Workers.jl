@@ -4,7 +4,7 @@ mutation startWorker(\$input: JSON = "", \$workerLabel: mutationInput_post_start
   startWorker(input: \$input, workerLabel: \$workerLabel)
 }
 """
-function startWorker(fgclient::NavAbilityDFG, workerLabel::String, payload)
+function startWorker(fgclient, workerLabel::String, payload)
     response = executeGql(
         fgclient,
         GQL_START_WORKER,

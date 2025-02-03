@@ -122,15 +122,25 @@ function DFG.getGraphBlobEntry(fgclient::NavAbilityDFG, label::Symbol)
     return handleQuery(response, "blobEntries", label)
 end
 
-function DFG.getGraphBlobEntries(fgclient::NavAbilityDFG)
+function DFG.getGraphBlobEntries(
+    fgclient::NavAbilityDFG,
+    filt::Union{Nothing, Base.Fix2} = nothing,
+)
     id = getId(fgclient.fg)
+
+    if isnothing(filt)
+        variables = (id = id,)
+    else
+        variables = (id = id, entrywhere = whereFilterStr(:label, filt))
+    end
+
     T = Vector{@NamedTuple{blobEntries::Vector{DFG.BlobEntry}}}
 
     response = GQL.execute(
         fgclient.client.client,
         GQL_GET_FG_BLOBENTRIES,
         T;
-        variables = (id = id,),
+        variables,
         throw_on_execution_error = true,
     )
 

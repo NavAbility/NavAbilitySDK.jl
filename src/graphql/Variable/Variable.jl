@@ -242,4 +242,3 @@ query findVariablesNearTime(
 #   }
 # }
 # """
-

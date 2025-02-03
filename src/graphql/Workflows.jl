@@ -33,6 +33,6 @@ fragment FRAGMENT_WORKFLOW on Workflow {
 
 # QUERY_GET_WORKFLOW = """
 # query QUERY_GET_WORKFLOW($userId: ID!, $mapId: ID!, $workflowId: ID!) {
-  
+
 # }
 # """

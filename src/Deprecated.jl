@@ -7,7 +7,9 @@ export DFGClient, NavAbilityClient
 DFGClient(args...; kwargs...) = error("DFGClient is deprecated, use NavAbilityDFG instead")
 
 #TODO DEPRECATE add orgId
-NavAbilityClient(args...; kwargs...) = error("Deprecated: NavAbilityClient requires a auth_token")
+function NavAbilityClient(args...; kwargs...)
+    error("Deprecated: NavAbilityClient requires a auth_token")
+end
 
 # FIXME DEPRECATED
 struct Context end

@@ -63,14 +63,3 @@ mutation completeUpload(
   )
 }
 """
-
-GQL_LIST_BLOBS_NAME_CONTAINS = GQL.gql"""
-query($name: String!) {
-  blobs(where: { name_CONTAINS: $name }) {
-    id
-    name
-    size
-    createdTimestamp
-  }
-}
-"""

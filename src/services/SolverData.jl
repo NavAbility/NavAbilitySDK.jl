@@ -15,7 +15,7 @@ function DFG.getVariableSolverData(
         fgclient.client.client,
         GQL_GET_SOLVERDATA,
         T;
-        variables=(id=id,),
+        variables = (id = id,),
         throw_on_execution_error = true,
     )
 
@@ -23,7 +23,6 @@ function DFG.getVariableSolverData(
 end
 
 function DFG.getVariableSolverDataAll(fgclient::NavAbilityDFG, variableLabel::Symbol)
-
     id = getId(fgclient.fg, variableLabel)
     T = Vector{@NamedTuple{solverData::Vector{DFG.PackedVariableNodeData}}}
 
@@ -31,7 +30,7 @@ function DFG.getVariableSolverDataAll(fgclient::NavAbilityDFG, variableLabel::Sy
         fgclient.client.client,
         GQL_GET_SOLVERDATA_ALL,
         T;
-        variables = (id=id,),
+        variables = (id = id,),
         throw_on_execution_error = true,
     )
 
@@ -51,7 +50,6 @@ function DFG.addVariableSolverData!(
     variableLabel::Symbol,
     vnds::Vector{DFG.PackedVariableNodeData},
 )
-
     varId = getId(fgclient.fg, variableLabel)
     connect = createConnect(varId)
 
@@ -71,21 +69,24 @@ function DFG.addVariableSolverData!(
         GQL_ADD_SOLVERDATA,
         T; #FIXME SolverDataResponse
         # SolverDataResponse;
-        variables = (solverData=input,),
+        variables = (solverData = input,),
         throw_on_execution_error = true,
     )
-    
+
     return handleMutate(response, "addSolverData", :solverData)
 end
 
 #TODO add if not exist, should now be easy as the id is deterministic
-function DFG.updateVariableSolverData!(fgclient::NavAbilityDFG, varLabel::Symbol, vnd::DFG.PackedVariableNodeData)
-
+function DFG.updateVariableSolverData!(
+    fgclient::NavAbilityDFG,
+    varLabel::Symbol,
+    vnd::DFG.PackedVariableNodeData,
+)
     varId = getId(fgclient.fg, varLabel)
 
     connect = createConnect(varId)
     id = getId(fgclient.fg, varLabel, vnd.solveKey)
-    
+
     request = (
         getCommonProperties(SolverDataCreateInput, vnd, [:id, :solveKey])...,
         variable = connect,
@@ -105,10 +106,13 @@ function DFG.updateVariableSolverData!(fgclient::NavAbilityDFG, varLabel::Symbol
     return response.data["updateSolverData"].solverData[1]
 end
 
-function DFG.deleteVariableSolverData!(fgclient::NavAbilityDFG, varLabel::Symbol, vnd::DFG.PackedVariableNodeData)
-
+function DFG.deleteVariableSolverData!(
+    fgclient::NavAbilityDFG,
+    varLabel::Symbol,
+    vnd::DFG.PackedVariableNodeData,
+)
     id = getId(fgclient.fg, varLabel, vnd.solveKey)
-    variables = (id=id,)
+    variables = (id = id,)
 
     response = GQL.execute(
         fgclient.client.client,
@@ -120,16 +124,18 @@ function DFG.deleteVariableSolverData!(fgclient::NavAbilityDFG, varLabel::Symbol
     return vnd
 end
 
-function DFG.deleteVariableSolverData!(fgclient::NavAbilityDFG, varLabel::Symbol, solveKey::Symbol)
+function DFG.deleteVariableSolverData!(
+    fgclient::NavAbilityDFG,
+    varLabel::Symbol,
+    solveKey::Symbol,
+)
     vnd = getVariableSolverData(fgclient, varLabel, solveKey)
     return deleteVariableSolverData!(fgclient, varLabel, vnd)
 end
 
-
 function DFG.listVariableSolverData(fgclient::NavAbilityDFG, variableLabel::Symbol)
-    
     id = getId(fgclient.fg, variableLabel)
-    variables = (id=id,)
+    variables = (id = id,)
 
     # T = (NamedTuple{(:solveKey,), Tuple{Symbol}})
     T = Vector{Dict{String, Vector{@NamedTuple{solveKey::Symbol}}}}
@@ -143,5 +149,4 @@ function DFG.listVariableSolverData(fgclient::NavAbilityDFG, variableLabel::Symb
     )
 
     return last.(handleQuery(response, "variables", variableLabel)["solverData"])
-
 end

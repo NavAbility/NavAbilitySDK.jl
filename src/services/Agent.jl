@@ -71,16 +71,10 @@ mutation deleteAgent($id: ID!) {
 """
 
 function deleteAgent!(client::NavAbilityClient, label::Symbol)
-  
-  response = executeGql(
-      client,
-      GQL_DELETE_AGENT,
-      (id = getId(client, label),)
-  )
+    response = executeGql(client, GQL_DELETE_AGENT, (id = getId(client, label),))
 
-  return response.data
+    return response.data
 end
-
 
 QUERY_LIST_AGENTS = GQL.gql"""
 query listAgents($id: ID!) {
@@ -114,7 +108,7 @@ function DFG.getAgentMetadata(fgclient::NavAbilityDFG)
     variables = (id = getId(fgclient.agent),)
 
     response = executeGql(fgclient, QUERY_GET_AGENT_METADATA, variables, Any)
-    
+
     b64data = handleQuery(response, "agents", fgclient.agent.label)["metadata"]
     if isnothing(b64data)
         return Dict{Symbol, DFG.SmallDataTypes}()
@@ -124,7 +118,10 @@ function DFG.getAgentMetadata(fgclient::NavAbilityDFG)
 end
 
 #TODO update to standard pattern
-function DFG.setAgentMetadata!(fgclient::NavAbilityDFG, smallData::Dict{Symbol, DFG.SmallDataTypes})
+function DFG.setAgentMetadata!(
+    fgclient::NavAbilityDFG,
+    smallData::Dict{Symbol, DFG.SmallDataTypes},
+)
     meta = base64encode(JSON3.write(smallData))
     gql = """
     mutation {

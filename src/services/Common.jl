@@ -82,3 +82,40 @@ createConnect(fgclient, parent::NvaNode{Agent}) = (Agent=createConnect(getId(par
 createConnect(fgclient, parent::NvaNode{Model}) = (Model=createConnect(getId(parent)),)
 createConnect(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGVariable) = (Variable=createConnect(getId(fgclient.fg, parent.label)),)
 createConnect(fgclient::NavAbilityDFG, parent::DFG.AbstractDFGFactor) = (Factor=createConnect(getId(fgclient.fg, parent.label)),)
+
+# Common Filters
+#TODO add to other nodes with label filters
+function whereFilterStr(prop, filt::Base.Fix2)
+    if filt.f == startswith
+        names = (Symbol(prop, "_STARTS_WITH"),)
+    elseif filt.f == contains
+        names = (Symbol(prop, "_CONTAINS"),)
+    elseif filt.f == endswith
+        names = (Symbol(prop, "_ENDS_WITH"),)
+    elseif filt.f == in
+        names = (Symbol(prop, "_IN"),)
+    else
+        error("Unsupported filter")
+    end
+    return NamedTuple{names}((filt.x,))
+end
+
+#TODO test and add to nodes with numerical filters
+function whereFilterNum(prop, filt::Base.Fix2)
+    if filt.f == >=
+        names = (Symbol(prop, "_GTE"), )
+    elseif filt.f == >
+        names = (Symbol(prop, "_GT"), )
+    elseif filt.f == <=
+        names = (Symbol(prop, "_LTE"), )
+    elseif filt.f == <
+        names = (Symbol(prop, "_LT"), )
+    elseif filt.f == ==
+        names = (Symbol(prop), )
+    elseif filt.f == in
+        names = (Symbol(prop, "_IN"), )
+    else
+        error("Unsupported filter")
+    end
+    return NamedTuple{names}((filt.x,))
+end
