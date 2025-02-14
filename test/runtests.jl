@@ -9,7 +9,7 @@ Aqua.test_all(
 
 include("./unit/runtests.jl")
 
-if !haskey(ENV, "AUTH_TOKEN")
+if !haskey(ENV, "AUTH_TOKEN") || ENV["AUTH_TOKEN"] == ""
     @error "#FIXME Skipping tests because AUTH_TOKEN is not set"
 else
 
