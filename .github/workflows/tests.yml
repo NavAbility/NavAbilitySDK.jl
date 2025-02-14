@@ -37,7 +37,12 @@ jobs:
       - id: set_auth_token #TODO get auth token automatically here #49
         name: Set auth token
         run: |
-          auth_token=${{ inputs.auth_token }}
+          if [ -z "${{ inputs.auth_token }}" ]; then
+            echo "FIXME not implemented - Fetching auth token from AWS Cognito..."
+            auth_token=""
+          else
+            auth_token=${{ inputs.auth_token }}
+          fi
           echo "::add-mask::$auth_token"
           echo "nva_auth_token=$auth_token" >> "$GITHUB_OUTPUT"
       - uses: julia-actions/julia-runtest@v1
