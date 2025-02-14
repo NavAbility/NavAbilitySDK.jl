@@ -1,13 +1,3 @@
-QUERY_GET_FACTORGRAPH = """
-query QUERY_GET_FACTORGRAPH(\$fgId: ID!) {
-  factorgraphs (where: {id: \$fgId}) {
-    label
-    createdTimestamp
-    namespace
-  }
-}
-"""
-
 function DFG.getGraph(client::NavAbilityClient, label::Symbol)
     fgId = getId(client.id, label)
     variables = Dict("fgId" => fgId)
@@ -16,7 +6,7 @@ function DFG.getGraph(client::NavAbilityClient, label::Symbol)
 
     response = GQL.execute(
         client.client,
-        QUERY_GET_FACTORGRAPH,
+        QUERY_GET_GRAPH,
         T;
         variables,
         throw_on_execution_error = true,
@@ -24,27 +14,6 @@ function DFG.getGraph(client::NavAbilityClient, label::Symbol)
 
     return handleQuery(response, "factorgraphs", label)
 end
-
-GQL_ADD_FACTORGRAPH = GQL.gql"""
-mutation addFactorGraph(
-    $orgId: ID = ""
-    $id: ID = "",
-    $label: String = "",
-    $description: String = "",
-    $metadata: String = "",
-    $_version: String = "",
-) {
-  addFactorgraphs(
-    input: {id: $id, label: $label, _version: $_version, description: $description, metadata: $metadata, org: {connect: {where: {node: {id: $orgId}}}}}
-  ) {
-    factorgraphs {
-        label
-        createdTimestamp
-        namespace
-    }
-  }
-}
-"""
 
 function addGraph!(client::NavAbilityClient, label::Symbol)
     @assert isValidLabel(label) "Factor graph label ($Label) is not a valid label"
@@ -61,7 +30,7 @@ function addGraph!(client::NavAbilityClient, label::Symbol)
 
     response = GQL.execute(
         client.client,
-        GQL_ADD_FACTORGRAPH,
+        MUTATION_ADD_GRAPH,
         T;
         variables,
         throw_on_execution_error = true,
@@ -69,22 +38,6 @@ function addGraph!(client::NavAbilityClient, label::Symbol)
 
     return handleMutate(response, "addFactorgraphs", :factorgraphs)[1]
 end
-
-GQL_DELETE_FG = GQL.gql"""
-mutation deleteFG($id: ID!) {
-  deleteFactorgraphs(
-    where: { id: $id }
-    delete: {
-      blobEntries: {
-        where: { node: { parentConnection: {Factorgraph: {node: {id: $id } } } } }
-      }
-    }
-  ) {
-    nodesDeleted
-    relationshipsDeleted
-  }
-}
-"""
 
 function deleteGraph!(fgclient::NavAbilityDFG)
     id = getId(fgclient.fg)
@@ -99,27 +52,17 @@ function deleteGraph!(fgclient::NavAbilityDFG)
         "Only empty sessions can be deleted, $(getGraphLabel(fgclient)) still has $nfacts factors.",
     )
 
-    response = executeGql(fgclient, GQL_DELETE_FG, (id = string(id),))
+    response = executeGql(fgclient, MUTATION_DELETE_GRAPH, (id = string(id),))
 
     return response.data
 end
-
-QUERY_LIST_FACTORGRAPHS = GQL.gql"""
-query listGraphs($id: ID!) {
-    orgs(where: {id: $id}) {
-        fgs {
-            label
-        }
-    }
-}
-"""
 
 function listGraphs(client::NavAbilityClient)
     T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
 
     response = GQL.execute(
         client.client,
-        QUERY_LIST_FACTORGRAPHS,
+        QUERY_LIST_GRAPHS,
         T;
         variables = (id = client.id,),
         throw_on_execution_error = true,
@@ -167,15 +110,13 @@ function DFG.exists(fgclient::NavAbilityDFG, label::Symbol)
 end
 
 #TODO update to standard pattern
-function DFG.getGraphMetadata(fgclient::NavAbilityDFG)
-    gql = """
-    {
-        factorgraphs(where: {id: "$(getId(fgclient.fg))"}) {
-            metadata
-        }
-    }
-    """
-    response = GQL.execute(fgclient.client.client, gql; throw_on_execution_error = true)
+function DFG.getGraphMetadata(dfg::NavAbilityDFG)
+    
+    response = executeGql(
+        dfg,
+        QUERY_GET_GRAPH_METADATA,
+        (id = getId(dfg.fg),),
+    )
     b64data = response.data["factorgraphs"][1]["metadata"]
 
     if isnothing(b64data) || b64data == ""
@@ -191,19 +132,11 @@ function DFG.setGraphMetadata!(
 )
     meta = base64encode(JSON3.write(smallData))
 
-    gql = """
-    mutation {
-      updateFactorgraphs(
-        where: { id: "$(getId(fgclient.fg))" }
-        update: { metadata: "$(meta)" }
-      ) {
-        factorgraphs {
-          metadata
-        }
-      }
-    }
-    """
-    response = GQL.execute(fgclient.client.client, gql; throw_on_execution_error = true)
+    response = executeGql(
+        fgclient,
+        MUTATION_SET_GRAPH_METADATA,
+        (id = getId(fgclient.fg), meta = meta),
+    )
 
     return JSON3.read(
         base64decode(response.data["updateFactorgraphs"]["factorgraphs"][1]["metadata"]),
@@ -215,19 +148,6 @@ end
 ## Connect Factorgraph to other nodes
 ## =======================================================================================
 
-GQL_CONNECT_GRAPH_TO_MODEL = GQL.gql"""
-mutation connectGraphModel($modelId: ID!, $fgId: ID!) {
-  updateModels(
-    where: { id: $modelId }
-    update: { fgs: { connect: { where: { node: { id: $fgId } } } } }
-  ) {
-    info {
-      relationshipsCreated
-    }
-  }
-}
-"""
-
 function connect!(client, model::NvaNode{Model}, fg::NvaNode{Factorgraph})
     variables = Dict("modelId" => getId(model), "fgId" => getId(fg))
 
@@ -236,19 +156,6 @@ function connect!(client, model::NvaNode{Model}, fg::NvaNode{Factorgraph})
     return response.data["updateModels"]["info"]["relationshipsCreated"]
 end
 
-GQL_CONNECT_GRAPH_TO_AGENT = GQL.gql"""
-mutation connectGraphModel($agentId: ID!, $fgId: ID!) {
-  updateAgents(
-    where: { id: $agentId }
-    update: { fgs: { connect: { where: { node: { id: $fgId } } } } }
-  ) {
-    info {
-      relationshipsCreated
-    }
-  }
-}
-"""
-
 function connect!(client, agent::NvaNode{Agent}, fg::NvaNode{Factorgraph})
     variables = Dict("agentId" => getId(agent), "fgId" => getId(fg))
 
@@ -256,17 +163,6 @@ function connect!(client, agent::NvaNode{Agent}, fg::NvaNode{Factorgraph})
 
     return response.data["updateAgents"]["info"]["relationshipsCreated"]
 end
-
-QUERY_GET_GRAPHS_AGENTS = GQL.gql"""
-query getAgents_Graph($id: ID!) {
-  factorgraphs(where: {id: $id}) {
-    agents {
-      label
-      namespace
-    }
-  }
-}
-"""
 
 function getAgents(client::NavAbilityClient, fg::NvaNode{Factorgraph})
     response = executeGql(

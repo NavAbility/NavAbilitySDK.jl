@@ -5,15 +5,14 @@ using LinearAlgebra
 using Random
 using UUIDs
 
-apiUrl = get(ENV, "API_URL", "https://api.navability.io")
-orgLabel = Symbol(ENV["ORG_LABEL"])
-agentLabel = :TestRobot
-fgLabel = Symbol("TestSession_" * randstring(7))
 auth_token = ENV["AUTH_TOKEN"]
+apiUrl = get(ENV, "API_URL", "https://api.navability.io/graphql")
 
+fgLabel = Symbol("TestSession_" * randstring(7))
+agentLabel = :TestRobot
 
 @testset "nva-sdk-standard-api-testset" begin
-    client = NavAbilityClient(auth_token, apiUrl; orgLabel)
+    client = NavAbilityClient(auth_token, apiUrl)
 
     fgclient = NvaSDK.NavAbilityDFG(
         client,

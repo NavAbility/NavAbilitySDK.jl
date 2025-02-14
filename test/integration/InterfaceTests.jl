@@ -6,14 +6,13 @@ using LinearAlgebra
 using Random
 using UUIDs
 
-apiUrl = get(ENV, "API_URL", "https://api.navability.io")
-orgLabel = Symbol(ENV["ORG_LABEL"])
+auth_token = ENV["AUTH_TOKEN"]
+apiUrl = get(ENV, "API_URL", "https://api.navability.io/graphql")
 agentLabel = :TestRobot
 fgLabel = Symbol("TestSession_", randstring(7))
-auth_token = ENV["AUTH_TOKEN"]
 
 @testset "Create fg client" begin
-    global client = NavAbilityClient(auth_token, apiUrl; orgLabel)
+    global client = NavAbilityClient(auth_token, apiUrl)
     global fgclient = NavAbilityDFG(
         client,
         fgLabel,
@@ -25,7 +24,7 @@ auth_token = ENV["AUTH_TOKEN"]
     display(fgclient)
 
     # test easy constructor
-    fgclient2 = NavAbilityDFG(auth_token, fgLabel, agentLabel; apiUrl, orgLabel)
+    fgclient2 = NavAbilityDFG(auth_token, fgLabel, agentLabel; apiUrl)
     @test fgclient.fg == fgclient2.fg
     @test fgclient.agent == fgclient2.agent
     @test fgclient.client.id == fgclient2.client.id
@@ -46,6 +45,19 @@ end
     @test temp_sessionLabel in listGraphs(client)
 
     tmp_fgclient = NavAbilityDFG(client, temp_sessionLabel, temp_robotLabel)
+
+    @test isempty(getAgentMetadata(tmp_fgclient))
+    samd = setAgentMetadata!(tmp_fgclient, Dict{Symbol, SmallDataTypes}(:str => "one", :num => 1))
+    @test issetequal(keys(samd), [:num, :str])
+    gamd = getAgentMetadata(tmp_fgclient)
+    @test samd == gamd
+
+    @test isempty(getGraphMetadata(tmp_fgclient))
+    sgmd = setGraphMetadata!(tmp_fgclient, Dict{Symbol, SmallDataTypes}(:str => "one", :num => 1))
+    @test issetequal(keys(sgmd), [:num, :str])
+    ggmd = getGraphMetadata(tmp_fgclient)
+    @test sgmd == ggmd
+
     deleteGraph!(tmp_fgclient)
     @test !(temp_sessionLabel in listGraphs(client))
 
@@ -80,13 +92,14 @@ end
     #
     # @test lsf(fgclient, :a) == [f1.label]
     # Tags
-    # @test ls(fgclient, tags=[:POSE]) == [:a]
+    @test ls(fgclient, tags=[:POSE]) == [:a]
+    @test ls(fgclient, tags=[:LANDMARK]) == [:b]
     # @test symdiff(ls(fgclient, tags=[:POSE, :LANDMARK]), ls(fgclient, tags=[:VARIABLE])) == []
     # Regexes
-    # @test ls(fgclient, r"a") == [v1.label]
+    @test ls(fgclient, r"a") == [v1.label]
     # TODO: Check that this regular expression works on everything else!
     # it works with the .
-    # @test lsf(fgclient, r"abf.*") == [f1.label]
+    @test lsf(fgclient, r"abf.*") == [f1.label]
 
     # Existence
     @test exists(fgclient, :a)
@@ -174,7 +187,7 @@ end
 
 end
 
-@testset "Data Entries" begin
+@testset "Blob Entries" begin
     
     de1 = BlobEntry(
         originId = uuid4(),
@@ -242,12 +255,28 @@ end
     @test deleteBlobEntry!(fgclient, :a, :key2).label == :key2
     @test listBlobEntries(fgclient, :a) == Symbol[]
 
-    #Testing session blob entries
+    addBlobEntries!(fgclient, :a, [de1, de2])
+    @test issetequal(listBlobEntries(fgclient, :a), [:key1, :key2])
+
+    #Testing graph blob entries
     a_de = NvaSDK.addGraphBlobEntries!(fgclient, [de1])[1]
     g_de = getGraphBlobEntry(fgclient, :key1)
     @test a_de == g_de
     @test listGraphBlobEntries(fgclient) == [:key1]
 
+    @test getGraphBlobEntries(fgclient) == [g_de]
+
+    #Testing agent blob entries
+    a_de = NvaSDK.addAgentBlobEntries!(fgclient, [de1])[1]
+    g_de = getAgentBlobEntry(fgclient, :key1)
+    @test a_de == g_de
+    @test listAgentBlobEntries(fgclient) == [:key1]
+
+    @test getAgentBlobEntry(fgclient.client, getAgentLabel(fgclient), de1.label) == g_de
+    @test getAgentBlobEntries(fgclient.client, fgclient.agent) == [g_de]
+
+    @test deleteAgentBlobEntry!(fgclient, g_de).label == :key1
+    @test listAgentBlobEntries(fgclient) == Symbol[]
 
 end
 

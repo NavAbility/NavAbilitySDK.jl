@@ -9,6 +9,11 @@ on:
       - v**
   pull_request:
   workflow_dispatch:
+    inputs:
+      auth_token:
+        description: 'NavAbility API auth token'
+        required: true
+        type: string
 
 jobs:
   test:
@@ -29,7 +34,15 @@ jobs:
           version: ${{ matrix.julia-version }}
           arch: ${{ matrix.julia-arch }}
       - uses: julia-actions/julia-buildpkg@v1
+      - id: set_auth_token #TODO get auth token automatically here #49
+        name: Set auth token
+        run: |
+          auth_token=${{ inputs.auth_token }}
+          echo "::add-mask::$auth_token"
+          echo "nva_auth_token=$auth_token" >> "$GITHUB_OUTPUT"
       - uses: julia-actions/julia-runtest@v1
+        env:
+          AUTH_TOKEN: ${{ steps.set_auth_token.outputs.nva_auth_token }}
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v2
         with:

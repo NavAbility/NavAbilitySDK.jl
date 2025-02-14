@@ -23,6 +23,10 @@ function NavAbilityBlobStore(fgclient::NavAbilityDFG, label::Symbol = :default)
     NavAbilityBlobStore(fgclient.client, label)
 end
 
+function executeGql(store::NavAbilityBlobStore, query::AbstractString, variables,  T::Type = Any; kwargs...)
+    executeGql(store.client, query, variables, T; kwargs...)
+end
+
 struct NavAbilityCachedBlobStore{T <: DFG.AbstractBlobStore} <:
        DFG.AbstractBlobStore{Vector{UInt8}}
     key::Symbol
@@ -39,19 +43,14 @@ $(SIGNATURES)
 Request URLs for data blob download.
 
 Args:
-  navAbilityClient (NavAbilityClient): The NavAbility client.
-  userLabel (String): The userLabel with access to the data.
+  store (NavAbilityBlobStore): The NavAbility blob store.
   blobId (String): The unique file identifier of the data blob.
 """
-# function createDownload(client::GQL.Client, userLabel::AbstractString, blobId::UUID)
 function createDownload(store::NavAbilityBlobStore, blobId::UUID)
-    #TODO use executeGql with GQL_CREATE_DOWNLOAD
-    type = "NVA_CLOUD"
-    response = GQL.mutate(
-        store.client.client,
-        "createDownload",
-        Dict("store"=>(label=store.label, type=type), "blobId"=>string(blobId));
-        throw_on_execution_error = true,
+    response = executeGql(
+        store.client,
+        MUTATION_CREATE_DOWNLOAD,
+        (blobId = string(blobId), label=store.label);
     )
     return response.data["createDownload"]
 end
@@ -74,32 +73,23 @@ function DFG.getBlob(blobstore::NavAbilityCachedBlobStore, blobId::UUID)
     return blob
 end
 
-#FIXME use executeGql
 function DFG.listBlobs(store::NavAbilityBlobStore)
-    query_args = Dict("store"=>(label=store.label,))
-    response = GQL.query(
-        store.client.client,
-        "listBlobs",
-        Vector{String};
-        # output_fields = ["id"],
-        query_args,
-        throw_on_execution_error = true,
+    response = executeGql(
+        store,
+        QUERY_LIST_BLOBS,
+        (label = store.label,),
+        Vector{String},
     )
     list = response.data["listBlobs"]
-    # FIXME should only return uuid strings
-    return UUID.(last.(split.(list, '/')))
+    return UUID.(list)
 end
 
-#FIXME use executeGql
 function DFG.hasBlob(store::NavAbilityBlobStore, blobId::UUID)
-    query_args = Dict("store"=>(label=store.label,), "blobId"=>string(blobId))
-    response = GQL.query(
-        store.client.client,
-        "hasBlob",
+    response = executeGql(
+        store,
+        QUERY_HAS_BLOB,
+        (blobId = string(blobId), label = store.label),
         Bool;
-        # output_fields = ["id"],
-        query_args,
-        throw_on_execution_error = true,
     )
     return response.data["hasBlob"]
 end
@@ -124,11 +114,10 @@ function createUpload(
 )
     #
     store = (label=nvastore.label, type="NVA_CLOUD")
-    response = GQL.execute(
-        nvastore.client.client,
-        GQL_CREATE_UPLOAD;
-        variables = (blobId=blobId, parts=parts, store=store),
-        throw_on_execution_error = true,
+    response = executeGql(
+        nvastore.client,
+        GQL_CREATE_UPLOAD,
+        (blobId=blobId, parts=parts, store=store)
     )
 
     return response.data["createUpload"]
@@ -137,7 +126,7 @@ end
 ## Complete the upload
 
 function completeUpload(
-    client::GQL.Client,
+    client::NavAbilityClient,
     blobId::UUID,
     uploadId::AbstractString,
     eTags::AbstractVector{<:AbstractString},
@@ -159,30 +148,25 @@ function completeUpload(
         "parts" => parts
     )
 
-    response = GQL.execute(
+    response = executeGql(
         client,
-        GQL_COMPLETEUPLOAD;
-        variables = Dict(
-            "blobId" => blobId, 
-            "completedUpload" => cui, 
-        ),
-        throw_on_execution_error = true,
+        GQL_COMPLETEUPLOAD,
+        (blobId = blobId, completedUpload = cui)
     )
 
     return response.data["completeUpload"]
 end
 
 function completeUploadSingle(
-    client::GQL.Client,
+    client::NavAbilityClient,
     blobId::UUID,
     uploadId::AbstractString,
     eTag::AbstractString,
 )
-    response = GQL.execute(
+    response = executeGql(
         client,
-        GQL_COMPLETEUPLOAD_SINGLE;
-        variables = Dict("blobId" => blobId, "uploadId" => uploadId, "eTag" => eTag),
-        throw_on_execution_error = true,
+        GQL_COMPLETEUPLOAD_SINGLE,
+        (blobId = blobId, uploadId = uploadId, eTag = eTag),
     )
 
     return response.data["completeUpload"]
@@ -246,7 +230,7 @@ function DFG.addBlob!(
 
     # close out the upload
     res = completeUpload(
-        store.client.client,
+        store.client,
         blobId,
         uploadId,
         eTags
@@ -293,7 +277,7 @@ function DFG.addBlob!(
     eTag = match(r"[a-zA-Z0-9]+", resp["eTag"]).match
 
     # close out the upload
-    res = completeUploadSingle(client.client, blobId, uploadId, eTag)
+    res = completeUploadSingle(client, blobId, uploadId, eTag)
 
     res == "Accepted" ? nothing : @error("Unable to upload blob, $res")
 
@@ -302,25 +286,22 @@ end
 
 function DFG.addBlob!(
     blobstore::NavAbilityCachedBlobStore,
+    blobId::UUID,
     blob::Vector{UInt8},
-    filename::String,
 )
-    safefilename = split(filename,"/")[end]
-    blobId = addBlob!(blobstore.remotestore, blob, String(safefilename))
-    addBlob!(blobstore.localstore, blobId, blob, filename)
+    addBlob!(blobstore.remotestore, blobId, blob)
+    addBlob!(blobstore.localstore, blobId, blob)
     return blobId
 end
 
-#TODO use executeGql with GQL_DELETE_BLOB
 function DFG.deleteBlob!(
     blobstore::NavAbilityBlobStore,
     blobId::UUID
 )
-    response = GQL.mutate(
+    response = executeGql(
         blobstore.client,
-        "deleteBlob",
-        Dict("blobId" => string(blobId));
-        throw_on_execution_error = true,
+        MUTATION_DELETE_BLOB,
+        (blobId = string(blobId), label = string(blobstore.label));
     )
     return response.data["deleteBlob"]
 
@@ -352,17 +333,11 @@ function DFG.addBlob!(store::NavAbilityOnPremBlobStore, blobId::UUID, blob::Vect
     return blobId
 end
 
-GQL_GET_BLOB = GQL.gql"""
-query getBlob($id: String!, $storeLabel: String = "default") {
-    getBlob(blobId: $id, storeLabel: $storeLabel)
-}
-"""
-
 function DFG.getBlob(store::NavAbilityOnPremBlobStore, blobId::UUID)
     
     response = executeGql(
         store.client,
-        GQL_GET_BLOB,
+        QUERY_GET_BLOB,
         (id = string(blobId), storeLabel = string(store.label))
     )
 
