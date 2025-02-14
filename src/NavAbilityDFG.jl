@@ -71,7 +71,8 @@ function NavAbilityDFG(
     fg_tsk = @async begin
         if addGraphIfAbsent && !in(fgLabel, listGraphs(client))
             addGraph!(client, fgLabel)
-        else
+        else 
+            #TODO maybe rather check if graph exist.
             # getGraph(client, fgLabel)
             NvaNode{Factorgraph}(client.id, fgLabel)
         end

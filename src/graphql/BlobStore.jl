@@ -1,3 +1,8 @@
+MUTATION_CREATE_DOWNLOAD = GQL.gql"""
+mutation createDownload($blobId: ID!, $label: String = "default", $type: BlobStoreType = NVA_CLOUD) {
+  createDownload(blobId: $blobId, store: {label: $label, type: $type})
+}
+"""
 
 GQL_CREATE_UPLOAD = GQL.gql"""
 mutation createUpload(
@@ -61,5 +66,30 @@ mutation completeUpload(
       ]
     }
   )
+}
+"""
+
+MUTATION_DELETE_BLOB = GQL.gql"""
+mutation deleteBlob($blobId: ID!, $label: String = "default", $type: BlobStoreType = NVA_CLOUD) {
+    deleteBlob(blobId: $blobId, store: {label: $label, type: $type})
+}
+"""
+
+QUERY_LIST_BLOBS = GQL.gql"""
+query listBlobs($label: String = "default", $type: BlobStoreType = NVA_CLOUD) {
+  listBlobs(store: {label: $label, type: $type})
+}
+"""
+
+QUERY_HAS_BLOB = GQL.gql"""
+query hasBlob($blobId: ID!, $label: String = "default", $type: BlobStoreType = NVA_CLOUD) {
+  hasBlob(blobId: $blobId, store: {label: $label, type: $type})
+}
+"""
+
+# Only for NavAbilityOnPremBlobStore - may be removed in the future
+QUERY_GET_BLOB = GQL.gql"""
+query getBlob($id: String!, $storeLabel: String = "default") {
+    getBlob(blobId: $id, storeLabel: $storeLabel)
 }
 """

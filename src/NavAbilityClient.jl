@@ -17,7 +17,7 @@ end
 
 function NavAbilityClient(
     auth_token::String,
-    apiUrl::String = "https://api.navability.io";
+    apiUrl::String = "https://api.navability.io/graphql";
     orgLabel::Union{Symbol, Nothing} = nothing,
     introspect::Bool = false,
     kwargs...,
@@ -37,7 +37,7 @@ function NavAbilityClient(;
     authorize::Bool = 0 !== length(auth_token),
     kwargs...,
 )
-    apiUrl = "https://api.navability.io"
+    apiUrl = "https://api.navability.io/graphql"
     @warn "Deprecated: NavAbilityClient kwarg `auth_token` is now a required parameter"
     return NavAbilityClient(auth_token, apiUrl; kwargs...)
 end
