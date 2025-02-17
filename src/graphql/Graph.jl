@@ -90,7 +90,7 @@ mutation connectGraphModel($modelId: ID!, $fgId: ID!) {
 """
 
 GQL_CONNECT_GRAPH_TO_AGENT = GQL.gql"""
-mutation connectGraphModel($agentId: ID!, $fgId: ID!) {
+mutation connectGraphAgent($agentId: ID!, $fgId: ID!) {
   updateAgents(
     where: { id: $agentId }
     update: { fgs: { connect: { where: { node: { id: $fgId } } } } }
