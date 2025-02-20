@@ -56,6 +56,7 @@ StructTypes.omitempties(::Type{ModelCreateInput}) = (:blobEntries,)
 @kwdef struct FactorGraphCreateInput
     id::UUID#!
     label::Symbol#!
+    tags::Vector{Symbol} = Symbol[]
     description::String
     metadata::String
     _version::String

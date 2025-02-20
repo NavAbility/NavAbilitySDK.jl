@@ -112,3 +112,31 @@ query getAgents_Graph($id: ID!) {
   }
 }
 """
+
+QUERY_GET_GRAPH_TAGS = GQL.gql"""
+query getGraphTags($id: ID!) {
+  factorgraphs(where: {id: $id}) {
+    tags
+  }
+}
+"""
+
+MUTATION_SET_GRAPH_TAGS = GQL.gql"""
+mutation setGraphTags($id: ID!, $tags: [String!]!) {
+  updateFactorgraphs(where: {id: $id}, update: {tags: $tags}) {
+    factorgraphs {
+      tags
+    }
+  }
+}
+"""
+
+MUTATION_PUSH_GRAPH_TAGS = GQL.gql"""
+mutation pushGraphTags($id: ID!, $tags_PUSH: [String!]!) {
+  updateFactorgraphs(where: {id: $id}, update: {tags_PUSH: $tags_PUSH}) {
+    factorgraphs {
+      tags
+    }
+  }
+}
+"""
