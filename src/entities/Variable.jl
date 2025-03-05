@@ -71,7 +71,7 @@ StructTypes.omitempties(::Type{SolverDataCreateInput}) = (:variable,)
 Base.@kwdef struct BlobEntryCreateInput
     id::UUID
     blobId::UUID
-    originId::UUID
+    originId::Union{Nothing, UUID}
     label::Symbol
     description::String
     hash::String

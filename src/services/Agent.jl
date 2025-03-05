@@ -74,7 +74,24 @@ function DFG.getAgentMetadata(fgclient::NavAbilityDFG)
     end
 end
 
-#TODO update to standard pattern
+function DFG.setAgentMetadata!(
+    client::NavAbilityClient,
+    label::Symbol,
+    smallData::Dict{Symbol, DFG.SmallDataTypes}
+)
+    meta = base64encode(JSON3.write(smallData))
+
+    response = executeGql(
+        client,
+        QUERY_SET_AGENT_METADATA,
+        (id = getId(client, label), meta=meta),
+    )
+    return JSON3.read(
+        base64decode(response.data["updateAgents"]["agents"][1]["metadata"]),
+        Dict{Symbol, DFG.SmallDataTypes},
+    )
+end
+
 function DFG.setAgentMetadata!(
     fgclient::NavAbilityDFG,
     smallData::Dict{Symbol, DFG.SmallDataTypes},

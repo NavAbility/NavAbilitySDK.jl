@@ -144,6 +144,47 @@ function DFG.setGraphMetadata!(
     )
 end
 
+## TAGS
+
+function getGraphTags(cfg::NavAbilityDFG)
+
+    response = executeGql(
+        cfg,
+        QUERY_GET_GRAPH_TAGS,
+        (id = getId(cfg.fg),),
+        #FIXME remove Union{Nothing...}
+        # Vector{Dict{Symbol, Vector{Symbol}}},
+        Vector{Dict{Symbol, Union{Nothing,Vector{Symbol}}}},
+    )
+
+    tls = handleQuery(response, "factorgraphs")[1][:tags]
+    return isnothing(tls) ? Symbol[] : tls
+end
+
+function setGraphTags!(cfg::NavAbilityDFG, tags::Vector{Symbol})
+
+    response = executeGql(
+        cfg,
+        MUTATION_SET_GRAPH_TAGS,
+        (id = getId(cfg.fg), tags = tags),
+        Dict{Symbol, Vector{Dict{Symbol, Vector{Symbol}}}},
+    )
+
+    return handleMutate(response, "updateFactorgraphs", :factorgraphs)[1][:tags]
+end
+
+function pushGraphTags!(cfg::NavAbilityDFG, tags::Vector{Symbol})
+
+    response = executeGql(
+        cfg,
+        MUTATION_PUSH_GRAPH_TAGS,
+        (id = getId(cfg.fg), tags_PUSH = tags),
+        Dict{Symbol, Vector{Dict{Symbol, Vector{Symbol}}}},
+    )
+
+    return handleMutate(response, "updateFactorgraphs", :factorgraphs)[1][:tags]
+end
+
 ## =======================================================================================
 ## Connect Factorgraph to other nodes
 ## =======================================================================================
