@@ -1,6 +1,6 @@
 
 GQL_START_WORKER = """
-mutation startWorker(\$input: JSON = "", \$workerLabel: mutationInput_post_startWorker_workerLabel = addAffordance_kNNvisual) {
+mutation startWorker(\$input: JSON!, \$workerLabel: WorkerLabelEnum!) {
   startWorker(input: \$input, workerLabel: \$workerLabel)
 }
 """
