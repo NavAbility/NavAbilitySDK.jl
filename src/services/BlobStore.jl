@@ -340,6 +340,31 @@ function DFG.getBlob(store::NavAbilityOnPremBlobStore, blobId::UUID)
         QUERY_GET_BLOB,
         (id = string(blobId), storeLabel = string(store.label))
     )
-
+    #FIXME Errors not working as expected
+    if startswith(response.data["getBlob"], "500 Internal Error") ||
+        startswith(response.data["getBlob"], "$blobId not found")
+        error(response.data["getBlob"])
+    end
     return base64decode(response.data["getBlob"])
+end
+
+function DFG.hasBlob(store::NavAbilityOnPremBlobStore, blobId::UUID)
+    response = executeGql(
+        store.client,
+        QUERY_HAS_BLOB,
+        (blobId = string(blobId), label = store.label, type = "NVA_ON_PREM"),
+        Bool;
+    )
+    return response.data["hasBlob"]
+end
+
+function DFG.listBlobs(store::NavAbilityOnPremBlobStore)
+    response = executeGql(
+        store.client,
+        QUERY_LIST_BLOBS,
+        (label = store.label, type = "NVA_ON_PREM"),
+        Vector{String},
+    )
+    list = response.data["listBlobs"]
+    return UUID.(list)
 end
