@@ -97,6 +97,16 @@ function DFG.deleteAgentBlobEntry!(fgclient::NavAbilityDFG, entry::BlobEntry)
     return entry
 end
 
+function DFG.deleteGraphBlobEntry!(fgclient::NavAbilityDFG, entry::BlobEntry)
+    response = executeGql(
+        fgclient,
+        GQL_DELETE_BLOBENTRY,
+        (id = getId(fgclient.fg, entry.label),),
+    )
+    #TOOD check response.data["deleteBlobEntry"]["nodesDeleted"]
+    return entry
+end
+
 # =========================================================================================
 # BlobEntry CRUD on other nodes
 # =========================================================================================
