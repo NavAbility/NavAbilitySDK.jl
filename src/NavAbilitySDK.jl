@@ -134,6 +134,7 @@ include("services/Agent.jl")
 include("services/Workers.jl")
 
 include("services/AsyncCalls.jl")
+include("services/RetryableCalls.jl")
 
 include("services/Org.jl")
 
