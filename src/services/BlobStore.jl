@@ -68,7 +68,6 @@ function DFG.getBlob(blobstore::NavAbilityCachedBlobStore, blobId::UUID)
     else
         @info "missed in cache, caching" blobId
         blob = getBlob(blobstore.remotestore, blobId)
-        # note, cache not getting non-blobentry metadata since non-blobentry metadata is conveniece only
         addBlob!(blobstore.localstore, blobId, blob)
     end
     return blob
@@ -244,15 +243,21 @@ function DFG.addBlob!(
     blobId
 end
 
+function getMimetype(io::IO)
+    getFormat(s::DFG.FileIO.Stream{T}) where T = T
+    stream = DFG.FileIO.query(io)
+    mime = findfirst(==(getFormat(stream)), DFG._MIMETypes)
+    if isnothing(mime)
+        return MIME("application/octet-stream")
+    else
+        return mime
+    end
+end
 
-function DFG.addBlob!(
-    store::NavAbilityBlobStore,
-    blobId::UUID,
-    blob::Vector{UInt8};
-    mimeType::String = "application/octet-stream",
-)
+function DFG.addBlob!(store::NavAbilityBlobStore, blobId::UUID, blob::Vector{UInt8})
     client = store.client
 
+    mimeType = getMimetype(IOBuffer(blob))
     filesize = length(blob)
     # TODO: Use about a 50M file part here.
     np = 1 # TODO: ceil(filesize / 50e6)
@@ -265,7 +270,7 @@ function DFG.addBlob!(
     # custom header for pushing the file up
     headers = [
         "Content-Length" => filesize,
-        "Content-Type" => mimeType,
+        "Content-Type" => string(mimeType),
         "Accept" => "application/json, text/plain, */*",
         "Accept-Encoding" => "gzip, deflate, br",
         "Sec-Fetch-Dest" => "empty",
@@ -292,10 +297,9 @@ end
 function DFG.addBlob!(
     blobstore::NavAbilityCachedBlobStore,
     blobId::UUID,
-    blob::Vector{UInt8};
-    mimeType::String = "application/octet-stream",
+    blob::Vector{UInt8},
 )
-    addBlob!(blobstore.remotestore, blobId, blob; mimeType)
+    addBlob!(blobstore.remotestore, blobId, blob)
     addBlob!(blobstore.localstore, blobId, blob)
     return blobId
 end
@@ -325,12 +329,7 @@ function NavAbilityOnPremBlobStore(fgclient::NavAbilityDFG, label=:default)
     NavAbilityOnPremBlobStore(fgclient.client, label)
 end
 
-function DFG.addBlob!(
-    store::NavAbilityOnPremBlobStore, 
-    blobId::UUID, 
-    blob::Vector{UInt8};
-    mimeType::String = "application/octet-stream",
-)
+function DFG.addBlob!(store::NavAbilityOnPremBlobStore, blobId::UUID, blob::Vector{UInt8})
     b64blob = base64encode(blob)
     response = NvaSDK.GQL.mutate(
         store.client.client,
