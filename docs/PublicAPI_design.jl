@@ -27,8 +27,11 @@ getGraphBlobentry(dfg::NavAbilityDFG, label::Symbol)
 
 getAgentBlobentry(dfg::NavAbilityDFG, label::Symbol)
 
-getBlob(store::NavAbilityBlobstore, blobId::UUID)
+getVariableState(dfg::NavAbilityDFG, variableLabel::Symbol, label::Symbol)
 
+getFactorState(dfg::NavAbilityDFG, factorLabel::Symbol)
+
+getBlob(store::NavAbilityBlobstore, blobId::UUID)
 
 ### Plural `get` 
 
