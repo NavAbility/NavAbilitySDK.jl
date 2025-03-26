@@ -246,6 +246,7 @@ end
 function getMimetype(io::IO)
     getFormat(s::DFG.FileIO.Stream{T}) where T = T
     stream = DFG.FileIO.query(io)
+    # not sure if we need restrict to only our mimetypes, but better than nothing
     mime = findfirst(==(getFormat(stream)), DFG._MIMETypes)
     if isnothing(mime)
         return MIME("application/octet-stream")
