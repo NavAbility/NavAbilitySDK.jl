@@ -180,6 +180,7 @@ function DFG.addBlob!(
     filepath::AbstractString,
     blobId::UUID = uuid4();
     chunkSize::Integer = UPLOAD_CHUNK_SIZE_HASH,
+    mimeType::String = "application/octet-stream",
 )
     # locate large file on fs, ready to read in chunks
     fid = open(filepath,"r")
@@ -195,7 +196,8 @@ function DFG.addBlob!(
     
     # custom header for pushing the file up
     headers_ = [
-        # "Content-Length" => filesize,
+        "Content-Length" => filesize(filepath),
+        "Content-Type" => mimeType,
         "Accept" => "application/json, text/plain, */*",
         "Accept-Encoding" => "gzip, deflate, br",
         "Sec-Fetch-Dest" => "empty",
@@ -241,14 +243,22 @@ function DFG.addBlob!(
     blobId
 end
 
+function getMimetype(io::IO)
+    getFormat(s::DFG.FileIO.Stream{T}) where T = T
+    stream = DFG.FileIO.query(io)
+    # not sure if we need restrict to only our mimetypes, but better than nothing
+    mime = findfirst(==(getFormat(stream)), DFG._MIMETypes)
+    if isnothing(mime)
+        return MIME("application/octet-stream")
+    else
+        return mime
+    end
+end
 
-function DFG.addBlob!(
-    store::NavAbilityBlobStore,
-    blobId::UUID,
-    blob::Vector{UInt8},
-)
+function DFG.addBlob!(store::NavAbilityBlobStore, blobId::UUID, blob::Vector{UInt8})
     client = store.client
 
+    mimeType = getMimetype(IOBuffer(blob))
     filesize = length(blob)
     # TODO: Use about a 50M file part here.
     np = 1 # TODO: ceil(filesize / 50e6)
@@ -261,6 +271,7 @@ function DFG.addBlob!(
     # custom header for pushing the file up
     headers = [
         "Content-Length" => filesize,
+        "Content-Type" => string(mimeType),
         "Accept" => "application/json, text/plain, */*",
         "Accept-Encoding" => "gzip, deflate, br",
         "Sec-Fetch-Dest" => "empty",
