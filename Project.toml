@@ -3,7 +3,7 @@ uuid = "f3e6a059-199c-4ada-8143-fcefb97e6165"
 keywords = ["navability", "navigation", "slam", "sdk", "robotics", "robots"]
 desc = "NavAbility SDK: Access NavAbility Cloud factor graph features. Note that this SDK and the related API are still in development. Please let us know if you have any issues at info@navability.io."
 authors = ["NavAbility <info@navability.io>"]
-version = "0.8.5"
+version = "0.8.6"
 
 [deps]
 Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
@@ -24,7 +24,7 @@ UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 Aqua = "0.8"
 Base64 = "1.10"
 Dates = "1.10"
-DistributedFactorGraphs = "0.25.2"
+DistributedFactorGraphs = "0.25.2, 0.26"
 DocStringExtensions = "0.8, 0.9"
 Downloads = "1"
 GraphQLClient = "0.7"
