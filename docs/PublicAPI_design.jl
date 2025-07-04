@@ -42,11 +42,29 @@ addBlob!(store::NavAbilityBlobstore, blobId::UUID, blob::Vector{UInt8})
 
 ### Plural `add` 
 
-### Singular `update` 
+### Singular `merge` 
 
-### Plural `update` 
+### Plural `merge` 
 
 ### Singular `delete` 
+
+deleteVariable!(dfg::NavAbilityDFG, label::Symbol)
+
+deleteFactor!(dfg::NavAbilityDFG, label::Symbol)
+
+deleteBlobentry!(dfg::NavAbilityDFG, variableLabel::Symbol, label::Symbol)
+
+deleteVariableBlobentry!(dfg::NavAbilityDFG, variableLabel::Symbol, label::Symbol)
+
+deleteFactorBlobentry!(dfg::NavAbilityDFG, factorLabel::Symbol, label::Symbol)
+
+deleteGraphBlobentry!(dfg::NavAbilityDFG, label::Symbol)
+
+deleteAgentBlobentry!(dfg::NavAbilityDFG, label::Symbol)
+
+deleteVariableState!(dfg::NavAbilityDFG, variableLabel::Symbol, label::Symbol)
+
+deleteBlob!(store::NavAbilityBlobstore, blobId::UUID)
 
 ### Plural `delete` 
 
