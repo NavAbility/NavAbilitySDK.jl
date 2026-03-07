@@ -3,14 +3,13 @@ fragment factor_skeleton_fields on Factor {
   id
   label
   tags
-  _variableOrderSymbols
+  variableorder
 }
 """
 
 GQL_FRAGMENT_FACTORS_SUMMARY = """
 fragment factor_summary_fields on Factor {
   timestamp
-  nstime
 }
 """
 
@@ -29,7 +28,7 @@ fragment factor_full_fields on Factor {
 GQL_GET_FACTOR = """
 $(GQL_FRAGMENT_FACTORS)
 query getFactor(
-  \$facId: ID!
+  \$facId: UUID!
   \$fields_summary: Boolean! = true
   \$fields_full: Boolean! = true
 ) {
@@ -59,11 +58,11 @@ mutation addFactors(\$factorsToCreate: [FactorCreateInput!]!) {
 GQL_GET_FACTORS = """
 $(GQL_FRAGMENT_FACTORS)
 query getFactors(
-  \$fgId: ID!
+  \$fgId: UUID!
   \$fields_summary: Boolean! = true
   \$fields_full: Boolean! = true
 ) {
-  factorgraphs(where: { id: \$fgId }) {
+  graphs(where: { id: \$fgId }) {
     factors {
       ...factor_skeleton_fields
       ...factor_summary_fields @include(if: \$fields_summary)
@@ -76,7 +75,7 @@ query getFactors(
 GQL_GET_FACTORS_FILTERED = """
 $(GQL_FRAGMENT_FACTORS)
 query getFactors_filtered(
-    \$sessionId: ID!,
+    \$sessionId: UUID!,
     \$factor_label_regexp: String = ".*",
     \$factor_tags: [String] = ["FACTOR"],
     \$solvable: Int! = 0,
@@ -96,19 +95,19 @@ query getFactors_filtered(
 """
 
 GQL_LIST_FACTORS = GQL.gql"""
-query listFactors($fgId: ID!, $where: ListWhere = {}) {
+query listFactors($fgId: UUID!, $where: ListWhere = {}) {
   listFactors(fgId: $fgId, where: $where)
 }
 """
 
 GQL_DELETE_FACTOR = GQL.gql"""
-mutation deleteFactor($factorId: ID!) {
+mutation deleteFactor($factorId: UUID!) {
   deleteFactors(
-    where: { id: $factorId }
+    where: { id: {eq: $factorId} }
     delete: {
-      blobEntries: {
+      blobentries: {
         where: {
-          node: { parentConnection: {Factor: { node: { id: $factorId } } } }
+          node: { parentConnection: {Factor: { node: { id: {eq: $factorId} } } } }
         }
       }
     }

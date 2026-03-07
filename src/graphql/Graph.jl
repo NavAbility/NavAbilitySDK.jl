@@ -1,28 +1,19 @@
 QUERY_GET_GRAPH = GQL.gql"""
-query getGraph($fgId: ID!) {
-  factorgraphs (where: {id: $fgId}) {
+query getGraph($id: UUID!) {
+  graphs (where: {id: {eq: $id}}) {
     label
-    createdTimestamp
     namespace
   }
 }
 """
 
 MUTATION_ADD_GRAPH = GQL.gql"""
-mutation addGraph(
-    $orgId: ID = ""
-    $id: ID = "",
-    $label: String = "",
-    $description: String = "",
-    $metadata: String = "",
-    $_version: String = "",
-) {
-  addFactorgraphs(
-    input: {id: $id, label: $label, _version: $_version, description: $description, metadata: $metadata, org: {connect: {where: {node: {id: $orgId}}}}}
+mutation addGraphs($input: [GraphCreateInput!]!) {
+  addGraphs(
+    input: $input
   ) {
-    factorgraphs {
+    graphs {
         label
-        createdTimestamp
         namespace
     }
   }
@@ -30,14 +21,10 @@ mutation addGraph(
 """
 
 MUTATION_DELETE_GRAPH = GQL.gql"""
-mutation deleteGraph($id: ID!) {
-  deleteFactorgraphs(
-    where: { id: $id }
-    delete: {
-      blobEntries: {
-        where: { node: { parentConnection: {Factorgraph: {node: {id: $id } } } } }
-      }
-    }
+mutation deleteGraph($id: UUID!) {
+  deleteGraphs(
+    where: { id: {eq: $id} }
+    delete: {blobentries: {}, bloblets: {}, factors: {}, variables: {}}
   ) {
     nodesDeleted
     relationshipsDeleted
@@ -46,9 +33,9 @@ mutation deleteGraph($id: ID!) {
 """
 
 QUERY_LIST_GRAPHS = GQL.gql"""
-query listGraphs($id: ID!) {
-    orgs(where: {id: $id}) {
-        fgs {
+query listGraphs($id: UUID!) {
+    orgs(where: {id: {eq: $id}}) {
+        graphs {
             label
         }
     }
@@ -56,20 +43,20 @@ query listGraphs($id: ID!) {
 """
 
 QUERY_GET_GRAPH_METADATA = GQL.gql"""
-query getGraphMetadata($id: ID!) {
-    factorgraphs(where: {id: $id}) {
+query getGraphMetadata($id: UUID!) {
+    graphs(where: {id: {eq: $id}}) {
         metadata
     }
 }
 """
 
 MUTATION_SET_GRAPH_METADATA = GQL.gql"""
-mutation setGraphMetadata($id: ID!, $meta: String!) {
-  updateFactorgraphs(
-    where: { id: $id }
+mutation setGraphMetadata($id: UUID!, $meta: String!) {
+  updateGraphs(
+    where: { id: {eq: $id} }
     update: { metadata: $meta }
   ) {
-    factorgraphs {
+    graphs {
       metadata
     }
   }
@@ -77,10 +64,10 @@ mutation setGraphMetadata($id: ID!, $meta: String!) {
 """
 
 GQL_CONNECT_GRAPH_TO_MODEL = GQL.gql"""
-mutation connectGraphModel($modelId: ID!, $fgId: ID!) {
+mutation connectGraphModel($modelId: UUID!, $fgId: UUID!) {
   updateModels(
-    where: { id: $modelId }
-    update: { fgs: { connect: { where: { node: { id: $fgId } } } } }
+    where: { id: {eq: $modelId} }
+    update: { graphs: { connect: { where: { node: { id: {eq: $fgId} } } } } }
   ) {
     info {
       relationshipsCreated
@@ -90,10 +77,10 @@ mutation connectGraphModel($modelId: ID!, $fgId: ID!) {
 """
 
 GQL_CONNECT_GRAPH_TO_AGENT = GQL.gql"""
-mutation connectGraphAgent($agentId: ID!, $fgId: ID!) {
+mutation connectGraphAgent($agentId: UUID!, $fgId: UUID!) {
   updateAgents(
-    where: { id: $agentId }
-    update: { fgs: { connect: { where: { node: { id: $fgId } } } } }
+    where: { id: {eq: $agentId} }
+    update: { graphs: { connect: { where: { node: { id: {eq: $fgId} } } } } }
   ) {
     info {
       relationshipsCreated
@@ -103,8 +90,8 @@ mutation connectGraphAgent($agentId: ID!, $fgId: ID!) {
 """
 
 QUERY_GET_GRAPHS_AGENTS = GQL.gql"""
-query getAgents_Graph($id: ID!) {
-  factorgraphs(where: {id: $id}) {
+query getAgents_Graph($id: UUID!) {
+  graphs(where: {id: {eq: $id}}) {
     agents {
       label
       namespace
@@ -114,17 +101,17 @@ query getAgents_Graph($id: ID!) {
 """
 
 QUERY_GET_GRAPH_TAGS = GQL.gql"""
-query getGraphTags($id: ID!) {
-  factorgraphs(where: {id: $id}) {
+query getGraphTags($id: UUID!) {
+  graphs(where: {id: {eq: $id}}) {
     tags
   }
 }
 """
 
 MUTATION_SET_GRAPH_TAGS = GQL.gql"""
-mutation setGraphTags($id: ID!, $tags: [String!]!) {
-  updateFactorgraphs(where: {id: $id}, update: {tags: $tags}) {
-    factorgraphs {
+mutation setGraphTags($id: UUID!, $tags: [String!]!) {
+  updateGraphs(where: {id: {eq: $id}}, update: {tags: $tags}) {
+    graphs {
       tags
     }
   }
@@ -132,9 +119,9 @@ mutation setGraphTags($id: ID!, $tags: [String!]!) {
 """
 
 MUTATION_PUSH_GRAPH_TAGS = GQL.gql"""
-mutation pushGraphTags($id: ID!, $tags_PUSH: [String!]!) {
-  updateFactorgraphs(where: {id: $id}, update: {tags_PUSH: $tags_PUSH}) {
-    factorgraphs {
+mutation pushGraphTags($id: UUID!, $tags_PUSH: [String!]!) {
+  updateGraphs(where: {id: {eq: $id}}, update: {tags_PUSH: $tags_PUSH}) {
+    graphs {
       tags
     }
   }

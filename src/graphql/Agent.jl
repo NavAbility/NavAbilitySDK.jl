@@ -1,9 +1,7 @@
 QUERY_GET_AGENT = GQL.gql"""
-query QUERY_GET_AGENT($agentId: ID!) {
-  agents (where: {id: $agentId}) {
-    id
+query QUERY_GET_AGENT($agentId: UUID!) {
+  agents (where: {id: {eq: $agentId}}) {
     label
-    createdTimestamp
     namespace
   }
 }
@@ -14,7 +12,6 @@ mutation addAgents($input: [AgentCreateInput!]!) {
   addAgents(input: $input) {
     agents {
         label
-        createdTimestamp
         namespace
     }
   }
@@ -22,13 +19,12 @@ mutation addAgents($input: [AgentCreateInput!]!) {
 """
 
 GQL_DELETE_AGENT = GQL.gql"""
-mutation deleteAgent($id: ID!) {
+mutation deleteAgent($id: UUID!) {
   deleteAgents(
-    where: { id: $id }
+    where: { id: {eq: $id} }
     delete: {
-      blobEntries: {
-        where: { node: { parentConnection: {Agent: {node: {id: $id } } } } }
-      }
+      blobentries: {},
+      bloblets: {}
     }
   ) {
     nodesDeleted
@@ -38,8 +34,8 @@ mutation deleteAgent($id: ID!) {
 """
 
 QUERY_LIST_AGENTS = GQL.gql"""
-query listAgents($id: ID!) {
-  orgs(where: {id: $id}) {
+query listAgents($id: UUID!) {
+  orgs(where: {id: {eq: $id}}) {
     agents {
       label
     }
@@ -47,23 +43,22 @@ query listAgents($id: ID!) {
 }
 """
 
-QUERY_GET_AGENT_METADATA = GQL.gql"""
-query getAgentMetadata($id: ID!) {
-  agents(where: {id: $id}) {
-    metadata
+QUERY_GET_AGENT_BLOBLETS = GQL.gql"""
+query getAgentBloblets($id: UUID) {
+  agents(where: {id: {eq: $id}}) {
+    bloblets {
+      label
+      val
+    }
   }
 }
 """
 
-QUERY_SET_AGENT_METADATA = GQL.gql"""
-mutation setAgentMetadata($id: ID!, $meta: String!) {
-  updateAgents(
-    where: { id: $id }
-    update: { metadata: $meta }
-  ) {
-    agents {
-      metadata
-    }
+QUERY_ADD_AGENT_BLOBLET = GQL.gql"""
+mutation addAgentBloblet($id: UUID!, $label: String!, $val: String!) {
+  addAgentBloblet(AgentId: $id, input: {label: $label, val: $val}) {
+    label
+    val
   }
 }
 """

@@ -1,29 +1,29 @@
 GQL_FRAGMENT_BLOBENTRY = """
-fragment blobEntry_fields on BlobEntry {
+fragment blobEntry_fields on Blobentry {
   id
-  blobId
-  originId
+  blobid
   label
   blobstore
-  hash
+  crchash
+  shahash
   origin
   size
   description
-  mimeType
+  mimetype
   metadata
   timestamp
-  createdTimestamp
-  lastUpdatedTimestamp
-  _version
+  createdtime
+  modifiedtime
+  version
 }
 """
 
 GQL_GET_BLOBENTRY = """
 $(GQL_FRAGMENT_BLOBENTRY)
 query get_blob_entry(
-  \$id: ID!
+  \$id: UUID!
 ) {
-  blobEntries(where: { id: \$id }) {
+  blobentries(where: { id: {eq: \$id} }) {
     ...blobEntry_fields
   }
 }
@@ -32,10 +32,10 @@ query get_blob_entry(
 GQL_GET_BLOBENTRIES = """
 $(GQL_FRAGMENT_BLOBENTRY)
 query get_blob_entries(
-  \$id: ID!
+  \$id: UUID!
 ) {
-  variables(where: { id: \$id }) {
-    blobEntries {
+  variables(where: { id: {eq: \$id} }) {
+    blobentries {
       ...blobEntry_fields
     }
   }
@@ -50,12 +50,12 @@ query get_blob_entries(
 
 GQL_ADD_BLOBENTRIES = """
 $(GQL_FRAGMENT_BLOBENTRY)
-mutation addBlobEntries(\$blobEntries: [BlobEntryCreateInput!]!) {
+mutation addBlobentries(\$blobentries: [BlobentryCreateInput!]!) {
   # Create the new ones
-  addBlobEntries(
-    input: \$blobEntries
+  addBlobentries(
+    input: \$blobentries
   ) {
-    blobEntries {
+    blobentries {
       ...blobEntry_fields
     }
   }
@@ -63,11 +63,11 @@ mutation addBlobEntries(\$blobEntries: [BlobEntryCreateInput!]!) {
 """
 
 GQL_LIST_BLOBENTRIES = """
-query listBlobEntries(\$id: ID!) {
+query listBlobEntries(\$id: UUID!) {
   variables (
-    where: {id: \$id}
+    where: {id: {eq: \$id}}
   ) {
-    blobEntries {
+    blobentries {
       label
     }
   }
@@ -75,9 +75,9 @@ query listBlobEntries(\$id: ID!) {
 """
 
 GQL_LIST_FACTORGRAPH_BLOBENTRIES = GQL.gql"""
-query listGraphBlobEntries($id: ID!) {
-  factorgraphs(where: { id: $id }) {
-    blobEntries {
+query listGraphBlobEntries($id: UUID!) {
+  graphs(where: { id: {eq: $id} }) {
+    blobentries {
       label
     }
   }
@@ -85,9 +85,9 @@ query listGraphBlobEntries($id: ID!) {
 """
 
 GQL_LIST_AGENT_BLOBENTRIES = GQL.gql"""
-query listAgentBlobEntries($id: ID!) {
-  agents(where: { id: $id }) { 
-    blobEntries {
+query listAgentBlobEntries($id: UUID!) {
+  agents(where: { id: {eq: $id} }) { 
+    blobentries {
       label
     } 
   }
@@ -95,9 +95,9 @@ query listAgentBlobEntries($id: ID!) {
 """
 
 GQL_LIST_MODEL_BLOBENTRIES = GQL.gql"""
-query listModelBlobEntries($id: ID!) {
-  models(where: { id: $id }) { 
-    blobEntries {
+query listModelBlobEntries($id: UUID!) {
+  models(where: { id: {eq: $id} }) { 
+    blobentries {
       label
     } 
   }
@@ -106,9 +106,9 @@ query listModelBlobEntries($id: ID!) {
 
 GQL_GET_FG_BLOBENTRIES = """
 $(GQL_FRAGMENT_BLOBENTRY)
-query getGraphBlobEntries(\$id: ID!, \$entrywhere: BlobEntryWhere = {}) {
-  factorgraphs(where: { id: \$id }) {
-    blobEntries (where: \$entrywhere) {
+query getGraphBlobEntries(\$id: UUID!, \$entrywhere: BlobentryWhere = {}) {
+  graphs(where: { id: {eq: \$id} }) {
+    blobentries (where: \$entrywhere) {
       ...blobEntry_fields
     }
   }
@@ -117,9 +117,9 @@ query getGraphBlobEntries(\$id: ID!, \$entrywhere: BlobEntryWhere = {}) {
 
 GQL_GET_AGENT_BLOBENTRIES = """
 $(GQL_FRAGMENT_BLOBENTRY)
-query getAgentBlobEntries(\$id: ID!, \$entrywhere: BlobEntryWhere = {}) {
-  agents(where: { id: \$id }) { 
-    blobEntries (where: \$entrywhere) {
+query getAgentBlobEntries(\$id: UUID!, \$entrywhere: BlobentryWhere = {}) {
+  agents(where: { id: {eq: \$id} }) { 
+    blobentries (where: \$entrywhere) {
       ...blobEntry_fields
     } 
   }
@@ -128,9 +128,9 @@ query getAgentBlobEntries(\$id: ID!, \$entrywhere: BlobEntryWhere = {}) {
 
 GQL_GET_MODEL_BLOBENTRIES = """
 $(GQL_FRAGMENT_BLOBENTRY)
-query getModelBlobEntries(\$id: ID!, \$entrywhere: BlobEntryWhere = {}) {
-  models(where: { id: \$id }) { 
-    blobEntries (where: \$entrywhere) {
+query getModelBlobEntries(\$id: UUID!, \$entrywhere: BlobentryWhere = {}) {
+  models(where: { id: {eq: \$id} }) { 
+    blobentries (where: \$entrywhere) {
       ...blobEntry_fields
     } 
   }
@@ -138,8 +138,8 @@ query getModelBlobEntries(\$id: ID!, \$entrywhere: BlobEntryWhere = {}) {
 """
 
 GQL_DELETE_BLOBENTRY = GQL.gql"""
-mutation deleteBlobEntry($id: ID!) {
-  deleteBlobEntries(where: { id: $id }) {
+mutation deleteBlobentry($id: UUID!) {
+  deleteBlobentries(where: { id: {eq: $id} }) {
     nodesDeleted
   }
 }
@@ -147,12 +147,12 @@ mutation deleteBlobEntry($id: ID!) {
 
 # GQL_UPDATE_BLOBENTRY = """
 # $(GQL_FRAGMENT_BLOBENTRY)
-# mutation updateBlobEntry(\$blobEntry: BlobEntryUpdateInput!, \$uniqueKey: String!) {
+# mutation updateBlobentry(\$blobEntry: BlobentryUpdateInput!, \$uniqueKey: String!) {
 #   updateDataEntries(
 #     update: \$blobEntry
 #     where: {uniqueKey: \$uniqueKey}
 #   ) {
-#     blobEntries {
+#     blobentries {
 #       ...blobEntry_fields
 #     }
 #   }
@@ -160,7 +160,7 @@ mutation deleteBlobEntry($id: ID!) {
 # """
 
 # GQL_DELETE_BLOBENTRY = """
-# mutation deleteBlobEntry(\$uniqueKey: String!) {
+# mutation deleteBlobentry(\$uniqueKey: String!) {
 #   deleteDataEntries(
 #     where: {uniqueKey: \$uniqueKey}
 #   ) {

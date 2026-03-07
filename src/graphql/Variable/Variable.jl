@@ -1,5 +1,4 @@
-include("PPE.jl")
-include("SolverData.jl")
+include("State.jl")
 
 GQL_FRAGMENT_VARIABLES_SKELETON = """
 fragment variable_skeleton_fields on Variable {
@@ -18,7 +17,7 @@ fragment variable_summary_fields on Variable {
   ppes {
     ...ppe_fields
   }
-  blobEntries {
+  blobentries {
     ...blobEntry_fields
   }
   variableType
@@ -28,15 +27,14 @@ fragment variable_summary_fields on Variable {
 
 #TODO looks like $(GQL_FRAGMENT_VARIABLES_SKELETON) should be moved to GQL_FRAGMENT_VARIABLES_SUMMARY
 GQL_FRAGMENT_VARIABLES = """
-$(GQL_FRAGMENT_SOLVERDATA)
+$(GQL_FRAGMENT_STATE)
 $(GQL_FRAGMENT_VARIABLES_SKELETON)
 $(GQL_FRAGMENT_VARIABLES_SUMMARY)
 fragment variable_full_fields on Variable {
   metadata
   solvable
-  solverData
-  {
-    ...solverdata_fields
+  states {
+    ...state_fields
   }
 }
 """
@@ -45,11 +43,11 @@ fragment variable_full_fields on Variable {
 GQL_GET_VARIABLE = """
 $(GQL_FRAGMENT_VARIABLES)
 query get_variable(
-  \$varId: ID!
+  \$varId: UUID!
   \$fields_summary: Boolean! = true
   \$fields_full: Boolean! = true
 ) {
-    variables(where: { id: \$varId }) {
+    variables(where: { id: {eq: \$varId }}) {
       ...variable_skeleton_fields
       ...variable_summary_fields @include(if: \$fields_summary)
       ...variable_full_fields @include(if: \$fields_full)
@@ -60,13 +58,13 @@ query get_variable(
 GQL_GET_VARIABLES_BY_IDS = """
 $(GQL_FRAGMENT_VARIABLES)
 query get_variables(
-  \$variableIds: [ID!]!
+  \$variableIds: [UUID!]!
   \$fields_summary: Boolean! = true
   \$fields_full: Boolean! = true
   ) {
     variables(
       where: {
-        id_IN: \$variableIds
+        id: {in: \$variableIds}
       }
     ) {
       ...variable_skeleton_fields
@@ -79,11 +77,11 @@ query get_variables(
 GQL_GET_VARIABLES = """
 $(GQL_FRAGMENT_VARIABLES)
 query get_variables(
-  \$fgId: ID!
+  \$fgId: UUID!
   \$fields_summary: Boolean! = true
   \$fields_full: Boolean! = true
 ) {
-    factorgraphs(where: { id: \$fgId }) {
+    graphs(where: { id: {eq: \$fgId} }) {
       variables {
         ...variable_skeleton_fields
         ...variable_summary_fields @include(if: \$fields_summary)
@@ -93,7 +91,7 @@ query get_variables(
 }
 """
 # TODO profile 
-# factorgraphs(where: { id: \$fgId }) {
+# graphs(where: { id: \$fgId }) {
 #   variables {
 # vs
 # variables(where: {fg: {id: \$fgId}}) {
@@ -112,17 +110,17 @@ mutation sdk_add_variables(\$variablesToCreate: [VariableCreateInput!]!) {
 """
 
 GQL_LIST_VARIABLES = GQL.gql"""
-query list_variables($fgId: ID!, $varwhere: ListWhere = {}) {
+query list_variables($fgId: UUID!, $varwhere: ListWhere = {}) {
   listVariables(fgId: $fgId, where: $varwhere)
 }
 """
 
 GQL_EXISTS_VARIABLE_FACTOR_LABEL = GQL.gql"""
-query($id: ID!) {
-  variables(where: { id: $id }) {
+query($id: UUID!) {
+  variables(where: { id: {eq: $id} }) {
     label
   }
-  factors(where: { id: $id }) {
+  factors(where: { id: {eq: $id} }) {
     label
   }
 }
@@ -135,9 +133,9 @@ query($id: ID!) {
 # GQL_GET_VARIABLES_FILTERED = """
 # $(GQL_FRAGMENT_VARIABLES)
 # query sdk_get_variables_filtered(
-#   \$userId: ID!
-#   \$robotId: ID!
-#   \$sessionId: ID!
+#   \$userId: UUID!
+#   \$robotId: UUID!
+#   \$sessionId: UUID!
 #   \$variable_label_regexp: String = ".*"
 #   \$variable_tags: [String] = ["VARIABLE"]
 #   \$solvable: Int! = 0
@@ -166,21 +164,21 @@ query($id: ID!) {
 # """
 
 GQL_DELETE_VARIABLE = GQL.gql"""
-mutation deleteVariable($variableId: ID!) {
+mutation deleteVariable($variableId: UUID!) {
   deleteVariables(
-    where: { id: $variableId }
+    where: { id: {eq: $variableId} }
     delete: {
       ppes: {
-        where: { node: { variableConnection: { node: { id: $variableId } } } }
+        where: { node: { variableConnection: { node: { id: {eq: $variableId} } } } }
       }
-      solverData: {
-        where: { node: { variableConnection: { node: { id: $variableId } } } }
+      states: {
+        where: { node: { variableConnection: { node: { id: {eq: $variableId} } } } }
       }
-      blobEntries: {
-        where: { node: { parentConnection: {Variable: {node: {id: $variableId } } } } }
+      blobentries: {
+        where: { node: { parentConnection: {Variable: {node: {id: {eq: $variableId} } } } } }
       }
       factors: {
-        where: { node: { variablesConnection_SOME: {node: {id: $variableId } } } } 
+        where: { node: { variablesConnection_SOME: {node: {id: {eq: $variableId} } } } } 
       }
     }
   ) {
@@ -192,14 +190,14 @@ mutation deleteVariable($variableId: ID!) {
 
 GQL_LIST_NEIGHBORS = GQL.gql"""
 query listNeighbors(
-  $id: ID!
+  $id: UUID!
 ) {
-  variables( where: {id: $id}) {
+  variables( where: {id: {eq: $id}}) {
     factors {
       label
     }
   }
-  factors( where: {id: $id}) {
+  factors( where: {id: {eq: $id}}) {
     variables {
       label
     }
@@ -209,11 +207,11 @@ query listNeighbors(
 
 GQL_FIND_VARIABLES_NEAR_TIMESTAMP = GQL.gql"""
 query findVariablesNearTime(
-  $fgId: ID!
+  $fgId: UUID!
   $fromTime: DateTime!
   $toTime: DateTime!
 ) {
-  factorgraphs(where: { id: $fgId }) {
+  graphs(where: { id: {eq: $fgId} }) {
     variables(
       where: {
         AND: [{ timestamp_GT: $fromTime }, { timestamp_LT: $toTime }]
