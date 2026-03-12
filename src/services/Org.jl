@@ -1,17 +1,14 @@
 function getOrg(client::GQL.Client, label::Symbol)
-    variables = Dict("label" => label)
-    T = Vector{Org}
     response = executeGql(
         client,
         GQL_GET_ORG,
-        variables,
-        T
+        (label = label,),
+        Vector{Org}
     )
-    return response.data["orgs"][1]
+    return response[:orgs][1]
 end
 
 function getOrgs(client::GQL.Client)
-    T = Vector{Org}
-    response = executeGql(client, GQL_GET_ORGS, Dict(), T)
-    return response.data["orgs"]
+    response = executeGql(client, GQL_GET_ORGS, Dict(), Vector{Org})
+    return response[:orgs]
 end

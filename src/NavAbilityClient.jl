@@ -4,6 +4,8 @@
 struct NavAbilityClient
     id::UUID
     client::GQL.Client
+    # endpoint::String
+    # headers::Dict{String, String}
     # org::Org
 end
 
@@ -30,14 +32,4 @@ function NavAbilityClient(
         id = getOrg(client, orgLabel).id
     end
     return NavAbilityClient(id, client)
-end
-
-function NavAbilityClient(;
-    auth_token::String = "",
-    authorize::Bool = 0 !== length(auth_token),
-    kwargs...,
-)
-    apiUrl = "https://api.navability.io/graphql"
-    @warn "Deprecated: NavAbilityClient kwarg `auth_token` is now a required parameter"
-    return NavAbilityClient(auth_token, apiUrl; kwargs...)
 end
