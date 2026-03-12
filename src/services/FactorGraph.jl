@@ -1,42 +1,35 @@
 function DFG.getGraph(client::NavAbilityClient, label::Symbol)
-    fgId = getId(client.id, label)
-    variables = Dict("fgId" => fgId)
+    variables = (id = getId(client, label),)
 
-    T = Vector{NvaNode{Factorgraph}}
+    T = Vector{NvaNode{Graphroot}}
 
-    response = GQL.execute(
-        client.client,
-        QUERY_GET_GRAPH,
-        T;
-        variables,
-        throw_on_execution_error = true,
-    )
+    response = executeGql(client, QUERY_GET_GRAPH, variables, T)
 
-    return handleQuery(response, "factorgraphs", label)
+    return handleQuery(response, :graphs, label)
 end
 
 function addGraph!(client::NavAbilityClient, label::Symbol)
-    @assert isValidLabel(label) "Factor graph label ($Label) is not a valid label"
+    @assert DFG.isValidLabel(label) "Factor graph label ($label) is not a valid label"
+    
+    # Create a minimal Graphroot with the label
+    graph = DFG.Graphroot(; label)
+    
+    input = [
+        GraphCreateInput(;
+            id = getId(client, label),
+            org = createConnect(client.id),
+            getCommonProperties(GraphCreateInput, graph)...,
+        ),
+    ]
 
-    variables = Dict(
-        "orgId" => client.id,
-        "id" => getId(client.id, label),
-        "label" => label,
-        "_version" => DFG._getDFGVersion(),
-    )
+    variables = (input = input,)
 
-    # FactorGraphRemoteResponse
-    T = @NamedTuple{factorgraphs::Vector{NvaNode{Factorgraph}}}
+    # GraphRemoteResponse
+    T = @NamedTuple{graphs::Vector{NvaNode{Graphroot}}}
 
-    response = GQL.execute(
-        client.client,
-        MUTATION_ADD_GRAPH,
-        T;
-        variables,
-        throw_on_execution_error = true,
-    )
+    response = executeGql(client, MUTATION_ADD_GRAPH, variables, T)
 
-    return handleMutate(response, "addFactorgraphs", :factorgraphs)[1]
+    return handleMutate(response, :addGraphs, :graphs)[1]
 end
 
 function deleteGraph!(fgclient::NavAbilityDFG)
@@ -44,109 +37,85 @@ function deleteGraph!(fgclient::NavAbilityDFG)
 
     nvars = length(listVariables(fgclient))
     nvars > 0 && error(
-        "Only empty sessions can be deleted, $(getGraphLabel(fgclient)) still has $nvars variables.",
+        "Only empty sessions can be deleted, $(DFG.getGraphLabel(fgclient)) still has $nvars variables.",
     )
 
     nfacts = length(listFactors(fgclient))
     nfacts > 0 && error(
-        "Only empty sessions can be deleted, $(getGraphLabel(fgclient)) still has $nfacts factors.",
+        "Only empty sessions can be deleted, $(DFG.getGraphLabel(fgclient)) still has $nfacts factors.",
     )
 
-    response = executeGql(fgclient, MUTATION_DELETE_GRAPH, (id = string(id),))
+    response = executeGql(fgclient, MUTATION_DELETE_GRAPH, (id = id,))
 
-    return response.data
+    return response[:deleteGraphs]["nodesDeleted"]
 end
 
 function listGraphs(client::NavAbilityClient)
-    T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
 
-    response = GQL.execute(
-        client.client,
+    response = executeGql(
+        client,
         QUERY_LIST_GRAPHS,
-        T;
-        variables = (id = client.id,),
-        throw_on_execution_error = true,
+        (id = client.id,),
+        Vector{Dict{Symbol, Vector{@NamedTuple{label::Symbol}}}}
     )
 
-    return last.(handleQuery(response, "orgs", Symbol(client.id))["fgs"])
+    return last.(handleQuery(response, :orgs, Symbol(client.id))[:graphs])
 end
 
+#TODO continue from here after updating variables and factors
 function DFG.listNeighbors(fgclient::NavAbilityDFG, label::Symbol)
     variables = (id = getId(fgclient.fg, label),)
 
-    T = Vector{Dict{String, Vector{NamedTuple{(:label,), Tuple{Symbol}}}}}
+    T = Vector{Dict{Symbol, Vector{NamedTuple{(:label,), Tuple{Symbol}}}}}
 
-    response = GQL.execute(
-        fgclient.client.client,
+    response = executeGql(
+        fgclient,
         GQL_LIST_NEIGHBORS,
-        T;
         variables,
-        throw_on_execution_error = true,
+        T
     )
     flbls =
-        isempty(response.data["variables"]) ? Symbol[] :
-        last.(response.data["variables"][1]["factors"])
+        isempty(response[:variables]) ? Symbol[] :
+        last.(response[:variables][1][:factors])
     vlbls =
-        isempty(response.data["factors"]) ? Symbol[] :
-        last.(response.data["factors"][1]["variables"])
+        isempty(response[:factors]) ? Symbol[] :
+        last.(response[:factors][1][:variables])
 
     return union(flbls, vlbls)
 end
 
-function DFG.exists(fgclient::NavAbilityDFG, label::Symbol)
-    variables = (id = getId(fgclient.fg, label),)
-
-    response = GQL.execute(
-        fgclient.client.client,
-        GQL_EXISTS_VARIABLE_FACTOR_LABEL;
-        variables,
-        throw_on_execution_error = true,
-    )
-
-    hasvar = !isempty(response.data["variables"])
-    hasfac = !isempty(response.data["factors"])
-
-    return hasvar || hasfac
-end
-
-#TODO update to standard pattern
-function DFG.getGraphMetadata(dfg::NavAbilityDFG)
-    
-    response = executeGql(
-        dfg,
-        QUERY_GET_GRAPH_METADATA,
-        (id = getId(dfg.fg),),
-    )
-    b64data = response.data["factorgraphs"][1]["metadata"]
-
-    if isnothing(b64data) || b64data == ""
-        return Dict{Symbol, DFG.SmallDataTypes}()
-    else
-        return JSON3.read(base64decode(b64data), Dict{Symbol, DFG.SmallDataTypes})
-    end
-end
-
-function DFG.setGraphMetadata!(
-    fgclient::NavAbilityDFG,
-    smallData::Dict{Symbol, DFG.SmallDataTypes},
-)
-    meta = base64encode(JSON3.write(smallData))
-
+function DFG.hasVariable(fgclient::NavAbilityDFG, label::Symbol)
     response = executeGql(
         fgclient,
-        MUTATION_SET_GRAPH_METADATA,
-        (id = getId(fgclient.fg), meta = meta),
+        GQL_EXISTS_VARIABLE_FACTOR_LABEL,
+        (id = getId(fgclient.fg, label),)
     )
+    return !isempty(response[:variables])
+end
 
-    return JSON3.read(
-        base64decode(response.data["updateFactorgraphs"]["factorgraphs"][1]["metadata"]),
-        Dict{Symbol, DFG.SmallDataTypes},
+function DFG.hasFactor(fgclient::NavAbilityDFG, label::Symbol)
+    response = executeGql(
+        fgclient,
+        GQL_EXISTS_VARIABLE_FACTOR_LABEL,
+        (id = getId(fgclient.fg, label),)
     )
+    return !isempty(response[:factors])
+end
+
+function DFG.exists(fgclient::NavAbilityDFG, label::Symbol)
+    response = executeGql(
+        fgclient,
+        GQL_EXISTS_VARIABLE_FACTOR_LABEL,
+        (id = getId(fgclient.fg, label),)
+    )
+    hasvar = !isempty(response[:variables])
+    hasfac = !isempty(response[:factors])
+    return hasvar || hasfac
 end
 
 ## TAGS
 
-function getGraphTags(cfg::NavAbilityDFG)
+function DFG.listGraphTags(cfg::NavAbilityDFG)
 
     response = executeGql(
         cfg,
@@ -154,11 +123,10 @@ function getGraphTags(cfg::NavAbilityDFG)
         (id = getId(cfg.fg),),
         #FIXME remove Union{Nothing...}
         # Vector{Dict{Symbol, Vector{Symbol}}},
-        Vector{Dict{Symbol, Union{Nothing,Vector{Symbol}}}},
+        Vector{Dict{Symbol, Vector{Symbol}}},
     )
 
-    tls = handleQuery(response, "factorgraphs")[1][:tags]
-    return isnothing(tls) ? Symbol[] : tls
+    return handleQuery(response, :graphs)[1][:tags]
 end
 
 function setGraphTags!(cfg::NavAbilityDFG, tags::Vector{Symbol})
@@ -170,7 +138,7 @@ function setGraphTags!(cfg::NavAbilityDFG, tags::Vector{Symbol})
         Dict{Symbol, Vector{Dict{Symbol, Vector{Symbol}}}},
     )
 
-    return handleMutate(response, "updateFactorgraphs", :factorgraphs)[1][:tags]
+    return handleMutate(response, "updateGraphs", :factorgraphs)[1][:tags]
 end
 
 function pushGraphTags!(cfg::NavAbilityDFG, tags::Vector{Symbol})
@@ -182,14 +150,14 @@ function pushGraphTags!(cfg::NavAbilityDFG, tags::Vector{Symbol})
         Dict{Symbol, Vector{Dict{Symbol, Vector{Symbol}}}},
     )
 
-    return handleMutate(response, "updateFactorgraphs", :factorgraphs)[1][:tags]
+    return handleMutate(response, "updateGraphs", :factorgraphs)[1][:tags]
 end
 
 ## =======================================================================================
 ## Connect Factorgraph to other nodes
 ## =======================================================================================
 
-function connect!(client, model::NvaNode{Model}, fg::NvaNode{Factorgraph})
+function connect!(client, model::NvaNode{Model}, fg::NvaNode{Graphroot})
     variables = Dict("modelId" => getId(model), "fgId" => getId(fg))
 
     response = executeGql(client, GQL_CONNECT_GRAPH_TO_MODEL, variables)
@@ -197,7 +165,7 @@ function connect!(client, model::NvaNode{Model}, fg::NvaNode{Factorgraph})
     return response.data["updateModels"]["info"]["relationshipsCreated"]
 end
 
-function connect!(client, agent::NvaNode{Agent}, fg::NvaNode{Factorgraph})
+function connect!(client, agent::NvaNode{Agent}, fg::NvaNode{Graphroot})
     variables = Dict("agentId" => getId(agent), "fgId" => getId(fg))
 
     response = executeGql(client, GQL_CONNECT_GRAPH_TO_AGENT, variables)
@@ -205,12 +173,12 @@ function connect!(client, agent::NvaNode{Agent}, fg::NvaNode{Factorgraph})
     return response.data["updateAgents"]["info"]["relationshipsCreated"]
 end
 
-function getAgents(client::NavAbilityClient, fg::NvaNode{Factorgraph})
+function getAgents(client::NavAbilityClient, fg::NvaNode{Graphroot})
     response = executeGql(
         client,
         QUERY_GET_GRAPHS_AGENTS,
-        Dict("id" => getId(fg)),
+        (id = getId(fg),),
         Vector{Dict{Symbol, Vector{NvaNode{Agent}}}},
     )
-    return handleQuery(response, "factorgraphs")[1][:agents]
+    return handleQuery(response, :graphs)[1][:agents]
 end
