@@ -14,8 +14,8 @@ fragment FRAGMENT_WORKFLOW on Workflow {
   result
   _type
   _version
-  createdTimestamp
-  lastUpdatedTimestamp
+  createdtime
+  modifiedtime
 }
 """
 

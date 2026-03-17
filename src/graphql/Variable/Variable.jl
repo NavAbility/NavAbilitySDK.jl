@@ -2,26 +2,23 @@ include("State.jl")
 
 GQL_FRAGMENT_VARIABLES_SKELETON = """
 fragment variable_skeleton_fields on Variable {
-    id
     label
     tags
   }
 """
 
 GQL_FRAGMENT_VARIABLES_SUMMARY = """
-$(GQL_FRAGMENT_PPES)
 $(GQL_FRAGMENT_BLOBENTRY)
 fragment variable_summary_fields on Variable {
   timestamp
-  nstime
-  ppes {
-    ...ppe_fields
-  }
   blobentries {
     ...blobEntry_fields
   }
-  variableType
-  _version
+  bloblets {
+    label
+    val
+  }
+  statekind
 }
 """
 
@@ -31,8 +28,8 @@ $(GQL_FRAGMENT_STATE)
 $(GQL_FRAGMENT_VARIABLES_SKELETON)
 $(GQL_FRAGMENT_VARIABLES_SUMMARY)
 fragment variable_full_fields on Variable {
-  metadata
   solvable
+  type
   states {
     ...state_fields
   }
@@ -98,8 +95,8 @@ query get_variables(
 
 GQL_ADD_VARIABLES = """
 $(GQL_FRAGMENT_VARIABLES)
-mutation sdk_add_variables(\$variablesToCreate: [VariableCreateInput!]!) {
-  addVariables(input: \$variablesToCreate) {
+mutation addVariables(\$input: [VariableCreateInput!]!) {
+  addVariables(input: \$input) {
     variables {
       ...variable_skeleton_fields
       ...variable_summary_fields
@@ -168,19 +165,12 @@ mutation deleteVariable($variableId: UUID!) {
   deleteVariables(
     where: { id: {eq: $variableId} }
     delete: {
-      ppes: {
-        where: { node: { variableConnection: { node: { id: {eq: $variableId} } } } }
-      }
-      states: {
-        where: { node: { variableConnection: { node: { id: {eq: $variableId} } } } }
-      }
-      blobentries: {
-        where: { node: { parentConnection: {Variable: {node: {id: {eq: $variableId} } } } } }
-      }
-      factors: {
-        where: { node: { variablesConnection_SOME: {node: {id: {eq: $variableId} } } } } 
-      }
+      states: {}
+      blobentries: {}
+      bloblets: {}
+      factors: {delete: {blobentries: {}, bloblets: {}}}
     }
+
   ) {
     nodesDeleted
     relationshipsDeleted
@@ -213,9 +203,7 @@ query findVariablesNearTime(
 ) {
   graphs(where: { id: {eq: $fgId} }) {
     variables(
-      where: {
-        AND: [{ timestamp_GT: $fromTime }, { timestamp_LT: $toTime }]
-      }
+      where: {timestamp: {gte: $fromTime, lte: $toTime }}
     ) {
       label
     }
@@ -240,3 +228,23 @@ query findVariablesNearTime(
 #   }
 # }
 # """
+
+QUERY_GET_VARIABLE_BLOBLETS = GQL.gql"""
+query getVariableBloblets($id: UUID!) {
+  variables(where: {id: {eq: $id}}) {
+    bloblets {
+      label
+      val
+    }
+  }
+}
+"""
+
+QUERY_ADD_VARIABLE_BLOBLET = GQL.gql"""
+mutation addVariableBloblet($id: UUID!, $label: String!, $val: String!) {
+  addVariableBloblet(VariableId: $id, input: {label: $label, val: $val}) {
+    label
+    val
+  }
+}
+"""

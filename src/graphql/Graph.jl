@@ -101,7 +101,7 @@ query getAgents_Graph($id: UUID!) {
 """
 
 QUERY_GET_GRAPH_TAGS = GQL.gql"""
-query getGraphTags($id: UUID!) {
+query listGraphTags($id: UUID!) {
   graphs(where: {id: {eq: $id}}) {
     tags
   }

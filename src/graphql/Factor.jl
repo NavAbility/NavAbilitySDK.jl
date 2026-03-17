@@ -1,6 +1,5 @@
 GQL_FRAGMENT_FACTORS_SKELETON = """
 fragment factor_skeleton_fields on Factor {
-  id
   label
   tags
   variableorder
@@ -8,8 +7,12 @@ fragment factor_skeleton_fields on Factor {
 """
 
 GQL_FRAGMENT_FACTORS_SUMMARY = """
+$(GQL_FRAGMENT_BLOBENTRY)
 fragment factor_summary_fields on Factor {
   timestamp
+  blobentries {
+    ...blobEntry_fields
+  }
 }
 """
 
@@ -17,11 +20,11 @@ GQL_FRAGMENT_FACTORS = """
 $(GQL_FRAGMENT_FACTORS_SKELETON)
 $(GQL_FRAGMENT_FACTORS_SUMMARY)
 fragment factor_full_fields on Factor {
-  fnctype
   solvable
-  data
-  metadata
-  _version
+  type
+  observation
+  hyper
+  state
 }
 """
 
@@ -32,7 +35,7 @@ query getFactor(
   \$fields_summary: Boolean! = true
   \$fields_full: Boolean! = true
 ) {
-  factors(where: { id: \$facId }) {
+  factors(where: { id: {eq: \$facId} }) {
     ...factor_skeleton_fields
     ...factor_summary_fields @include(if: \$fields_summary)
     ...factor_full_fields @include(if: \$fields_full)
@@ -42,9 +45,9 @@ query getFactor(
 
 GQL_ADD_FACTORS = """
 $(GQL_FRAGMENT_FACTORS)
-mutation addFactors(\$factorsToCreate: [FactorCreateInput!]!) {
+mutation addFactors(\$input: [FactorCreateInput!]!) {
   addFactors(
-    input: \$factorsToCreate
+    input: \$input
   ) {
     factors {
       ...factor_skeleton_fields
@@ -62,7 +65,7 @@ query getFactors(
   \$fields_summary: Boolean! = true
   \$fields_full: Boolean! = true
 ) {
-  graphs(where: { id: \$fgId }) {
+  graphs(where: { id: {eq: \$fgId} }) {
     factors {
       ...factor_skeleton_fields
       ...factor_summary_fields @include(if: \$fields_summary)
@@ -82,7 +85,7 @@ query getFactors_filtered(
     \$fields_summary: Boolean! = false, 
     \$fields_full: Boolean! = false){
   factors( where: {
-        session: {id: \$sessionId},
+        session: {id: {eq: \$sessionId}},
         label_MATCHES: \$factor_label_regexp, 
         tags: \$factor_tags, 
         solvable_GTE: \$solvable},
@@ -105,11 +108,8 @@ mutation deleteFactor($factorId: UUID!) {
   deleteFactors(
     where: { id: {eq: $factorId} }
     delete: {
-      blobentries: {
-        where: {
-          node: { parentConnection: {Factor: { node: { id: {eq: $factorId} } } } }
-        }
-      }
+      blobentries: {}
+      bloblets: {}
     }
   ) {
     nodesDeleted
@@ -133,3 +133,23 @@ mutation deleteFactor($factorId: UUID!) {
 #   }
 # }
 # """
+
+QUERY_GET_FACTOR_BLOBLETS = GQL.gql"""
+query getFactorBloblets($id: UUID!) {
+  factors(where: {id: {eq: $id}}) {
+    bloblets {
+      label
+      val
+    }
+  }
+}
+"""
+
+QUERY_ADD_FACTOR_BLOBLET = GQL.gql"""
+mutation addFactorBloblet($id: UUID!, $label: String!, $val: String!) {
+  addFactorBloblet(FactorId: $id, input: {label: $label, val: $val}) {
+    label
+    val
+  }
+}
+"""

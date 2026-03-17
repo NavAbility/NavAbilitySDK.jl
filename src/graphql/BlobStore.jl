@@ -93,3 +93,9 @@ query getBlob($id: String!, $storeLabel: String = "default") {
     getBlob(blobId: $id, storeLabel: $storeLabel)
 }
 """
+
+GQL_ADD_BLOB_FS = GQL.gql"""
+mutation addBlobFS($blobId: String, $input: String, $storeLabel: String) {
+  addBlobFS(blobId: $blobId, input: $input, storeLabel: $storeLabel)
+}
+"""
