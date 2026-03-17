@@ -1,31 +1,23 @@
 methodstoasync = [
     #add
     :addBlob,
-    :addBlobEntries!,
+    :addBlobentries!,
     :addFactor!,
-    :addNodeBlobEntries!,
-    :addPPEs!,
     :addAgent!,
-    :addAgentBlobEntries!,
+    :addAgentBlobentries!,
     :addGraph!,
-    :addGraphBlobEntries!,
+    :addGraphBlobentries!,
     :addVariable!,
-    :addVariableSolverData!,
+    :addState!,
     #get
     :getBlob,
-    :getBlobEntry,
-    :getBlobEntries,
+    :getBlobentry,
+    :getBlobentries,
     :getFactor,
     :getFactors,
-    :getFncTypeName,
-    :getPPE,
-    :getAgentMetadata,
     :getVariable,
-    :getVariableSkeleton,
-    :getVariableSolverData,
-    :getVariableSummary,
+    :getState,
     :getVariables,
-    :getVariablesSkeleton,
 ]
 
 # create async versions of methods listed
