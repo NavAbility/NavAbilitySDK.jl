@@ -1,64 +1,70 @@
 # =========================================================================================
-# BlobEntry CRUD
+# Blobentry CRUD
 # =========================================================================================
+function createInput(fgclient, parent, entry::Blobentry)
+    return NvaSDK.CreateInput(
+        getId(fgclient, parent, entry.label),
+        entry,
+        Dict(:parent => NvaSDK.createConnect(fgclient, parent)),
+    )
+end
 
-function DFG.getBlobEntry(fgclient::NavAbilityDFG, variableLabel::Symbol, label::Symbol)
+function DFG.getVariableBlobentry(fgclient::NavAbilityDFG, variableLabel::Symbol, label::Symbol)
     id = getId(fgclient.fg, variableLabel, label)
 
-    T = Vector{DFG.BlobEntry}
+    T = Vector{DFG.Blobentry}
 
     response = executeGql(fgclient, GQL_GET_BLOBENTRY, (id = id,), T)
 
-    return handleQuery(response, "blobEntries", label)
+    return handleQuery(response, :blobentries, label)
 end
 
-function DFG.getBlobEntries(fgclient::NavAbilityDFG, variableLabel::Symbol)
+function DFG.getVariableBlobentries(fgclient::NavAbilityDFG, variableLabel::Symbol)
     id = getId(fgclient.fg, variableLabel)
-    T = Vector{@NamedTuple{blobEntries::Vector{DFG.BlobEntry}}}
+    T = Vector{@NamedTuple{blobentries::Vector{DFG.Blobentry}}}
 
     response = executeGql(fgclient, GQL_GET_BLOBENTRIES, (id = id,), T)
 
-    return handleQuery(response, "variables", :blobEntries)[1]
+    return handleQuery(response, :variables, :blobentries)[1]
 end
 
-function DFG.addBlobEntry!(
+function DFG.addVariableBlobentry!(
     fgclient::NavAbilityDFG,
     variableLabel::Symbol,
-    entry::DFG.BlobEntry,
+    entry::DFG.Blobentry,
 )
-    return addBlobEntries!(fgclient, variableLabel, [entry])[1]
+    return addVariableBlobentries!(fgclient, variableLabel, [entry])[1]
 end
 
-function DFG.addBlobEntries!(
+function DFG.addVariableBlobentries!(
     fgclient::NavAbilityDFG,
     variableLabel::Symbol,
-    entries::Vector{DFG.BlobEntry},
+    entries::Vector{DFG.Blobentry},
 )
     varId = getId(fgclient.fg, variableLabel)
     connect = createConnect(varId)
-
     # TODO we can probably standardise this
     input = map(entries) do entry
-        return BlobEntryCreateInput(;
-            getCommonProperties(BlobEntryCreateInput, entry)...,
-            id = getId(fgclient.fg, variableLabel, entry.label),
-            parent = (Variable = connect,),
+        NvaSDK.CreateInput(
+            getId(fgclient.fg, variableLabel, entry.label),
+            entry,
+            Dict(:parent => (Variable = connect,)),
         )
     end
 
-    T = @NamedTuple{blobEntries::Vector{BlobEntry}}
+    T = @NamedTuple{blobentries::Vector{Blobentry}}
 
     response = executeGql(
         fgclient,
         GQL_ADD_BLOBENTRIES,
-        (blobEntries = input,),
-        T; #FIXME BlobEntryResponse
+        (blobentries = input,),
+        T; #FIXME BlobentryResponse
     )
-    return handleMutate(response, "addBlobEntries", :blobEntries)
+    return handleMutate(response, :addBlobentries, :blobentries)
 end
 
-function DFG.listBlobEntries(fgclient::NavAbilityDFG, variableLabel::Symbol)
-    T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
+function DFG.listVariableBlobentries(fgclient::NavAbilityDFG, variableLabel::Symbol)
+    T = Vector{Dict{Symbol, Vector{@NamedTuple{label::Symbol}}}}
 
     response = executeGql(
         fgclient,
@@ -67,221 +73,229 @@ function DFG.listBlobEntries(fgclient::NavAbilityDFG, variableLabel::Symbol)
         T;
     )
 
-    return last.(handleQuery(response, "variables", variableLabel)["blobEntries"])
+    return last.(handleQuery(response, :variables, variableLabel)[:blobentries])
 end
 
 #TODO update
 
-function DFG.deleteBlobEntry!(fgclient::NavAbilityDFG, varLabel::Symbol, entry::BlobEntry)
+function DFG.deleteVariableBlobentry!(fgclient::NavAbilityDFG, varLabel::Symbol, entryLabel::Symbol)
     response = executeGql(
         fgclient,
         GQL_DELETE_BLOBENTRY,
-        (id = getId(fgclient.fg, varLabel, entry.label),),
+        (id = getId(fgclient.fg, varLabel, entryLabel),),
     )
-    #TOOD check response.data["deleteBlobEntry"]["nodesDeleted"]
-    return entry
+    return response[:deleteBlobentries][:nodesDeleted]
 end
 
-function DFG.deleteBlobEntry!(fgclient::NavAbilityDFG, varLabel::Symbol, label::Symbol)
-    entry = getBlobEntry(fgclient, varLabel, label)
-    return deleteBlobEntry!(fgclient, varLabel, entry)
-end
-
-function DFG.deleteAgentBlobEntry!(fgclient::NavAbilityDFG, entry::BlobEntry)
+function DFG.deleteAgentBlobentry!(fgclient::NavAbilityDFG, label::Symbol)
     response = executeGql(
         fgclient,
         GQL_DELETE_BLOBENTRY,
-        (id = getId(fgclient.agent, entry.label),),
+        (id = getId(fgclient.agent, label),),
     )
-    #TOOD check response.data["deleteBlobEntry"]["nodesDeleted"]
-    return entry
+    return response[:deleteBlobentries][:nodesDeleted]
 end
 
-function DFG.deleteGraphBlobEntry!(fgclient::NavAbilityDFG, entry::BlobEntry)
+function DFG.deleteGraphBlobentry!(fgclient::NavAbilityDFG, label::Symbol)
     response = executeGql(
         fgclient,
         GQL_DELETE_BLOBENTRY,
-        (id = getId(fgclient.fg, entry.label),),
+        (id = getId(fgclient.fg, label),),
     )
-    #TOOD check response.data["deleteBlobEntry"]["nodesDeleted"]
-    return entry
+    return response[:deleteBlobentries][:nodesDeleted]
 end
 
+#TODO Factor Blobentry
+# function DFG.deleteFactorBlobentry!(fgclient::NavAbilityDFG, factorLabel::Symbol, entryLabel::Symbol)
+#     response = executeGql(
+#         fgclient,
+#         GQL_DELETE_BLOBENTRY,
+#         (id = getId(fgclient.fg, factorLabel, entryLabel),),
+#     )
+#     return response[:deleteBlobentries][:nodesDeleted]
+# end
+
+function DFG.deleteModelBlobentry!(client::NavAbilityClient, model::NvaNode{Model}, label::Symbol)
+    response = executeGql(
+        client,
+        GQL_DELETE_BLOBENTRY,
+        (id = getId(model, label),),
+    )
+    return response[:deleteBlobentries][:nodesDeleted]
+end
 # =========================================================================================
-# BlobEntry CRUD on other nodes
+# Blobentry CRUD on other nodes
 # =========================================================================================
 
-function DFG.getGraphBlobEntry(fgclient::NavAbilityDFG, label::Symbol)
+function DFG.getGraphBlobentry(fgclient::NavAbilityDFG, label::Symbol)
 
     response = executeGql(
         fgclient,
         GQL_GET_BLOBENTRY,
         (id =  getId(fgclient.fg, label),),
-        Vector{DFG.BlobEntry}
+        Vector{DFG.Blobentry}
     )
 
-    return handleQuery(response, "blobEntries", label)
+    return handleQuery(response, :blobentries, label)
 end
 
-function DFG.getGraphBlobEntries(
-    fgclient::NavAbilityDFG,
-    filt::Union{Nothing, Base.Fix2} = nothing,
+function DFG.getGraphBlobentries(
+    fgclient::NavAbilityDFG;
+    labelFilter::Union{Nothing, Base.Fix2} = nothing,
 )
     id = getId(fgclient.fg)
 
-    if isnothing(filt)
+    if isnothing(labelFilter)
         variables = (id = id,)
     else
-        variables = (id = id, entrywhere = whereFilterStr(:label, filt))
+        variables = (id = id, entrywhere = (label = whereFilter(labelFilter),))
     end
-
-    T = Vector{@NamedTuple{blobEntries::Vector{DFG.BlobEntry}}}
 
     response = executeGql(
         fgclient,
         GQL_GET_FG_BLOBENTRIES,
         variables,
-        T
+        Vector{@NamedTuple{blobentries::Vector{DFG.Blobentry}}}
     )
 
-    return handleQuery(response, "factorgraphs", :blobEntries)[1]
+    return handleQuery(response, :graphs, DFG.getGraphLabel(fgclient))[1]
 end
 
-function DFG.getAgentBlobEntry(client::NavAbilityClient, agentLabel::Symbol, label::Symbol)
+function DFG.getAgentBlobentry(client::NavAbilityClient, agentLabel::Symbol, label::Symbol)
 
     response = executeGql(
         client,
         GQL_GET_BLOBENTRY,
         (id = getId(client, agentLabel, label),),
-        Vector{DFG.BlobEntry}
+        Vector{DFG.Blobentry}
     )
 
-    return handleQuery(response, "blobEntries", label)
+    return handleQuery(response, :blobentries, label)
 end
 
-function DFG.getAgentBlobEntry(fg::NavAbilityDFG, label::Symbol)
-    getAgentBlobEntry(fg.client, getAgentLabel(fg), label)
+function DFG.getAgentBlobentry(fg::NavAbilityDFG, label::Symbol)
+    getAgentBlobentry(fg.client, DFG.getAgentLabel(fg), label)
 end
 
-function DFG.getAgentBlobEntries(client::NavAbilityClient, agent::NvaNode{Agent})
+function DFG.getAgentBlobentries(
+    client::NavAbilityClient,
+    agent::NvaNode{Agent};
+    labelFilter::Union{Nothing, Base.Fix2} = nothing,
+)
+
+    id = getId(agent)
+
+    if isnothing(labelFilter)
+        variables = (id = id,)
+    else
+        variables = (id = id, entrywhere = whereFilterStr(:label, labelFilter))
+    end
+
+    T = Vector{@NamedTuple{blobentries::Vector{DFG.Blobentry}}}
 
     response = executeGql(
         client,
-        GQL_GET_AGENT_BLOBENTRIES,
-        (id = getId(agent),),
-        Vector{@NamedTuple{blobEntries::Vector{DFG.BlobEntry}}}
-    )
-
-    return handleQuery(response, "agents", :blobEntries)[1]
-end
-
-function DFG.getAgentBlobEntries(
-    fgclient::NavAbilityDFG,
-    filt::Union{Nothing, Base.Fix2} = nothing,
-)
-    id = getId(fgclient.agent)
-
-    if isnothing(filt)
-        variables = (id = id,)
-    else
-        variables = (id = id, entrywhere = whereFilterStr(:label, filt))
-    end
-
-    T = Vector{@NamedTuple{blobEntries::Vector{DFG.BlobEntry}}}
-
-    response = executeGql(
-        fgclient,
         GQL_GET_AGENT_BLOBENTRIES,
         variables,
         T
     )
 
-    return handleQuery(response, "agents", :blobEntries)[1]
+    return handleQuery(response, :agents, :blobentries)[1]
 end
 
-function DFG.getAgentBlobEntries(client::NavAbilityClient, label::Symbol)
-    return getAgentBlobEntries(client, getAgent(client, label))
+function DFG.getAgentBlobentries(client::NavAbilityClient, label::Symbol; kwargs...)
+    return getAgentBlobentries(client, getAgent(client, label); kwargs...)
+end
+function DFG.getAgentBlobentries(fgclient::NavAbilityDFG; kwargs...)
+    getAgentBlobentries(fgclient.client, fgclient.agent; kwargs...)
 end
 
-function DFG.getModelBlobEntry(client::NavAbilityClient, modelLabel::Symbol, label::Symbol)
+function DFG.getModelBlobentry(client::NavAbilityClient, modelLabel::Symbol, label::Symbol)
     id = getId(client, modelLabel, label)
 
-    T = Vector{DFG.BlobEntry}
+    T = Vector{DFG.Blobentry}
 
     response = executeGql(client, GQL_GET_BLOBENTRY, (id = id,), T)
 
-    return handleQuery(response, "blobEntries", label)
+    return handleQuery(response, :blobentries, label)
 end
 
-function DFG.addBlobEntries!(
+function addBlobentries!(
     fgclient::Union{NavAbilityDFG, NavAbilityClient},
-    parent::Union{NvaNode, DFG.AbstractDFGVariable, DFG.AbstractDFGFactor},
-    entries::Vector{DFG.BlobEntry},
+    parent::Union{NvaNode, DFG.AbstractGraphVariable, DFG.AbstractGraphFactor},
+    entries::Vector{DFG.Blobentry},
 )
+
     input = map(entries) do entry
-        return BlobEntryCreateInput(;
-            getCommonProperties(BlobEntryCreateInput, entry)...,
-            id = getId(fgclient, parent, entry.label),
-            parent = createConnect(fgclient, parent),
-            size = isnothing(entry.size) ? "-1" : entry.size, #FIXME remove once size is "required"
-        )
+        createInput(fgclient, parent, entry)
     end
 
-    T = @NamedTuple{blobEntries::Vector{BlobEntry}}
+    T = @NamedTuple{blobentries::Vector{Blobentry}}
 
-    response = executeGql(fgclient, GQL_ADD_BLOBENTRIES, (blobEntries = input,), T)
+    response = executeGql(fgclient, GQL_ADD_BLOBENTRIES, (blobentries = input,), T)
 
-    return handleMutate(response, "addBlobEntries", :blobEntries)
+    return handleMutate(response, :addBlobentries, :blobentries)
 end
 
-function DFG.addGraphBlobEntries!(fgclient::NavAbilityDFG, entries::Vector{DFG.BlobEntry})
-    return addBlobEntries!(fgclient, fgclient.fg, entries)
+function DFG.addGraphBlobentries!(fgclient::NavAbilityDFG, entries::Vector{DFG.Blobentry})
+    return addBlobentries!(fgclient, fgclient.fg, entries)
 end
 
-function DFG.addGraphBlobEntry!(fgclient::NavAbilityDFG, entry::DFG.BlobEntry)
-    return addBlobEntries!(fgclient, fgclient.fg, [entry])[1]
+function DFG.addGraphBlobentry!(fgclient::NavAbilityDFG, entry::DFG.Blobentry)
+    return addBlobentries!(fgclient, fgclient.fg, [entry])[1]
 end
 
-function DFG.addAgentBlobEntries!(fgclient::NavAbilityDFG, entries::Vector{DFG.BlobEntry})
-    return addBlobEntries!(fgclient, fgclient.agent, entries)
-end
-function DFG.addModelBlobEntries!(nva::NavAbilityModel, entries::Vector{DFG.BlobEntry})
-    return addBlobEntries!(nva.client, nva.model, entries)
+function DFG.addAgentBlobentries!(fgclient::NavAbilityDFG, entries::Vector{DFG.Blobentry})
+    return addBlobentries!(fgclient, fgclient.agent, entries)
 end
 
-function DFG.listGraphBlobEntries(fgclient::NavAbilityDFG)
+function DFG.addAgentBlobentry!(fgclient::NavAbilityDFG, entry::DFG.Blobentry)
+    return addBlobentries!(fgclient, fgclient.agent, [entry])[1]
+end
+
+function DFG.addModelBlobentries!(nva::NavAbilityModel, entries::Vector{DFG.Blobentry})
+    return addBlobentries!(nva.client, nva.model, entries)
+end
+function DFG.addModelBlobentries!(client::NavAbilityClient, model::NvaNode{Model}, entries::Vector{DFG.Blobentry})
+    return addBlobentries!(client, model, entries)
+end
+function DFG.addModelBlobentry!(client::NavAbilityClient, model::NvaNode{Model}, entry::DFG.Blobentry)
+    return addBlobentries!(client, model, [entry])[1]
+end
+
+function DFG.listGraphBlobentries(fgclient::NavAbilityDFG)
     variables = (id = getId(fgclient.fg),)
 
-    T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
+    T = Vector{Dict{Symbol, Vector{@NamedTuple{label::Symbol}}}}
 
     response = executeGql(fgclient, GQL_LIST_FACTORGRAPH_BLOBENTRIES, variables, T)
 
-    return last.(handleQuery(response, "factorgraphs", fgclient.fg.label)["blobEntries"])
+    return last.(handleQuery(response, :graphs, fgclient.fg.label)[:blobentries])
 end
 
-function DFG.listAgentBlobEntries(fgclient::NavAbilityDFG)
-    listAgentBlobEntries(fgclient.client, fgclient.agent)
+function DFG.listAgentBlobentries(fgclient::NavAbilityDFG)
+    listAgentBlobentries(fgclient.client, fgclient.agent)
 end
 
-function DFG.listAgentBlobEntries(client::NavAbilityClient, agent::NvaNode{Agent})
+function DFG.listAgentBlobentries(client::NavAbilityClient, agent::NvaNode{Agent})
     variables = (id = getId(agent),)
 
-    T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
+    T = Vector{Dict{Symbol, Vector{@NamedTuple{label::Symbol}}}}
 
     response = executeGql(client, GQL_LIST_AGENT_BLOBENTRIES, variables, T)
 
-    return last.(handleQuery(response, "agents", agent.label)["blobEntries"])
+    return last.(handleQuery(response, :agents, agent.label)[:blobentries])
 end
 
-function DFG.listModelBlobEntries(client::NavAbilityClient, label::Symbol)
+function DFG.listModelBlobentries(client::NavAbilityClient, label::Symbol)
     variables = (id = getId(client, label),)
 
-    T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
+    T = Vector{Dict{Symbol, Vector{@NamedTuple{label::Symbol}}}}
 
     response = executeGql(client, GQL_LIST_MODEL_BLOBENTRIES, variables, T)
 
-    return last.(handleQuery(response, "models", label)["blobEntries"])
+    return last.(handleQuery(response, :models, label)[:blobentries])
 end
 
 #TODO
-# addFactorBlobEntries!
+# addFactorBlobentries!
