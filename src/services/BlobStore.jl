@@ -56,12 +56,20 @@ function createDownload(store::NavAbilityBlobStore, blobId::UUID)
 end
 
 function DFG.getBlob(blobstore::NavAbilityBlobStore, blobId::UUID)
-    url = createDownload(blobstore, blobId)
-    #TODO throw if not found, so update createDownload to know when blobId is not found
-    # throw(IdNotFoundError("Blob", blobId))
-    io = PipeBuffer()
-    Downloads.download(url, io)
-    return io |> take!
+    try 
+        url = createDownload(blobstore, blobId)
+        #TODO throw if not found, so update createDownload to know when blobId is not found
+        # throw(IdNotFoundError("Blob", blobId))
+        io = PipeBuffer()
+        Downloads.download(url, io)
+        return io |> take!
+    catch e
+        if e isa Downloads.RequestError && e.response.status == 404
+            throw(DFG.IdNotFoundError("Blob", blobId))
+        else
+            rethrow()
+        end
+    end
 end
 
 function DFG.getBlob(blobstore::NavAbilityCachedBlobStore, blobId::UUID)
@@ -114,11 +122,10 @@ function createUpload(
     parts::Int = 1,
 )
     #
-    store = (label=nvastore.label, type="NVA_CLOUD")
     response = executeGql(
         nvastore.client,
         GQL_CREATE_UPLOAD,
-        (blobId=blobId, parts=parts, store=store)
+        (blobId=blobId, parts=parts, store=(label=nvastore.label,))
     )
 
     return response[:createUpload]
@@ -327,65 +334,4 @@ function DFG.deleteBlob!(
     deleteBlob!(blobstore.remotestore, blobId)
     deleteBlob!(blobstore.localstore, blobId)
     return 1
-end
-
-##==========================================================================================
-## NavAbility™ Blob Store Deployed on Premise
-##==========================================================================================
-struct NavAbilityOnPremBlobStore <: DFG.AbstractBlobstore{Vector{UInt8}}
-    client::NavAbilityClient
-    label::Symbol
-end
-
-function NavAbilityOnPremBlobStore(fgclient::NavAbilityDFG, label=:default)
-    NavAbilityOnPremBlobStore(fgclient.client, label)
-end
-
-function DFG.addBlob!(store::NavAbilityOnPremBlobStore, blobId::UUID, blob::Vector{UInt8})
-    b64blob = base64encode(blob)
-    response = executeGql(
-        store.client.client,
-        GQL_ADD_BLOB_FS,
-        (storeLabel = string(store.label), blobId = string(blobId), input = b64blob)
-    )
-    blobId_str = response[:addBlobFS]
-    blobId = tryparse(UUID, blobId_str)
-    isnothing(blobId) && error(blobId_str)
-    return blobId
-end
-
-function DFG.getBlob(store::NavAbilityOnPremBlobStore, blobId::UUID)
-    
-    response = executeGql(
-        store.client,
-        QUERY_GET_BLOB,
-        (id = string(blobId), storeLabel = string(store.label))
-    )
-    #FIXME Errors not working as expected
-    if startswith(response[:getBlob], "500 Internal Error") ||
-        startswith(response[:getBlob], "$blobId not found")
-        error(response[:getBlob])
-    end
-    return base64decode(response[:getBlob])
-end
-
-function DFG.hasBlob(store::NavAbilityOnPremBlobStore, blobId::UUID)
-    response = executeGql(
-        store.client,
-        QUERY_HAS_BLOB,
-        (blobId = string(blobId), label = store.label, type = "NVA_ON_PREM"),
-        Bool;
-    )
-    return response[:hasBlob]
-end
-
-function DFG.listBlobs(store::NavAbilityOnPremBlobStore)
-    response = executeGql(
-        store.client,
-        QUERY_LIST_BLOBS,
-        (label = store.label, type = "NVA_ON_PREM"),
-        Vector{String},
-    )
-    list = response[:listBlobs]
-    return UUID.(list)
 end

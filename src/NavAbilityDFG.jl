@@ -97,3 +97,7 @@ function Base.show(io::IO, ::MIME"text/plain", c::NavAbilityDFG)
     println(io, "  BlobStores: ", keys(c.blobStores))
     return
 end
+
+function Base.:(==)(a::NavAbilityDFG, b::NavAbilityDFG)
+    return a.client == b.client && a.fg == b.fg && a.agent == b.agent
+end

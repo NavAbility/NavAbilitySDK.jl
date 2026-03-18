@@ -10,5 +10,5 @@ function startWorker(fgclient, workerLabel::String, payload)
         GQL_START_WORKER,
         Dict("workerLabel" => workerLabel, "input" => payload),
     )
-    return response.data["startWorker"]["id"]
+    return response[:startWorker]["id"]
 end

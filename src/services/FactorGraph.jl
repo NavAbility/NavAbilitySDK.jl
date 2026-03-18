@@ -162,7 +162,7 @@ function connect!(client, model::NvaNode{Model}, fg::NvaNode{Graphroot})
 
     response = executeGql(client, GQL_CONNECT_GRAPH_TO_MODEL, variables)
 
-    return response.data["updateModels"]["info"]["relationshipsCreated"]
+    return response[:updateModels]["info"]["relationshipsCreated"]
 end
 
 function connect!(client, agent::NvaNode{Agent}, fg::NvaNode{Graphroot})
@@ -170,7 +170,7 @@ function connect!(client, agent::NvaNode{Agent}, fg::NvaNode{Graphroot})
 
     response = executeGql(client, GQL_CONNECT_GRAPH_TO_AGENT, variables)
 
-    return response.data["updateAgents"]["info"]["relationshipsCreated"]
+    return response[:updateAgents]["info"]["relationshipsCreated"]
 end
 
 function getAgents(client::NavAbilityClient, fg::NvaNode{Graphroot})

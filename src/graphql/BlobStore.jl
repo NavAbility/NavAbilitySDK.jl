@@ -1,6 +1,6 @@
 MUTATION_CREATE_DOWNLOAD = GQL.gql"""
-mutation createDownload($blobId: ID!, $label: String = "default", $type: BlobStoreType = NVA_CLOUD) {
-  createDownload(blobId: $blobId, store: {label: $label, type: $type})
+mutation createDownload($blobId: ID!, $label: String = "default") {
+  createDownload(blobId: $blobId, store: {label: $label})
 }
 """
 
@@ -8,8 +8,7 @@ GQL_CREATE_UPLOAD = GQL.gql"""
 mutation createUpload(
   $blobId: ID!, 
   $store: BlobStoreInput = {
-    label: "default", 
-    type: NVA_CLOUD
+    label: "default"
   }, 
   $parts: Int = 1
 ) {
@@ -49,8 +48,7 @@ mutation completeUpload(
   $blobId: ID!, $uploadId: ID!, 
   $eTag: String, 
   $store: BlobStoreInput = {
-    label: "default", 
-    type: NVA_CLOUD
+    label: "default"
   }
 ) {
   completeUpload (
@@ -70,20 +68,20 @@ mutation completeUpload(
 """
 
 MUTATION_DELETE_BLOB = GQL.gql"""
-mutation deleteBlob($blobId: ID!, $label: String = "default", $type: BlobStoreType = NVA_CLOUD) {
-    deleteBlob(blobId: $blobId, store: {label: $label, type: $type})
+mutation deleteBlob($blobId: ID!, $label: String = "default") {
+    deleteBlob(blobId: $blobId, store: {label: $label})
 }
 """
 
 QUERY_LIST_BLOBS = GQL.gql"""
-query listBlobs($label: String = "default", $type: BlobStoreType = NVA_CLOUD) {
-  listBlobs(store: {label: $label, type: $type})
+query listBlobs($label: String = "default") {
+  listBlobs(store: {label: $label})
 }
 """
 
 QUERY_HAS_BLOB = GQL.gql"""
-query hasBlob($blobId: ID!, $label: String = "default", $type: BlobStoreType = NVA_CLOUD) {
-  hasBlob(blobId: $blobId, store: {label: $label, type: $type})
+query hasBlob($blobId: ID!, $label: String = "default") {
+  hasBlob(blobId: $blobId, store: {label: $label})
 }
 """
 
