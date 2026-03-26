@@ -25,7 +25,7 @@ DFG.getLabel(node::NvaNode) = node.label
     id::UUID#!
     label::Symbol#!
     description::String = ""
-    tags::Set{Symbol} = Symbol[]#!
+    tags::Set{Symbol} = Set{Symbol}()#!
     # TODO bloblets
     version::VersionNumber = DFG.version(DFG.Agent)#!
     # parent
@@ -59,7 +59,7 @@ JSON.omit_null(::Type{<:ModelCreateInput}) = true
     id::UUID#!
     label::Symbol#!
     description::String = ""
-    tags::Set{Symbol} = Symbol[]#!
+    tags::Set{Symbol} = Set{Symbol}()#!
     version::VersionNumber = DFG.version(DFG.Graphroot)#!
     # parent
     org::Any #OrgConnect
