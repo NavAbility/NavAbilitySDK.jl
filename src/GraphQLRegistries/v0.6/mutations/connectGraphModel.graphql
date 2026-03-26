@@ -1,0 +1,10 @@
+mutation connectGraphModel($modelId: UUID!, $fgId: UUID!) {
+  updateModels(
+    where: { id: { eq: $modelId } }
+    update: { graphs: { connect: { where: { node: { id: { eq: $fgId } } } } } }
+  ) {
+    info {
+      relationshipsCreated
+    }
+  }
+}

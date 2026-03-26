@@ -127,6 +127,23 @@ function handleMutate(response::Dict, mutation::Symbol, return_node::Symbol)
     end
 end
 
+#TODO this should be done in the backend
+# id_prefix(::DFG.Graphroot) = :gph
+# id_prefix(::DFG.Agent) = :agt
+# id_prefix(::DFG.Model) = :mdl
+# id_prefix(::DFG.Variable) = :var
+# id_prefix(::DFG.Factor) = :fac
+# id_prefix(::DFG.Blobentry) = :ble
+# id_prefix(::DFG.State) = :ste
+# id_prefix(::DFG.Blobstore) = :bls
+# id_prefix(::DFG.Bloblet) = :blt
+
+# id_prefix(::DFG.Authuser) = :usr
+# id_prefix(DFG.Workflow) = :wkf
+# id_prefix(DFG.Execution) = :exc
+# id_prefix(DFG.Log) = :log
+
+
 """
     getId
 

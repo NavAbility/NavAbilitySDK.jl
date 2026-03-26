@@ -27,20 +27,60 @@ getGraphBlobentry(dfg::NavAbilityDFG, label::Symbol)
 
 getAgentBlobentry(dfg::NavAbilityDFG, label::Symbol)
 
-getVariableState(dfg::NavAbilityDFG, variableLabel::Symbol, label::Symbol)
-
-getFactorState(dfg::NavAbilityDFG, factorLabel::Symbol)
+getState(dfg::NavAbilityDFG, variableLabel::Symbol, label::Symbol)
 
 getBlob(store::NavAbilityBlobstore, blobId::UUID)
 
 ### Plural `get` 
+getVariables(
+    dfg::NavAbilityDFG,
+    labels::Vector{Symbol}
+)
+getVariables(
+    dfg::NavAbilityDFG;
+    solvableFilter::Union{Nothing, Function} = nothing,
+    labelFilter::Union{Nothing, Function} = nothing,
+    tagsFilter::Union{Nothing, Function} = nothing,
+    typeFilter::Union{Nothing, Function} = nothing,
+)
 
-### Singular `add` 
+getFactors(
+    dfg::NavAbilityDFG,
+    labels::Vector{Symbol}
+)
+getFactors(
+    dfg::NavAbilityDFG;
+    solvableFilter::Union{Nothing, Function} = nothing,
+    labelFilter::Union{Nothing, Function} = nothing,
+    tagsFilter::Union{Nothing, Function} = nothing,
+    typeFilter::Union{Nothing, Function} = nothing,
+)
+
+### Singular `add`
+
+addVariable!(dfg::NavAbilityDFG, variable::AbstractGraphVariable)
+
+addFactor!(dfg::NavAbilityDFG, factor::AbstractGraphFactor)
+
+addBlobentry!(dfg::NavAbilityDFG, variableLabel::Symbol, entry::Blobentry)
+
+addGraphBlobentry!(dfg::NavAbilityDFG, entry::Blobentry)
+
+addAgentBlobentry!(dfg::NavAbilityDFG, entry::Blobentry)
 
 addBlob!(store::NavAbilityBlobstore, blobId::UUID, blob::Vector{UInt8})
 
-
 ### Plural `add` 
+
+addVariables!(dfg::NavAbilityDFG, variables::Vector{<:AbstractGraphVariable})
+
+addFactors!(dfg::NavAbilityDFG, factors::Vector{<:AbstractGraphFactor})
+
+addBlobentries!(dfg::NavAbilityDFG, variableLabel::Symbol, entries::Vector{Blobentry})
+
+addGraphBlobentries!(dfg::NavAbilityDFG, entries::Vector{Blobentry})
+
+addAgentBlobentries!(dfg::NavAbilityDFG, entries::Vector{Blobentry})
 
 ### Singular `update` 
 

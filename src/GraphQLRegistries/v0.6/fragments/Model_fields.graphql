@@ -1,0 +1,4 @@
+fragment Model_fields on Model {
+  label
+  namespace
+}

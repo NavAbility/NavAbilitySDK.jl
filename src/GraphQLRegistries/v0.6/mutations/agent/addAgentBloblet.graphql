@@ -1,0 +1,6 @@
+mutation addAgentBloblet($id: UUID!, $label: String!, $val: String!) {
+  addAgentBloblet(AgentId: $id, input: { label: $label, val: $val }) {
+    label
+    val
+  }
+}

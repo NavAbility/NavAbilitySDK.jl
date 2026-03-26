@@ -20,7 +20,7 @@ A specific factor can be retrieved using the label:
 f = getFactor(client, context, flbls[1]) |> fetch
 # Dict{String, Any} with 8 entries:
 #   "label"                 => "x0f_8ebc"
-#   "_variableOrderSymbols" => Any["x0"]
+#   "variableorder" => Any["x0"]
 #   "data"                  => "eyJlbGltaW5hdGVkIjpmYWxzZSwicG90ZW50aWFsdXNlZCI6Z…
 #   "tags"                  => Any["FACTOR"]
 #   "timestamp"             => "2023-02-11T22:36:49.171Z"

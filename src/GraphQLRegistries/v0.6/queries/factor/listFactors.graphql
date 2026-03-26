@@ -1,0 +1,3 @@
+query listFactors($fgId: UUID!, $where: ListWhere = {}) {
+  listFactors(fgId: $fgId, where: $where)
+}

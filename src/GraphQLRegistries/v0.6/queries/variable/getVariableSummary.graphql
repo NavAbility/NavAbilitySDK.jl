@@ -1,0 +1,5 @@
+query getVariableSummary($id: UUID!) {
+  variables(where: { id: { eq: $id } }) {
+    ...VariableSummary_fields
+  }
+}

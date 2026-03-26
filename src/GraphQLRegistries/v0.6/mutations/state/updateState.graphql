@@ -1,0 +1,7 @@
+mutation updateState($id: UUID!, $state: StateUpdateInput!) {
+  updateStates(update: $state, where: { id: { eq: $id } }) {
+    states {
+      ...State_fields
+    }
+  }
+}

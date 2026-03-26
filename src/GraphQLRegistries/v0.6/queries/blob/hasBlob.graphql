@@ -1,0 +1,3 @@
+query hasBlob($blobId: ID!, $label: String = "default") {
+  hasBlob(blobId: $blobId, store: { label: $label })
+}

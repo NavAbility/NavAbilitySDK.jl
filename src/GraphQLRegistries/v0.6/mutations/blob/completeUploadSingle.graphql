@@ -1,0 +1,15 @@
+mutation completeUploadSingle(
+  $blobId: ID!
+  $uploadId: ID!
+  $eTag: String
+  $store: BlobStoreInput = { label: "default" }
+) {
+  completeUpload(
+    store: $store
+    blobId: $blobId
+    completedUpload: {
+      uploadId: $uploadId
+      parts: [{ partNumber: 1, eTag: $eTag }]
+    }
+  )
+}

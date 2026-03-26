@@ -1,210 +1,172 @@
 # =======================================================================================
 # Variable CRUD
 # =======================================================================================
+function createInput(fgclient::NavAbilityDFG, variable_connect::NamedTuple, state::State)
+    return NvaSDK.CreateInput(
+        getId(fgclient.fg, variableLabel, state.label),
+        state,
+        Dict(:variable => variable_connect),
+    )
+end
 
-function VariableCreateInput(fgclient::NavAbilityDFG, v::VariableDFG)
-    # copy from a packed variable
+function createInput(fgclient::NavAbilityDFG, variableLabel::Symbol, state::State)
+    varId = NvaSDK.getId(fgclient.fg, variableLabel)
+    variable_connect = createConnect(varId)
+    # createInput(fgclient, variable_connect, state)
+    return NvaSDK.CreateInput(
+        getId(fgclient.fg, variableLabel, state.label),
+        state,
+        Dict(:variable => variable_connect),
+    )
+end
+
+function createInput(fgclient::NavAbilityDFG, v::VariableDFG)
+    variableCreateInput = StructUtils.make(Dict{Symbol, Any}, v, DFG.DFGJSONStyle())
+
+    pop!(variableCreateInput, :states)
+    pop!(variableCreateInput, :blobentries)
+    pop!(variableCreateInput, :bloblets)
+
     variableLabel = v.label
 
-    fgId = NvaSDK.getId(fgclient.fg)
     varId = NvaSDK.getId(fgclient.fg, variableLabel)
+    variable_connect = createConnect(varId)
 
-    if isempty(v.blobEntries)
-        blobEntries = nothing
-    else
-        blobEntryNodes = map(v.blobEntries) do entry
+    push!(variableCreateInput, :id => varId)
+    push!(variableCreateInput, :graph => createConnect(NvaSDK.getId(fgclient.fg)))
+
+    if !isempty(DFG.refBlobentries(v))
+        blobentyNodes = map(values(DFG.refBlobentries(v))) do entry
             Dict(
-                "node" => BlobEntryCreateInput(;
-                    getCommonProperties(BlobEntryCreateInput, entry)...,
-                    id = getId(fgclient.fg, variableLabel, entry.label),
-                    parent = (Variable = createConnect(varId),),
-                    blobId = if isnothing(entry.blobId)
-                        entry.originId
-                    else
-                        entry.blobId
-                    end,
-                    size = isnothing(entry.size) ? "" : entry.size,
+                :node => NvaSDK.CreateInput(
+                    getId(fgclient.fg, variableLabel, entry.label),
+                    entry,
+                    Dict(:parent => (Variable = variable_connect,)),
                 ),
             )
         end
-        blobEntries = Dict("create" => blobEntryNodes)
+        blobentries = Dict(:create => blobentyNodes)
+        push!(variableCreateInput, :blobentries => blobentries)
     end
 
-    if isempty(v.solverData)
-        solverData = nothing
-    else
-        solverDataNodes = map(v.solverData) do sd
-            Dict(
-                "node" => SolverDataCreateInput(;
-                    getCommonProperties(SolverDataCreateInput, sd)...,
-                    id = getId(fgclient.fg, variableLabel, sd.solveKey),
-                    variable = createConnect(varId),
-                ),
-            )
+    if !isempty(DFG.refStates(v))
+        states = map(values(DFG.refStates(v))) do state
+            Dict(:node => createInput(fgclient, variableLabel, state))
+            # FIXME this one doest work yet 
+            # Dict(:node => createInput(fgclient, variable_connect, state))
         end
-        solverData = Dict("create" => solverDataNodes)
+        states = Dict(:create => states)
+        push!(variableCreateInput, :states => states)
     end
 
-    if isempty(v.ppes)
-        ppes = nothing
-    else
-        ppeNodes = map(v.ppes) do ppe
-            Dict(
-                "node" => PPECreateInput(;
-                    getCommonProperties(PPECreateInput, ppe)...,
-                    id = getId(fgclient.fg, variableLabel, ppe.solveKey),
-                    variable = createConnect(varId),
-                ),
-            )
+    if !isempty(DFG.refBloblets(v))
+        blobletNodes = map(values(DFG.refBloblets(v))) do bloblet
+            (node = bloblet,)
         end
-        ppes = Dict("create" => ppeNodes)
+        bloblets = Dict(:create => blobletNodes)
+        push!(variableCreateInput, :bloblets => bloblets)
     end
 
-    label = string(v.label)
-    variableType = v.variableType
-    nstime = v.nstime
-    solvable = v.solvable
-    tags = string.(v.tags)
-    metadata = v.metadata
-    timestamp = string(v.timestamp)
-
-    fg = createConnect(fgId)
-
-    addvar = VariableCreateInput(;
-        # TODO replace with `getCommonProperties(VariableCreateInput, v)...` when types updated
-        id = varId,
-        label,
-        variableType,
-        nstime,
-        solvable,
-        tags,
-        metadata,
-        timestamp,
-        # to here
-        #parent
-        fg,
-        #children
-        blobEntries,
-        solverData,
-        ppes,
-    )
-    return addvar
+    return variableCreateInput
 end
 
 function DFG.addVariable!(fgclient::NavAbilityDFG, v::VariableDFG)
-    addvar = VariableCreateInput(fgclient, v)
-
-    variables = Dict("variablesToCreate" => [addvar])
-
-    T = @NamedTuple{variables::Vector{VariableDFG}}
-
-    response = GQL.execute(
-        fgclient.client.client,
-        GQL_ADD_VARIABLES,
-        T; #FIXME use VariableResponse named tuple
-        # VariableResponse;
-        variables,
-        throw_on_execution_error = true,
+    response = executeGql(
+        fgclient,
+        GQL_OPS[:addVariables],
+        (input = createInput(fgclient, v),),
+        @NamedTuple{variables::Vector{VariableDFG}}
     )
-    return handleMutate(response, "addVariables", :variables)[1]
+    return handleMutate(response, :addVariables, :variables)[1]
 end
 
 function DFG.addVariables!(
     fgclient::NavAbilityDFG,
     vars::Vector{VariableDFG};
-    chunksize::Int = 20,
+    chunksize::Int = 10,
     showprogress::Bool = length(vars) > 1000,
 )
-    #
-    addvars = VariableCreateInput.(fgclient, vars)
+    addvars = createInput.(fgclient, vars)
 
-    # Chunk it at chunksize per call
     chunks = collect(Iterators.partition(addvars, chunksize))
 
-    T = @NamedTuple{variables::Vector{VariableDFG}}
-
     newVarReturns = @showprogress enabled = showprogress asyncmap(chunks) do c
-        response =
-            executeGql(fgclient, GQL_ADD_VARIABLES, Dict("variablesToCreate" => c), T;)
-        handleMutate(response, "addVariables", :variables)
+        response = executeGql(
+            fgclient,
+            GQL_OPS[:addVariables],
+            (input = c,),
+            @NamedTuple{variables::Vector{VariableDFG}}
+        )
+        handleMutate(response, :addVariables, :variables)
     end
 
     return reduce(vcat, newVarReturns)
 end
 
-function DFG.getVariables(fgclient::NavAbilityDFG)
-    fgId = NvaSDK.getId(fgclient.fg)
+function DFG.getVariables(dfg::NavAbilityDFG)
 
-    variables = Dict("fgId" => fgId, "fields_summary" => true, "fields_full" => true)
-
-    T = Vector{Dict{String, Vector{VariableDFG}}}
-
-    response = executeGql(fgclient, GQL_GET_VARIABLES, variables, T)
-
-    return handleQuery(response, "factorgraphs", fgclient.fg.label)["variables"]
+    response = executeGql(
+        dfg,
+        GQL_OPS[:getVariables],
+        (fgId = NvaSDK.getId(dfg.fg),), 
+        Vector{Dict{Symbol, Vector{VariableDFG}}}
+    )
+    return handleQuery(response, :graphs, dfg.fg.label)[:variables]
 end
 
 function DFG.getVariables(fgclient::NavAbilityDFG, labels::Vector{Symbol})
     namespace = fgclient.fg.namespace
     fgLabel = fgclient.fg.label
 
-    variables = Dict(
-        "variableIds" => getId.(namespace, fgLabel, labels),
-        "fields_summary" => true,
-        "fields_full" => true,
+    response = executeGql(
+        fgclient,
+        GQL_OPS[:getVariablesByIds],
+        (variableIds = getId.(namespace, fgLabel, labels),),
+        Vector{VariableDFG}
     )
-
-    response = GQL.execute(
-        fgclient.client.client,
-        GQL_GET_VARIABLES_BY_IDS,
-        Vector{VariableDFG};
-        variables,
-        throw_on_execution_error = true,
-    )
-    return handleQuery(response, "variables")
+    return handleQuery(response, :variables)
 end
 
 function DFG.listVariables(
     fgclient::NavAbilityDFG,
     regexFilter::Union{Nothing, Regex} = nothing;
     tags::Vector{Symbol} = Symbol[],
-    solvable::Union{Int, Nothing} = nothing,
-    solvableFilter::Union{Nothing, Base.Fix2} = isnothing(solvable) ? nothing :
-                                                >=(solvable),
-    typeFilter::Union{Nothing, Type{<:InferenceVariable}} = nothing,
+    solvableFilter::Union{Nothing, Base.Fix2} = nothing,
+    typeFilter::Union{Nothing, Type{<:StateType}} = nothing,
 )
     #TODO deprecate solvable "solvable::Int is deprecated, use solvableFilter = >=(solvable) instead"
     !isnothing(typeFilter) && @warn("typeFilter is not implemented yet")
 
     fgId = NvaSDK.getId(fgclient.fg)
     variables =
-        Dict("fgId" => fgId, "varwhere" => Dict{String, Union{Int, Vector{Int}, Symbol}}())
+        Dict("fgId" => fgId, "varwhere" => Dict{String, Any}())
 
     if !isempty(tags)
-        @assert length(tags) == 1 "Only one tag is currently supported in tags filter"
-        variables["varwhere"]["tags_INCLUDES"] = tags[1]
+        variables["varwhere"]["tags"] = Dict("in" => string.(tags))
     end
 
     if !isnothing(solvableFilter)
+        solvableWhere = Dict{Symbol, Any}()
         if solvableFilter.f == >=
-            variables["varwhere"]["solvable_GTE"] = solvableFilter.x
+            solvableWhere[:gte] = solvableFilter.x
         elseif solvableFilter.f == >
-            variables["varwhere"]["solvable_GT"] = solvableFilter.x
+            solvableWhere[:gt] = solvableFilter.x
         elseif solvableFilter.f == <=
-            variables["varwhere"]["solvable_LTE"] = solvableFilter.x
+            solvableWhere[:lte] = solvableFilter.x
         elseif solvableFilter.f == <
-            variables["varwhere"]["solvable_LT"] = solvableFilter.x
+            solvableWhere[:lt] = solvableFilter.x
         elseif solvableFilter.f == ==
-            variables["varwhere"]["solvable"] = solvableFilter.x
+            solvableWhere[:eq] = solvableFilter.x
         elseif solvableFilter.f == in
-            variables["varwhere"]["solvable_IN"] = solvableFilter.x
+            solvableWhere[:in] = solvableFilter.x
         else
             error("Unsupported solvableFilter function: $(solvableFilter.f)")
         end
+        variables["varwhere"]["solvable"] = solvableWhere
     end
 
-    response = executeGql(fgclient, GQL_LIST_VARIABLES, variables, Vector{Symbol})
-    labels = handleQuery(response, "listVariables")
+    response = executeGql(fgclient, GQL_OPS[:listVariables], variables, Vector{Symbol})
+    labels = handleQuery(response, :listVariables)
 
     !isnothing(regexFilter) && filter!(x -> occursin(regexFilter, string(x)), labels)
 
@@ -212,59 +174,42 @@ function DFG.listVariables(
 end
 
 function DFG.getVariable(
-    fgclient::NavAbilityDFG{VT, <:AbstractDFGFactor},
+    fgclient::NavAbilityDFG{VT, <:AbstractGraphFactor},
     label::Symbol,
 ) where {VT}
-    varId = NvaSDK.getId(fgclient.fg, label)
 
-    variables = Dict("varId" => varId, "fields_summary" => true, "fields_full" => true)
-
-    T = Vector{VariableDFG}
-
-    response = GQL.execute(
-        fgclient.client.client,
-        GQL_GET_VARIABLE,
-        T;
-        variables,
-        throw_on_execution_error = true,
+    response = executeGql(
+        fgclient,
+        GQL_OPS[:getVariable],
+        (varId = NvaSDK.getId(fgclient.fg, label),),
+        Vector{VT},
     )
-    return VT(handleQuery(response, "variables", label))
+    return handleQuery(response, :variables, label)
 end
 
 function DFG.getVariableSummary(fgclient::NavAbilityDFG, label::Symbol)
-    varId = NvaSDK.getId(fgclient.fg, label)
 
-    variables = Dict("varId" => varId, "fields_summary" => true, "fields_full" => false)
-
-    T = Vector{DFG.DFGVariableSummary}
-
-    response = GQL.execute(
-        fgclient.client.client,
-        GQL_GET_VARIABLE,
-        T;
-        variables,
-        throw_on_execution_error = true,
+    response = executeGql(
+        fgclient,
+        GQL_OPS[:getVariableSummary],
+        (id = NvaSDK.getId(fgclient.fg, label),),
+        Vector{DFG.VariableSummary}
     )
 
-    return handleQuery(response, "variables", label)
+    return handleQuery(response, :variables, label)
 end
 
 function DFG.getVariableSkeleton(fgclient::NavAbilityDFG, label::Symbol)
     varId = NvaSDK.getId(fgclient.fg, label)
 
-    variables = Dict("varId" => varId, "fields_summary" => false, "fields_full" => false)
-
-    T = Vector{DFG.SkeletonDFGVariable}
-
-    response = GQL.execute(
-        fgclient.client.client,
-        GQL_GET_VARIABLE,
-        T;
-        variables,
-        throw_on_execution_error = true,
+    response = executeGql(
+        fgclient,
+        GQL_OPS[:getVariableSkeleton],
+        (varId = varId,),
+        Vector{DFG.VariableSkeleton}
     )
 
-    return handleQuery(response, "variables", label)
+    return handleQuery(response, :variables, label)
 end
 
 ##
@@ -273,17 +218,10 @@ function DFG.getVariablesSkeleton(fgclient::NavAbilityDFG)#, label::Symbol)
 
     variables = Dict("fgId" => fgId, "fields_summary" => false, "fields_full" => false)
 
-    T = Vector{@NamedTuple{variables::Vector{DFG.SkeletonDFGVariable}}}
+    T = @NamedTuple{variables::Vector{DFG.VariableSkeleton}}
+    response = executeGql(fgclient, GQL_OPS[:getVariablesSkeleton], variables, Vector{T})
 
-    response = GQL.execute(
-        fgclient.client.client,
-        GQL_GET_VARIABLES,
-        T;
-        variables,
-        throw_on_execution_error = true,
-    )
-
-    return handleQuery(response, "factorgraphs", :variables)[1]
+    return handleQuery(response, :graphs, :variables)[1]
 end
 
 function DFG.getVariablesSummary(fgclient::NavAbilityDFG)#, label::Symbol)
@@ -291,50 +229,28 @@ function DFG.getVariablesSummary(fgclient::NavAbilityDFG)#, label::Symbol)
 
     variables = Dict("fgId" => fgId, "fields_summary" => true, "fields_full" => false)
 
-    T = Vector{@NamedTuple{variables::Vector{DFG.DFGVariableSummary}}}
+    T = @NamedTuple{variables::Vector{DFG.VariableSummary}}
+    response = executeGql(fgclient, GQL_OPS[:getVariablesSummary], variables, Vector{T})
 
-    response = GQL.execute(
-        fgclient.client.client,
-        GQL_GET_VARIABLES,
-        T;
-        variables,
-        throw_on_execution_error = true,
-    )
-
-    return handleQuery(response, "factorgraphs", :variables)[1]
-end
-
-# delete variable and its satelites (by variable id)
-function DFG.deleteVariable!(fgclient::NavAbilityDFG, variable::DFG.AbstractDFGVariable)
-    varId = NvaSDK.getId(fgclient.fg, variable.label)
-
-    variables = Dict("variableId" => varId)
-
-    response = GQL.execute(
-        fgclient.client.client,
-        GQL_DELETE_VARIABLE;
-        variables,
-        throw_on_execution_error = true,
-    )
-
-    #FIXME return neighboring factors that got deleted
-    neigfacs = Nothing[]
-
-    return variable, neigfacs
+    return handleQuery(response, :graphs, :variables)[1]
 end
 
 function DFG.deleteVariable!(fgclient::NavAbilityDFG, label::Symbol)
-    v = getVariable(fgclient, label)
-    return deleteVariable!(fgclient, v)
+    varId = NvaSDK.getId(fgclient.fg, label)
+
+    variables = Dict("variableId" => varId)
+
+    response = executeGql(fgclient, GQL_OPS[:deleteVariable], variables)
+
+    return response[:deleteVariables].nodesDeleted
 end
 
 ## ====================
 ## Utilities
 ## ====================
-#FIXME findVariable**s**NearTimestamp
-function DFG.findVariableNearTimestamp(
+function DFG.findVariablesNearTimestamp(
     fgclient::NavAbilityDFG,
-    timestamp::ZonedDateTime,
+    timestamp,#FIXME::ZonedDateTime,
     window::TimePeriod,
 )
     fromtime = timestamp - window
@@ -342,16 +258,39 @@ function DFG.findVariableNearTimestamp(
 
     fgId = NvaSDK.getId(fgclient.fg)
 
-    variables = Dict("fgId" => fgId, "fromTime" => fromtime, "toTime" => totime)
+    variables = Dict(:fgId => fgId, :fromTime => fromtime, :toTime => totime)
 
-    response = GQL.execute(
-        fgclient.client.client,
-        GQL_FIND_VARIABLES_NEAR_TIMESTAMP;
-        variables,
-        throw_on_execution_error = true,
-    )
+    T = @NamedTuple{variables::Vector{@NamedTuple{label::Symbol}}}
+    response = executeGql(fgclient, GQL_OPS[:findVariablesNearTimestamp], variables, Vector{T})
 
-    return Symbol.(get.(response.data["factorgraphs"][1]["variables"], "label", missing))
+    return last.(handleQuery(response, :graphs, :variables)[1])
 end
 
-# findVariableNearTimestamp(fgclient, ZonedDateTime("2018-08-10T13:06:18.622Z"), Millisecond(100))
+# findVariablesNearTimestamp(fgclient, ZonedDateTime("2018-08-10T13:06:18.622Z"), Millisecond(100))
+
+function DFG.getVariableBloblets(fgclient::NavAbilityDFG, label::Symbol)
+    variables = (id = NvaSDK.getId(fgclient.fg, label),)
+
+    T = Vector{@NamedTuple{bloblets::Vector{DFG.Bloblet}}}
+    response = executeGql(fgclient, GQL_OPS[:getVariableBloblets], variables, T)
+
+    return handleQuery(response, :variables, label).bloblets
+end
+
+function DFG.addVariableBloblet!(
+    fgclient::NavAbilityDFG,
+    label::Symbol,
+    bloblet::DFG.Bloblet
+)
+    response = executeGql(
+        fgclient,
+        GQL_OPS[:addVariableBloblet],
+        (
+            id = NvaSDK.getId(fgclient.fg, label), 
+            label = bloblet.label,
+            val = bloblet.val
+        ),
+    )
+    #TODO handle response
+    return bloblet
+end

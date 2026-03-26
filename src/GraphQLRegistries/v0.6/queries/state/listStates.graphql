@@ -1,0 +1,7 @@
+query listStates($id: UUID!) {
+  variables(where: { id: { eq: $id } }) {
+    states {
+      label
+    }
+  }
+}

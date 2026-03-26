@@ -1,0 +1,6 @@
+query getModels {
+  models {
+    label
+    namespace
+  }
+}

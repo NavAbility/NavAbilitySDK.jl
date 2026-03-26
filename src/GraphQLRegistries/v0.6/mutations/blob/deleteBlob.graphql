@@ -1,0 +1,3 @@
+mutation deleteBlob($blobId: ID!, $label: String = "default") {
+  deleteBlob(blobId: $blobId, store: { label: $label })
+}

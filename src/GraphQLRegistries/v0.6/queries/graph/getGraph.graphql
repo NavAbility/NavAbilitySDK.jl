@@ -1,0 +1,6 @@
+query getGraph($id: UUID!) {
+  graphs(where: { id: { eq: $id } }) {
+    label
+    namespace
+  }
+}

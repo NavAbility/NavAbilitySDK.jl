@@ -1,0 +1,7 @@
+mutation addFactors($input: [FactorCreateInput!]!) {
+  addFactors(input: $input) {
+    factors {
+      ...FactorDFG_fields
+    }
+  }
+}

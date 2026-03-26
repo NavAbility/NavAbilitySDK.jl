@@ -1,0 +1,17 @@
+fragment Blobentry_fields on Blobentry {
+  id
+  blobid
+  label
+  blobstore
+  crchash
+  shahash
+  origin
+  size
+  description
+  mimetype
+  metadata
+  timestamp
+  createdtime
+  modifiedtime
+  version
+}

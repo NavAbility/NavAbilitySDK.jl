@@ -1,0 +1,8 @@
+mutation deleteGraph($id: UUID!) {
+  deleteGraphs(
+    where: { id: { eq: $id } }
+    delete: { blobentries: {}, bloblets: {}, factors: {}, variables: {} }
+  ) {
+    nodesDeleted
+  }
+}

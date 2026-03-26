@@ -5,7 +5,7 @@ function DFG.getAgent(client::NavAbilityClient, label::Symbol)
 
     T = Vector{NvaNode{Agent}}
 
-    response = executeGql(client, QUERY_GET_AGENT, variables, T)
+    response = executeGql(client, GQL_OPS[:getAgent], variables, T)
 
     return handleQuery(response, :agents, label)
 end
@@ -25,13 +25,13 @@ function addAgent!(client::NavAbilityClient, agent::DFG.Agent)
     # AgentRemoteResponse
     T = @NamedTuple{agents::Vector{NvaNode{Agent}}}
 
-    response = executeGql(client, GQL_ADD_AGENTS, variables, T)
+    response = executeGql(client, GQL_OPS[:addAgents], variables, T)
 
     return handleMutate(response, :addAgents, :agents)[1]
 end
 
 function deleteAgent!(client::NavAbilityClient, label::Symbol)
-    response = executeGql(client, GQL_DELETE_AGENT, (id = getId(client, label),))
+    response = executeGql(client, GQL_OPS[:deleteAgent], (id = getId(client, label),))
 
     return response
 end
@@ -41,7 +41,7 @@ function listAgents(client::NavAbilityClient)
 
     T = Vector{Dict{Symbol, Vector{@NamedTuple{label::Symbol}}}}
 
-    response = executeGql(client, QUERY_LIST_AGENTS, variables, T)
+    response = executeGql(client, GQL_OPS[:listAgents], variables, T)
 
     return last.(handleQuery(response, :orgs, Symbol(client.id))[:agents])
 end
@@ -50,7 +50,7 @@ function DFG.getAgentBloblets(client::NavAbilityClient, label::Symbol)
     variables = (id = getId(client, label),)
 
     T = Vector{@NamedTuple{bloblets::Vector{DFG.Bloblet}}}
-    response = executeGql(client, QUERY_GET_AGENT_BLOBLETS, variables, T)
+    response = executeGql(client, GQL_OPS[:getAgentBloblets], variables, T)
 
     return handleQuery(response, :agents, label).bloblets
     
@@ -68,7 +68,7 @@ function DFG.addAgentBloblet!(
 )
     response = executeGql(
         client,
-        QUERY_ADD_AGENT_BLOBLET,
+        GQL_OPS[:addAgentBloblet],
         (
             id = getId(client, label), 
             label = bloblet.label,

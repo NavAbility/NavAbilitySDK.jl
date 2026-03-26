@@ -1,0 +1,7 @@
+mutation addVariables($input: [VariableCreateInput!]!) {
+  addVariables(input: $input) {
+    variables {
+      ...VariableDFG_fields
+    }
+  }
+}

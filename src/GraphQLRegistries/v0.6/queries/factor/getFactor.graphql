@@ -1,0 +1,5 @@
+query getFactor($id: UUID!) {
+  factors(where: { id: { eq: $id } }) {
+    ...FactorDFG_fields
+  }
+}

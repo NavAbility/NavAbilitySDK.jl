@@ -1,0 +1,7 @@
+query getVariablesSkeleton($fgId: UUID!) {
+  graphs(where: { id: { eq: $fgId } }) {
+    variables {
+      ...VariableSkeleton_fields
+    }
+  }
+}

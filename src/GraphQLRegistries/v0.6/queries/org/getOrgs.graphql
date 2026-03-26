@@ -1,0 +1,7 @@
+query getOrgs {
+  orgs {
+    id
+    label
+    description
+  }
+}

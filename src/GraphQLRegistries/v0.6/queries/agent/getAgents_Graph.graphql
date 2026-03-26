@@ -1,0 +1,8 @@
+query getAgents_Graph($id: UUID!) {
+  graphs(where: {id: {eq: $id}}) {
+    agents {
+      label
+      namespace
+    }
+  }
+}

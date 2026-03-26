@@ -1,0 +1,4 @@
+fragment FactorSummary_fields on Factor {
+  ...FactorSkeleton_fields
+  timestamp
+}

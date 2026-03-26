@@ -1,0 +1,7 @@
+query getOrg($label: String!) {
+  orgs(where: { label: $label }) {
+    id
+    label
+    description
+  }
+}

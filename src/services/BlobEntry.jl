@@ -14,7 +14,7 @@ function DFG.getVariableBlobentry(fgclient::NavAbilityDFG, variableLabel::Symbol
 
     T = Vector{DFG.Blobentry}
 
-    response = executeGql(fgclient, GQL_GET_BLOBENTRY, (id = id,), T)
+    response = executeGql(fgclient, GQL_OPS[:getBlobentry], (id = id,), T)
 
     return handleQuery(response, :blobentries, label)
 end
@@ -23,7 +23,7 @@ function DFG.getVariableBlobentries(fgclient::NavAbilityDFG, variableLabel::Symb
     id = getId(fgclient.fg, variableLabel)
     T = Vector{@NamedTuple{blobentries::Vector{DFG.Blobentry}}}
 
-    response = executeGql(fgclient, GQL_GET_BLOBENTRIES, (id = id,), T)
+    response = executeGql(fgclient, GQL_OPS[:getBlobentries], (id = id,), T)
 
     return handleQuery(response, :variables, :blobentries)[1]
 end
@@ -56,7 +56,7 @@ function DFG.addVariableBlobentries!(
 
     response = executeGql(
         fgclient,
-        GQL_ADD_BLOBENTRIES,
+        GQL_OPS[:addBlobentries],
         (blobentries = input,),
         T; #FIXME BlobentryResponse
     )
@@ -68,7 +68,7 @@ function DFG.listVariableBlobentries(fgclient::NavAbilityDFG, variableLabel::Sym
 
     response = executeGql(
         fgclient,
-        GQL_LIST_BLOBENTRIES,
+        GQL_OPS[:listBlobentries],
         (id = getId(fgclient.fg, variableLabel),),
         T;
     )
@@ -81,7 +81,7 @@ end
 function DFG.deleteVariableBlobentry!(fgclient::NavAbilityDFG, varLabel::Symbol, entryLabel::Symbol)
     response = executeGql(
         fgclient,
-        GQL_DELETE_BLOBENTRY,
+        GQL_OPS[:deleteBlobentry],
         (id = getId(fgclient.fg, varLabel, entryLabel),),
     )
     return response[:deleteBlobentries][:nodesDeleted]
@@ -90,7 +90,7 @@ end
 function DFG.deleteAgentBlobentry!(fgclient::NavAbilityDFG, label::Symbol)
     response = executeGql(
         fgclient,
-        GQL_DELETE_BLOBENTRY,
+        GQL_OPS[:deleteBlobentry],
         (id = getId(fgclient.agent, label),),
     )
     return response[:deleteBlobentries][:nodesDeleted]
@@ -99,7 +99,7 @@ end
 function DFG.deleteGraphBlobentry!(fgclient::NavAbilityDFG, label::Symbol)
     response = executeGql(
         fgclient,
-        GQL_DELETE_BLOBENTRY,
+        GQL_OPS[:deleteBlobentry],
         (id = getId(fgclient.fg, label),),
     )
     return response[:deleteBlobentries][:nodesDeleted]
@@ -109,7 +109,7 @@ end
 # function DFG.deleteFactorBlobentry!(fgclient::NavAbilityDFG, factorLabel::Symbol, entryLabel::Symbol)
 #     response = executeGql(
 #         fgclient,
-#         GQL_DELETE_BLOBENTRY,
+#         GQL_OPS[:deleteBlobentry],
 #         (id = getId(fgclient.fg, factorLabel, entryLabel),),
 #     )
 #     return response[:deleteBlobentries][:nodesDeleted]
@@ -118,7 +118,7 @@ end
 function DFG.deleteModelBlobentry!(client::NavAbilityClient, model::NvaNode{Model}, label::Symbol)
     response = executeGql(
         client,
-        GQL_DELETE_BLOBENTRY,
+        GQL_OPS[:deleteBlobentry],
         (id = getId(model, label),),
     )
     return response[:deleteBlobentries][:nodesDeleted]
@@ -131,7 +131,7 @@ function DFG.getGraphBlobentry(fgclient::NavAbilityDFG, label::Symbol)
 
     response = executeGql(
         fgclient,
-        GQL_GET_BLOBENTRY,
+        GQL_OPS[:getBlobentry],
         (id =  getId(fgclient.fg, label),),
         Vector{DFG.Blobentry}
     )
@@ -153,7 +153,7 @@ function DFG.getGraphBlobentries(
 
     response = executeGql(
         fgclient,
-        GQL_GET_FG_BLOBENTRIES,
+        GQL_OPS[:getGraphBlobentries],
         variables,
         Vector{@NamedTuple{blobentries::Vector{DFG.Blobentry}}}
     )
@@ -165,7 +165,7 @@ function DFG.getAgentBlobentry(client::NavAbilityClient, agentLabel::Symbol, lab
 
     response = executeGql(
         client,
-        GQL_GET_BLOBENTRY,
+        GQL_OPS[:getBlobentry],
         (id = getId(client, agentLabel, label),),
         Vector{DFG.Blobentry}
     )
@@ -195,7 +195,7 @@ function DFG.getAgentBlobentries(
 
     response = executeGql(
         client,
-        GQL_GET_AGENT_BLOBENTRIES,
+        GQL_OPS[:getAgentBlobentries],
         variables,
         T
     )
@@ -215,9 +215,35 @@ function DFG.getModelBlobentry(client::NavAbilityClient, modelLabel::Symbol, lab
 
     T = Vector{DFG.Blobentry}
 
-    response = executeGql(client, GQL_GET_BLOBENTRY, (id = id,), T)
+    response = executeGql(client, GQL_OPS[:getBlobentry], (id = id,), T)
 
     return handleQuery(response, :blobentries, label)
+end
+
+function DFG.getModelBlobentries(
+    client::NavAbilityClient,
+    model::NvaNode{Model};
+    labelFilter::Union{Nothing, Base.Fix2} = nothing,
+)
+
+    id = getId(model)
+
+    if isnothing(labelFilter)
+        variables = (id = id,)
+    else
+        variables = (id = id, entrywhere = whereFilterStr(:label, labelFilter))
+    end
+
+    T = Vector{@NamedTuple{blobentries::Vector{DFG.Blobentry}}}
+
+    response = executeGql(
+        client,
+        GQL_OPS[:getModelBlobentries],
+        variables,
+        T
+    )
+
+    return handleQuery(response, :models, :blobentries)[1]
 end
 
 function addBlobentries!(
@@ -232,7 +258,7 @@ function addBlobentries!(
 
     T = @NamedTuple{blobentries::Vector{Blobentry}}
 
-    response = executeGql(fgclient, GQL_ADD_BLOBENTRIES, (blobentries = input,), T)
+    response = executeGql(fgclient, GQL_OPS[:addBlobentries], (blobentries = input,), T)
 
     return handleMutate(response, :addBlobentries, :blobentries)
 end
@@ -268,7 +294,7 @@ function DFG.listGraphBlobentries(fgclient::NavAbilityDFG)
 
     T = Vector{Dict{Symbol, Vector{@NamedTuple{label::Symbol}}}}
 
-    response = executeGql(fgclient, GQL_LIST_FACTORGRAPH_BLOBENTRIES, variables, T)
+    response = executeGql(fgclient, GQL_OPS[:listGraphBlobentries], variables, T)
 
     return last.(handleQuery(response, :graphs, fgclient.fg.label)[:blobentries])
 end
@@ -282,7 +308,7 @@ function DFG.listAgentBlobentries(client::NavAbilityClient, agent::NvaNode{Agent
 
     T = Vector{Dict{Symbol, Vector{@NamedTuple{label::Symbol}}}}
 
-    response = executeGql(client, GQL_LIST_AGENT_BLOBENTRIES, variables, T)
+    response = executeGql(client, GQL_OPS[:listAgentBlobentries], variables, T)
 
     return last.(handleQuery(response, :agents, agent.label)[:blobentries])
 end
@@ -292,7 +318,7 @@ function DFG.listModelBlobentries(client::NavAbilityClient, label::Symbol)
 
     T = Vector{Dict{Symbol, Vector{@NamedTuple{label::Symbol}}}}
 
-    response = executeGql(client, GQL_LIST_MODEL_BLOBENTRIES, variables, T)
+    response = executeGql(client, GQL_OPS[:listModelBlobentries], variables, T)
 
     return last.(handleQuery(response, :models, label)[:blobentries])
 end

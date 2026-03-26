@@ -1,15 +1,15 @@
 function getModel(client::NavAbilityClient, label::Symbol)
     response = executeGql(
         client,
-        QUERY_GET_MODEL,
-        (modelId = getId(client.id, label),),
+        GQL_OPS[:getModel],
+        (id = getId(client.id, label),),
         Vector{NvaNode{Model}}
     )
     return handleQuery(response, :models, label)
 end
 
 function getModels(client)
-    response = executeGql(client, QUERY_GET_MODELS_ALL, Dict(), Vector{NvaNode{Model}})
+    response = executeGql(client, GQL_OPS[:getModels], Dict(), Vector{NvaNode{Model}})
     return handleQuery(response, :models)
 end
 
@@ -25,7 +25,7 @@ function addModel!(client::NavAbilityClient, model::Model)
     ]
     response = executeGql(
         client,
-        GQL_ADD_MODELS,
+        GQL_OPS[:addModels],
         (input = input,),
         @NamedTuple{models::Vector{NvaNode{Model}}}
     )
@@ -36,7 +36,7 @@ end
 function getGraphs(client::NavAbilityClient, model::NvaNode{Model})
     response = executeGql(
         client,
-        QUERY_GET_MODEL_GRAPHS,
+        GQL_OPS[:getGraphs_Model],
         (id = getId(model),),
         Vector{Dict{Symbol, Vector{NvaNode{Graphroot}}}},
     )

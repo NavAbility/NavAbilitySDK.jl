@@ -1,0 +1,3 @@
+mutation createDownload($blobId: ID!, $label: String = "default") {
+  createDownload(blobId: $blobId, store: { label: $label })
+}

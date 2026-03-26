@@ -49,7 +49,7 @@ Args:
 function createDownload(store::NavAbilityBlobStore, blobId::UUID)
     response = executeGql(
         store.client,
-        MUTATION_CREATE_DOWNLOAD,
+        GQL_OPS[:createDownload],
         (blobId = string(blobId), label=store.label);
     )
     return response[:createDownload]
@@ -86,7 +86,7 @@ end
 function DFG.listBlobs(store::NavAbilityBlobStore)
     response = executeGql(
         store,
-        QUERY_LIST_BLOBS,
+        GQL_OPS[:listBlobs],
         (label = store.label,),
         Vector{String},
     )
@@ -96,7 +96,7 @@ end
 function DFG.hasBlob(store::NavAbilityBlobStore, blobId::UUID)
     response = executeGql(
         store,
-        QUERY_HAS_BLOB,
+        GQL_OPS[:hasBlob],
         (blobId = string(blobId), label = store.label),
         Bool;
     )
@@ -124,7 +124,7 @@ function createUpload(
     #
     response = executeGql(
         nvastore.client,
-        GQL_CREATE_UPLOAD,
+        GQL_OPS[:createUpload],
         (blobId=blobId, parts=parts, store=(label=nvastore.label,))
     )
 
@@ -158,7 +158,7 @@ function completeUpload(
 
     response = executeGql(
         client,
-        GQL_COMPLETEUPLOAD,
+        GQL_OPS[:completeUpload],
         (blobId = blobId, completedUpload = cui)
     )
 
@@ -173,7 +173,7 @@ function completeUploadSingle(
 )
     response = executeGql(
         client,
-        GQL_COMPLETEUPLOAD_SINGLE,
+        GQL_OPS[:completeUploadSingle],
         (blobId = blobId, uploadId = uploadId, eTag = eTag),
     )
 
@@ -251,22 +251,10 @@ function uploadFile!(
     blobId
 end
 
-function getMimetype(io::IO)
-    getFormat(s::DFG.FileIO.Stream{T}) where T = T
-    stream = DFG.FileIO.query(io)
-    # not sure if we need restrict to only our mimetypes, but better than nothing
-    mime = findfirst(==(getFormat(stream)), DFG._MIMETypes)
-    if isnothing(mime)
-        return MIME("application/octet-stream")
-    else
-        return mime
-    end
-end
-
 function DFG.addBlob!(store::NavAbilityBlobStore, blobId::UUID, blob::Vector{UInt8})
     client = store.client
 
-    mimeType = getMimetype(IOBuffer(blob))
+    mimeType = DFG.getMimetype(IOBuffer(blob))
     filesize = length(blob)
     # TODO: Use about a 50M file part here.
     np = 1 # TODO: ceil(filesize / 50e6)
@@ -320,10 +308,12 @@ function DFG.deleteBlob!(
 )
     response = executeGql(
         blobstore.client,
-        MUTATION_DELETE_BLOB,
+        GQL_OPS[:deleteBlob],
         (blobId = string(blobId), label = string(blobstore.label));
     )
-    return response[:deleteBlob]
+    #TODO rm "Success" check after Blob api is fixed
+    result = response[:deleteBlob] == "Success" ? 1 : error("Something went wrong deleting blob with id $blobId, response: $(response[:deleteBlob])")
+    return result
 
 end
 

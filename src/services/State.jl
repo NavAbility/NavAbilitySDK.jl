@@ -11,7 +11,7 @@ function DFG.getState(
 
     T = Vector{DFG.State}
 
-    response = executeGql(fgclient, GQL_GET_STATE, (id = id,), T)
+    response = executeGql(fgclient, GQL_OPS[:getState], (id = id,), T)
 
     return handleQuery(response, :states, solveKey)
 end
@@ -20,7 +20,7 @@ function DFG.getStates(fgclient::NavAbilityDFG, variableLabel::Symbol)
     id = getId(fgclient.fg, variableLabel)
     T = Vector{@NamedTuple{states::Vector{DFG.State}}}
 
-    response = executeGql(fgclient, GQL_GET_STATE_ALL, (id = id,), T)
+    response = executeGql(fgclient, GQL_OPS[:getStates], (id = id,), T)
 
     return handleQuery(response, :variables, :states)[1]
 end
@@ -44,7 +44,7 @@ function DFG.addState!(
 
     T = @NamedTuple{states::Vector{State}}
 
-    response = executeGql(fgclient, GQL_ADD_STATE, (states = input,), T)
+    response = executeGql(fgclient, GQL_OPS[:addStates], (states = input,), T)
 
     return handleMutate(response, :addStates, :states)
 end
@@ -67,7 +67,8 @@ function DFG.mergeState!(
 
     T = @NamedTuple{states::Vector{State}}
 
-    response = executeGql(fgclient, GQL_UPDATE_STATE, (state = state, id = id), T)
+    #FIXME updateState -> mergeState
+    response = executeGql(fgclient, GQL_OPS[:updateState], (state = state, id = id), T)
 
     return handleMutate(response, :updateStates, :states)[1]
 end
@@ -75,22 +76,13 @@ end
 function DFG.deleteState!(
     fgclient::NavAbilityDFG,
     varLabel::Symbol,
-    vnd::DFG.State,
+    label::Symbol,
 )
-    id = getId(fgclient.fg, varLabel, vnd.label)
+    id = getId(fgclient.fg, varLabel, label)
 
-    response = executeGql(fgclient, GQL_DELETE_STATE, (id = id,))
+    response = executeGql(fgclient, GQL_OPS[:deleteState], (id = id,))
 
-    return vnd
-end
-
-function DFG.deleteState!(
-    fgclient::NavAbilityDFG,
-    varLabel::Symbol,
-    solveKey::Symbol,
-)
-    vnd = getState(fgclient, varLabel, solveKey)
-    return deleteState!(fgclient, varLabel, vnd)
+    return response[:deleteStates].nodesDeleted
 end
 
 function DFG.listStates(fgclient::NavAbilityDFG, variableLabel::Symbol)
@@ -98,7 +90,7 @@ function DFG.listStates(fgclient::NavAbilityDFG, variableLabel::Symbol)
 
     T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
 
-    response = executeGql(fgclient, GQL_LIST_STATE, (id = id,), T)
+    response = executeGql(fgclient, GQL_OPS[:listStates], (id = id,), T)
 
     return last.(handleQuery(response, :variables, variableLabel)["states"])
 end

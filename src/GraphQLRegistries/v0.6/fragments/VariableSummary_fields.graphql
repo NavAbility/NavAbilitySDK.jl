@@ -1,0 +1,6 @@
+fragment VariableSummary_fields on Variable {
+  ...VariableSkeleton_fields
+  timestamp
+  solvable
+  statekind
+}

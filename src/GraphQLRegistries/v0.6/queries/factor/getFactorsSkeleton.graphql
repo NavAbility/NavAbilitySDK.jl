@@ -1,0 +1,9 @@
+query getFactorsSkeleton(
+  $fgId: UUID!
+) {
+  graphs(where: { id: {eq: $fgId} }) {
+    factors {
+      ...FactorSkeleton_fields
+    }
+  }
+}

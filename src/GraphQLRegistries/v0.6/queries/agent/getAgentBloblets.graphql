@@ -1,0 +1,8 @@
+query getAgentBloblets($id: UUID) {
+  agents(where: { id: { eq: $id } }) {
+    bloblets {
+      label
+      val
+    }
+  }
+}

@@ -1,0 +1,7 @@
+query getGraphBlobentries($id: UUID!, $entrywhere: BlobentryWhere = {}) {
+  graphs(where: { id: { eq: $id } }) {
+    blobentries(where: $entrywhere) {
+      ...Blobentry_fields
+    }
+  }
+}

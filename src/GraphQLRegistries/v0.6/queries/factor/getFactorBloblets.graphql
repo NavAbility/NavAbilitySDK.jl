@@ -1,0 +1,8 @@
+query getFactorBloblets($id: UUID!) {
+  factors(where: { id: { eq: $id } }) {
+    bloblets {
+      label
+      val
+    }
+  }
+}

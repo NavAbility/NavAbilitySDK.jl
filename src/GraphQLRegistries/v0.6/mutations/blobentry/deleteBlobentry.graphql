@@ -1,0 +1,5 @@
+mutation deleteBlobentry($id: UUID!) {
+  deleteBlobentries(where: { id: { eq: $id } }) {
+    nodesDeleted
+  }
+}

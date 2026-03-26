@@ -1,0 +1,7 @@
+query getAgentBlobentries($id: UUID!, $entrywhere: BlobentryWhere = {}) {
+  agents(where: { id: { eq: $id } }) {
+    blobentries(where: $entrywhere) {
+      ...Blobentry_fields
+    }
+  }
+}

@@ -82,19 +82,13 @@ import DistributedFactorGraphs:
 # ls,
 # lsf,
 # isConnected,
-# buildSubgraph,
+# getSubgraph,
 # copyGraph!,
 # getBiadjacencyMatrix,
 
 # Graphql
-include("graphql/BlobEntry.jl")
-include("graphql/Factor.jl")
-include("graphql/Variable/Variable.jl")
-include("graphql/BlobStore.jl")
-include("graphql/Model.jl")
-include("graphql/Agent.jl")
-include("graphql/Graph.jl")
-include("graphql/Org.jl")
+include("GraphQLRegistries/GraphQLRegistries.jl")
+using .GraphQLRegistries: GQL_OPS
 
 include("entities/NvaNodes.jl")
 

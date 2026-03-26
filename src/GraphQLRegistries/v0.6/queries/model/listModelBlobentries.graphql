@@ -1,0 +1,7 @@
+query listModelBlobentries($id: UUID!) {
+  models(where: { id: { eq: $id } }) {
+    blobentries {
+      label
+    }
+  }
+}

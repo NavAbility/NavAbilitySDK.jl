@@ -1,0 +1,7 @@
+query listGraphs($id: UUID!) {
+  orgs(where: { id: { eq: $id } }) {
+    graphs {
+      label
+    }
+  }
+}

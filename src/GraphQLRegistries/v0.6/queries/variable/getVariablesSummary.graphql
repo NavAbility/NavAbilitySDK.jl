@@ -1,0 +1,7 @@
+query getVariablesSummary($fgId: UUID!) {
+  graphs(where: { id: { eq: $fgId } }) {
+    variables {
+      ...VariableSummary_fields
+    }
+  }
+}

@@ -1,0 +1,13 @@
+mutation deleteVariable($variableId: UUID!) {
+  deleteVariables(
+    where: { id: { eq: $variableId } }
+    delete: {
+      states: {}
+      blobentries: {}
+      bloblets: {}
+      factors: { delete: { blobentries: {}, bloblets: {} } }
+    }
+  ) {
+    nodesDeleted
+  }
+}

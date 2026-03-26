@@ -1,0 +1,7 @@
+mutation pushGraphTags($id: UUID!, $tags_PUSH: [String!]!) {
+  updateGraphs(where: { id: { eq: $id } }, update: { tags_PUSH: $tags_PUSH }) {
+    graphs {
+      tags
+    }
+  }
+}

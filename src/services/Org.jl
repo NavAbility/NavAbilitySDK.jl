@@ -1,7 +1,7 @@
 function getOrg(client::GQL.Client, label::Symbol)
     response = executeGql(
         client,
-        GQL_GET_ORG,
+        GQL_OPS[:getOrg],
         (label = label,),
         Vector{Org}
     )
@@ -9,6 +9,6 @@ function getOrg(client::GQL.Client, label::Symbol)
 end
 
 function getOrgs(client::GQL.Client)
-    response = executeGql(client, GQL_GET_ORGS, Dict(), Vector{Org})
+    response = executeGql(client, GQL_OPS[:getOrgs], Dict(), Vector{Org})
     return response[:orgs]
 end
