@@ -1,0 +1,7 @@
+mutation completeUpload($blobId: ID!, $completedUpload: CompletedUploadInput!) {
+  completeUpload(
+    store: { label: "default", type: NVA_CLOUD }
+    blobId: $blobId
+    completedUpload: $completedUpload
+  )
+}

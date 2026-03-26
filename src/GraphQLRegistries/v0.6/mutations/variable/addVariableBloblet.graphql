@@ -1,0 +1,6 @@
+mutation addVariableBloblet($id: UUID!, $label: String!, $val: String!) {
+  addVariableBloblet(VariableId: $id, input: { label: $label, val: $val }) {
+    label
+    val
+  }
+}

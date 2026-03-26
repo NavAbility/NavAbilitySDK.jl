@@ -1,0 +1,8 @@
+mutation addGraphs($input: [GraphCreateInput!]!) {
+  addGraphs(input: $input) {
+    graphs {
+      label
+      namespace
+    }
+  }
+}

@@ -1,0 +1,5 @@
+query getBlobentry($id: UUID!) {
+  blobentries(where: { id: { eq: $id } }) {
+    ...Blobentry_fields
+  }
+}

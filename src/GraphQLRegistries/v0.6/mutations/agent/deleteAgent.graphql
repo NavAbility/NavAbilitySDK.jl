@@ -1,0 +1,8 @@
+mutation deleteAgent($id: UUID!) {
+  deleteAgents(
+    where: { id: { eq: $id } }
+    delete: { blobentries: {}, bloblets: {} }
+  ) {
+    nodesDeleted
+  }
+}

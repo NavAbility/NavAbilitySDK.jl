@@ -1,0 +1,4 @@
+fragment VariableSkeleton_fields on Variable {
+  label
+  tags
+}

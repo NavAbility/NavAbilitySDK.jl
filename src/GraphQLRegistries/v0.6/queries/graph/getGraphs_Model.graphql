@@ -1,0 +1,8 @@
+query getGraphs_Model($id: ID!) {
+  models(where: {id: $id}) {
+    fgs {
+      label
+      namespace
+    }
+  }
+}

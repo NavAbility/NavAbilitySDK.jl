@@ -1,0 +1,5 @@
+query getVariable($varId: UUID!) {
+  variables(where: { id: { eq: $varId } }) {
+    ...VariableDFG_fields
+  }
+}

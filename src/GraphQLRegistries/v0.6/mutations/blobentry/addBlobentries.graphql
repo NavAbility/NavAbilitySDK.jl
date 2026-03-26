@@ -1,0 +1,7 @@
+mutation addBlobentries($blobentries: [BlobentryCreateInput!]!) {
+  addBlobentries(input: $blobentries) {
+    blobentries {
+      ...Blobentry_fields
+    }
+  }
+}

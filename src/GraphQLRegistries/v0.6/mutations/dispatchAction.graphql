@@ -1,0 +1,3 @@
+mutation dispatchAction($input: JSON!, $workerLabel: WorkerLabelEnum!) {
+  startWorker(input: $input, workerLabel: $workerLabel)
+}

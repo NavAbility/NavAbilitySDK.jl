@@ -1,0 +1,10 @@
+mutation connectGraphAgent($agentId: UUID!, $fgId: UUID!) {
+  updateAgents(
+    where: { id: { eq: $agentId } }
+    update: { graphs: { connect: { where: { node: { id: { eq: $fgId } } } } } }
+  ) {
+    info {
+      relationshipsCreated
+    }
+  }
+}

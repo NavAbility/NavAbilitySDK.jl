@@ -1,24 +1,22 @@
 
 function DFG.getAgent(client::NavAbilityClient, label::Symbol)
-    agentId = getId(client.id, label)
+    agentId = getId(client, label)
     variables = (agentId = agentId,)
 
     T = Vector{NvaNode{Agent}}
 
-    response = executeGql(client, QUERY_GET_AGENT, variables, T)
+    response = executeGql(client, GQL_OPS[:getAgent], variables, T)
 
-    return handleQuery(response, "agents", label)
+    return handleQuery(response, :agents, label)
 end
 
-function addAgent!(client::NavAbilityClient, label::Symbol, agent = nothing; agentKwargs...)
-    @assert isValidLabel(label) "Agent label ($agentLabel) is not a valid label"
+function addAgent!(client::NavAbilityClient, agent::DFG.Agent)
+    @assert DFG.isValidLabel(getLabel(agent)) "Agent label ($(getLabel(agent))) is not a valid label"
     input = [
         AgentCreateInput(;
-            id = getId(client.id, label),
-            label,
+            id = getId(client.id, getLabel(agent)),
             org = createConnect(client.id),
             getCommonProperties(AgentCreateInput, agent)...,
-            getCommonProperties(AgentCreateInput, agentKwargs)...,
         ),
     ]
 
@@ -27,84 +25,61 @@ function addAgent!(client::NavAbilityClient, label::Symbol, agent = nothing; age
     # AgentRemoteResponse
     T = @NamedTuple{agents::Vector{NvaNode{Agent}}}
 
-    response = executeGql(client, GQL_ADD_AGENTS, variables, T)
+    response = executeGql(client, GQL_OPS[:addAgents], variables, T)
 
-    return handleMutate(response, "addAgents", :agents)[1]
+    return handleMutate(response, :addAgents, :agents)[1]
 end
 
 function deleteAgent!(client::NavAbilityClient, label::Symbol)
-    response = executeGql(client, GQL_DELETE_AGENT, (id = getId(client, label),))
+    response = executeGql(client, GQL_OPS[:deleteAgent], (id = getId(client, label),))
 
-    return response.data
+    return response
 end
 
 function listAgents(client::NavAbilityClient)
     variables = (id = client.id,)
 
-    T = Vector{Dict{String, Vector{@NamedTuple{label::Symbol}}}}
+    T = Vector{Dict{Symbol, Vector{@NamedTuple{label::Symbol}}}}
 
-    response = executeGql(client, QUERY_LIST_AGENTS, variables, T)
+    response = executeGql(client, GQL_OPS[:listAgents], variables, T)
 
-    return last.(handleQuery(response, "orgs", Symbol(client.id))["agents"])
+    return last.(handleQuery(response, :orgs, Symbol(client.id))[:agents])
 end
 
-function DFG.getAgentMetadata(client::NavAbilityClient, label::Symbol)
+function DFG.getAgentBloblets(client::NavAbilityClient, label::Symbol)
     variables = (id = getId(client, label),)
 
-    response = executeGql(client, QUERY_GET_AGENT_METADATA, variables, Any)
+    T = Vector{@NamedTuple{bloblets::Vector{DFG.Bloblet}}}
+    response = executeGql(client, GQL_OPS[:getAgentBloblets], variables, T)
 
-    b64data = handleQuery(response, "agents", label)["metadata"]
-    if isnothing(b64data)
-        return Dict{Symbol, DFG.SmallDataTypes}()
-    else
-        return JSON3.read(base64decode(b64data), Dict{Symbol, DFG.SmallDataTypes})
-    end
+    return handleQuery(response, :agents, label).bloblets
+    
 end
 
-function DFG.getAgentMetadata(fgclient::NavAbilityDFG)
-    variables = (id = getId(fgclient.agent),)
-
-    response = executeGql(fgclient, QUERY_GET_AGENT_METADATA, variables, Any)
-
-    b64data = handleQuery(response, "agents", fgclient.agent.label)["metadata"]
-    if isnothing(b64data)
-        return Dict{Symbol, DFG.SmallDataTypes}()
-    else
-        return JSON3.read(base64decode(b64data), Dict{Symbol, DFG.SmallDataTypes})
-    end
+#TODO test me
+function DFG.getAgentBloblets(fg::NavAbilityDFG)
+    return getAgentBloblets(fg.client, getLabel(fg.agent))
 end
 
-function DFG.setAgentMetadata!(
+function DFG.addAgentBloblet!(
     client::NavAbilityClient,
     label::Symbol,
-    smallData::Dict{Symbol, DFG.SmallDataTypes}
+    bloblet::DFG.Bloblet
 )
-    meta = base64encode(JSON3.write(smallData))
-
     response = executeGql(
         client,
-        QUERY_SET_AGENT_METADATA,
-        (id = getId(client, label), meta=meta),
+        GQL_OPS[:addAgentBloblet],
+        (
+            id = getId(client, label), 
+            label = bloblet.label,
+            val = bloblet.val
+        ),
     )
-    return JSON3.read(
-        base64decode(response.data["updateAgents"]["agents"][1]["metadata"]),
-        Dict{Symbol, DFG.SmallDataTypes},
-    )
+    #TODO handle response
+    return bloblet
 end
 
-function DFG.setAgentMetadata!(
-    fgclient::NavAbilityDFG,
-    smallData::Dict{Symbol, DFG.SmallDataTypes},
-)
-    meta = base64encode(JSON3.write(smallData))
-
-    response = executeGql(
-        fgclient,
-        QUERY_SET_AGENT_METADATA,
-        (id = getId(fgclient.agent), meta=meta),
-    )
-    return JSON3.read(
-        base64decode(response.data["updateAgents"]["agents"][1]["metadata"]),
-        Dict{Symbol, DFG.SmallDataTypes},
-    )
+#TODO testme
+function DFG.addAgentBloblet!(fg::NavAbilityDFG, bloblet::DFG.Bloblet)
+    return addAgentBloblet!(fg.client, getLabel(fg.agent), bloblet)
 end

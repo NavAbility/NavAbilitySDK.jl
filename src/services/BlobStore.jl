@@ -2,7 +2,7 @@
 const UPLOAD_CHUNK_SIZE_HASH = 5*1024*1024
 
 #TODO we can also extend the blobstore
-struct NavAbilityBlobStore <: DFG.AbstractBlobStore{Vector{UInt8}}
+struct NavAbilityBlobStore <: DFG.AbstractBlobstore{Vector{UInt8}}
     client::NavAbilityClient
     label::Symbol
 end
@@ -27,15 +27,15 @@ function executeGql(store::NavAbilityBlobStore, query::AbstractString, variables
     executeGql(store.client, query, variables, T; kwargs...)
 end
 
-struct NavAbilityCachedBlobStore{T <: DFG.AbstractBlobStore} <:
-       DFG.AbstractBlobStore{Vector{UInt8}}
-    key::Symbol
+struct NavAbilityCachedBlobStore{T <: DFG.AbstractBlobstore} <:
+       DFG.AbstractBlobstore{Vector{UInt8}}
+    label::Symbol
     localstore::T
     remotestore::NavAbilityBlobStore
 end
 
-function NavAbilityCachedBlobStore(localstore::DFG.AbstractBlobStore, remotestore::NavAbilityBlobStore)
-    return NavAbilityCachedBlobStore(:default_nva_cached, localstore, remotestore)
+function NavAbilityCachedBlobStore(localstore::DFG.AbstractBlobstore, remotestore::NavAbilityBlobStore)
+    return NavAbilityCachedBlobStore(:default, localstore, remotestore)
 end
 
 """
@@ -49,24 +49,34 @@ Args:
 function createDownload(store::NavAbilityBlobStore, blobId::UUID)
     response = executeGql(
         store.client,
-        MUTATION_CREATE_DOWNLOAD,
+        GQL_OPS[:createDownload],
         (blobId = string(blobId), label=store.label);
     )
-    return response.data["createDownload"]
+    return response[:createDownload]
 end
 
 function DFG.getBlob(blobstore::NavAbilityBlobStore, blobId::UUID)
-    url = createDownload(blobstore, blobId)
-    io = PipeBuffer()
-    Downloads.download(url, io)
-    return io |> take!
+    try 
+        url = createDownload(blobstore, blobId)
+        #TODO throw if not found, so update createDownload to know when blobId is not found
+        # throw(IdNotFoundError("Blob", blobId))
+        io = PipeBuffer()
+        Downloads.download(url, io)
+        return io |> take!
+    catch e
+        if e isa Downloads.RequestError && e.response.status == 404
+            throw(DFG.IdNotFoundError("Blob", blobId))
+        else
+            rethrow()
+        end
+    end
 end
 
 function DFG.getBlob(blobstore::NavAbilityCachedBlobStore, blobId::UUID)
     if hasBlob(blobstore.localstore, blobId)
         blob = getBlob(blobstore.localstore, blobId)
     else
-        @info "missed in cache, caching" blobId
+        # @info "missed in cache, caching" blobId
         blob = getBlob(blobstore.remotestore, blobId)
         addBlob!(blobstore.localstore, blobId, blob)
     end
@@ -76,22 +86,21 @@ end
 function DFG.listBlobs(store::NavAbilityBlobStore)
     response = executeGql(
         store,
-        QUERY_LIST_BLOBS,
+        GQL_OPS[:listBlobs],
         (label = store.label,),
         Vector{String},
     )
-    list = response.data["listBlobs"]
-    return UUID.(list)
+    return tryparse.(UUID, response[:listBlobs])
 end
 
 function DFG.hasBlob(store::NavAbilityBlobStore, blobId::UUID)
     response = executeGql(
         store,
-        QUERY_HAS_BLOB,
+        GQL_OPS[:hasBlob],
         (blobId = string(blobId), label = store.label),
         Bool;
     )
-    return response.data["hasBlob"]
+    return response[:hasBlob]
 end
 
 ## =========================================================================
@@ -113,14 +122,13 @@ function createUpload(
     parts::Int = 1,
 )
     #
-    store = (label=nvastore.label, type="NVA_CLOUD")
     response = executeGql(
         nvastore.client,
-        GQL_CREATE_UPLOAD,
-        (blobId=blobId, parts=parts, store=store)
+        GQL_OPS[:createUpload],
+        (blobId=blobId, parts=parts, store=(label=nvastore.label,))
     )
 
-    return response.data["createUpload"]
+    return response[:createUpload]
 end
 
 ## Complete the upload
@@ -150,11 +158,11 @@ function completeUpload(
 
     response = executeGql(
         client,
-        GQL_COMPLETEUPLOAD,
+        GQL_OPS[:completeUpload],
         (blobId = blobId, completedUpload = cui)
     )
 
-    return response.data["completeUpload"]
+    return response[:completeUpload]
 end
 
 function completeUploadSingle(
@@ -165,17 +173,17 @@ function completeUploadSingle(
 )
     response = executeGql(
         client,
-        GQL_COMPLETEUPLOAD_SINGLE,
+        GQL_OPS[:completeUploadSingle],
         (blobId = blobId, uploadId = uploadId, eTag = eTag),
     )
 
-    return response.data["completeUpload"]
+    return response[:completeUpload]
 end
 
 ##
 
 
-function DFG.addBlob!(
+function uploadFile!(
     store::NavAbilityBlobStore,
     filepath::AbstractString,
     blobId::UUID = uuid4();
@@ -243,22 +251,10 @@ function DFG.addBlob!(
     blobId
 end
 
-function getMimetype(io::IO)
-    getFormat(s::DFG.FileIO.Stream{T}) where T = T
-    stream = DFG.FileIO.query(io)
-    # not sure if we need restrict to only our mimetypes, but better than nothing
-    mime = findfirst(==(getFormat(stream)), DFG._MIMETypes)
-    if isnothing(mime)
-        return MIME("application/octet-stream")
-    else
-        return mime
-    end
-end
-
 function DFG.addBlob!(store::NavAbilityBlobStore, blobId::UUID, blob::Vector{UInt8})
     client = store.client
 
-    mimeType = getMimetype(IOBuffer(blob))
+    mimeType = DFG.getMimetype(IOBuffer(blob))
     filesize = length(blob)
     # TODO: Use about a 50M file part here.
     np = 1 # TODO: ceil(filesize / 50e6)
@@ -282,6 +278,7 @@ function DFG.addBlob!(store::NavAbilityBlobStore, blobId::UUID, blob::Vector{UIn
     ]
     #
 
+    #TODO use retries from new client field ; retries=getRetries(store)
     resp = HTTP.put(url, headers, blob)
 
     # Extract eTag
@@ -311,71 +308,20 @@ function DFG.deleteBlob!(
 )
     response = executeGql(
         blobstore.client,
-        MUTATION_DELETE_BLOB,
+        GQL_OPS[:deleteBlob],
         (blobId = string(blobId), label = string(blobstore.label));
     )
-    return response.data["deleteBlob"]
+    #TODO rm "Success" check after Blob api is fixed
+    result = response[:deleteBlob] == "Success" ? 1 : error("Something went wrong deleting blob with id $blobId, response: $(response[:deleteBlob])")
+    return result
 
 end
 
-##==========================================================================================
-## NavAbility™ Blob Store Deployed on Premise
-##==========================================================================================
-struct NavAbilityOnPremBlobStore <: DFG.AbstractBlobStore{Vector{UInt8}}
-    client::NavAbilityClient
-    label::Symbol
-end
-
-function NavAbilityOnPremBlobStore(fgclient::NavAbilityDFG, label=:default)
-    NavAbilityOnPremBlobStore(fgclient.client, label)
-end
-
-function DFG.addBlob!(store::NavAbilityOnPremBlobStore, blobId::UUID, blob::Vector{UInt8})
-    b64blob = base64encode(blob)
-    response = NvaSDK.GQL.mutate(
-        store.client.client,
-        "addBlobFS",
-        Dict("storeLabel" => string(store.label), "blobId" => string(blobId), "input" => b64blob);
-        throw_on_execution_error = true,
-    )
-    blobId_str = response.data["addBlobFS"]
-    blobId = tryparse(UUID, blobId_str)
-    isnothing(blobId) && error(blobId_str)
-    return blobId
-end
-
-function DFG.getBlob(store::NavAbilityOnPremBlobStore, blobId::UUID)
-    
-    response = executeGql(
-        store.client,
-        QUERY_GET_BLOB,
-        (id = string(blobId), storeLabel = string(store.label))
-    )
-    #FIXME Errors not working as expected
-    if startswith(response.data["getBlob"], "500 Internal Error") ||
-        startswith(response.data["getBlob"], "$blobId not found")
-        error(response.data["getBlob"])
-    end
-    return base64decode(response.data["getBlob"])
-end
-
-function DFG.hasBlob(store::NavAbilityOnPremBlobStore, blobId::UUID)
-    response = executeGql(
-        store.client,
-        QUERY_HAS_BLOB,
-        (blobId = string(blobId), label = store.label, type = "NVA_ON_PREM"),
-        Bool;
-    )
-    return response.data["hasBlob"]
-end
-
-function DFG.listBlobs(store::NavAbilityOnPremBlobStore)
-    response = executeGql(
-        store.client,
-        QUERY_LIST_BLOBS,
-        (label = store.label, type = "NVA_ON_PREM"),
-        Vector{String},
-    )
-    list = response.data["listBlobs"]
-    return UUID.(list)
+function DFG.deleteBlob!(
+    blobstore::NavAbilityCachedBlobStore,
+    blobId::UUID,
+)
+    deleteBlob!(blobstore.remotestore, blobId)
+    deleteBlob!(blobstore.localstore, blobId)
+    return 1
 end

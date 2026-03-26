@@ -1,0 +1,8 @@
+query existsVariableFactorLabel($id: UUID!) {
+  variables(where: { id: { eq: $id } }) {
+    label
+  }
+  factors(where: { id: { eq: $id } }) {
+    label
+  }
+}

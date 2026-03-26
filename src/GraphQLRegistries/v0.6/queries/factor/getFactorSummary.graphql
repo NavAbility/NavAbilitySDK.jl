@@ -1,0 +1,5 @@
+query getFactorSummary($id: UUID!) {
+  factors (where: { id: { eq: $id } }) {
+    ...FactorSummary_fields
+  }
+}

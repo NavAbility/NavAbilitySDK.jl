@@ -4,13 +4,14 @@ struct Org
     description::String
     # models::Vector{Model}#!
     # agents::Vector{Agent}#!
-    # fgs::Vector{Factorgraph}#!
+    # fgs::Vector{Graphroot}#!
     # users::Vector{Symbol}#!
 end
 
 # struct BlobStore end
-struct Model end
-struct Factorgraph end
+@kwdef struct Model
+    label::Symbol
+end
 
 struct NvaNode{T}
     namespace::UUID
@@ -23,55 +24,56 @@ DFG.getLabel(node::NvaNode) = node.label
     # Interface
     id::UUID#!
     label::Symbol#!
-    metadata::String = "e30="
-    # description::String #FIXME
-    tags::Vector{Symbol} = Symbol[]#!
-    _version::String = string(DFG._getDFGVersion())#!
+    description::String = ""
+    tags::Set{Symbol} = Set{Symbol}()#!
+    # TODO bloblets
+    version::VersionNumber = DFG.version(DFG.Agent)#!
     # parent
     org::Any #OrgConnect#!
     # children
-    blobEntries::Any = nothing #TODO VariableBlobEntriesFieldInput
+    # blobentries::Any = nothing  #TODO VariableBlobentriesFieldInput
     # models::Vector{Model}#!
-    # fgs::Vector{Factorgraph}#!
+    # fgs::Vector{Graphroot}#!
 end
 
-StructTypes.omitempties(::Type{AgentCreateInput}) = (:blobEntries,)
+JSON.omit_empty(::Type{<:AgentCreateInput}) = true
 
 @kwdef struct ModelCreateInput
     id::UUID
     label::Symbol
     description::String = ""
-    # status::String
-    metadata::String = "e30="
     tags::Vector{Symbol} = Symbol[]
+    # status::String
     # parent
     org::Any #OrgConnect#!
     # children
-    blobEntries::Any = nothing #TODO VariableBlobEntriesFieldInput
+    blobentries::Any = nothing #TODO VariableBlobentriesFieldInput
+    bloblets::Any = nothing #TODO VariableBlobletsFieldInput
     # models::Vector{Symbol}
 end
 
-StructTypes.omitempties(::Type{ModelCreateInput}) = (:blobEntries,)
+JSON.omit_null(::Type{<:ModelCreateInput}) = true
 
-@kwdef struct FactorGraphCreateInput
+@kwdef struct GraphCreateInput
+    # Interface
     id::UUID#!
     label::Symbol#!
-    tags::Vector{Symbol} = Symbol[]
-    description::String
-    metadata::String
-    _version::String
+    description::String = ""
+    tags::Set{Symbol} = Set{Symbol}()#!
+    version::VersionNumber = DFG.version(DFG.Graphroot)#!
     # parent
-    # namespace::UUID 
+    org::Any #OrgConnect
     # relationships
     # agents::Vector{Symbol}#!
     # #children
     # variables::Vector{Variable}#!
     # factors::Vector{Factor}#!
-    # blobEntries::Vector{BlobEntry}#!
-    org::Any #OrgConnect
-    agents::Any = nothing # AgentsConnect
-    blobEntries::Any = nothing #TODO VariableBlobEntriesFieldInput
+    # bloblets
+    # agents::Any = nothing # AgentsConnect
+    # blobentries::Any = nothing #TODO VariableBlobentriesFieldInput
 end
+
+JSON.omit_empty(::Type{<:GraphCreateInput}) = true
 
 struct BlobStoreCreateInput
     id::UUID#!

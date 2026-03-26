@@ -1,0 +1,9 @@
+.graphqlrc.yml
+package.json
+package-lock.json
+eslint.config.mjs
+node_modules/
+hive_persisted_queries.json
+full_registry_audit.graphql
+test
+README.md

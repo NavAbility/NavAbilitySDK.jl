@@ -1,0 +1,7 @@
+mutation addStates($states: [StateCreateInput!]!) {
+  addStates(input: $states) {
+    states {
+      ...State_fields
+    }
+  }
+}

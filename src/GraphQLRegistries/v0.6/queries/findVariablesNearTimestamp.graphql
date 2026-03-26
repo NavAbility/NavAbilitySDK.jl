@@ -1,0 +1,11 @@
+query findVariablesNearTimestamp(
+  $fgId: UUID!
+  $fromTime: DateTime!
+  $toTime: DateTime!
+) {
+  graphs(where: { id: { eq: $fgId } }) {
+    variables(where: { timestamp: { gte: $fromTime, lte: $toTime } }) {
+      label
+    }
+  }
+}

@@ -1,0 +1,5 @@
+query getState($id: UUID!) {
+  states(where: { id: { eq: $id } }) {
+    ...State_fields
+  }
+}

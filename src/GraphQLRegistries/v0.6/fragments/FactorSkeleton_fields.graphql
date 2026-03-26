@@ -1,0 +1,5 @@
+fragment FactorSkeleton_fields on Factor {
+  label
+  tags
+  variableorder
+}

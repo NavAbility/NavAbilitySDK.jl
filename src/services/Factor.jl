@@ -1,30 +1,72 @@
 #TODO factor does not have blobs yet
 
-function DFG.addFactor!(fgclient::NavAbilityDFG, pacfac::FactorDFG)
-    return addFactors!(fgclient, [pacfac])[1]
+function createInput(fgclient::NavAbilityDFG, factor::FactorDFG)
+    factorCreateInput = StructUtils.make(Dict{Symbol, Any}, factor, DFG.DFGJSONStyle())
+
+    pop!(factorCreateInput, :blobentries)
+    pop!(factorCreateInput, :bloblets)
+
+    factorLabel = factor.label
+
+    facId = getId(fgclient.fg, factorLabel)
+
+    push!(factorCreateInput, :id => facId)
+    push!(factorCreateInput, :graph => createConnect(getId(fgclient.fg)))
+
+    push!(
+        factorCreateInput,
+        :variables => createConnect(
+            map(vl -> getId(fgclient, fgclient.fg, vl), collect(factor.variableorder)),
+        ),
+    )
+
+    factor_connect = createConnect(facId)
+    if !isempty(DFG.refBlobentries(factor))
+        blobentyNodes = map(values(DFG.refBlobentries(factor))) do entry
+            Dict(
+                :node => NvaSDK.CreateInput(
+                    getId(fgclient.fg, factorLabel, entry.label),
+                    entry,
+                    Dict(:parent => (Factor = factor_connect,)),
+                ),
+            )
+        end
+        blobentries = Dict(:create => blobentyNodes)
+        push!(factorCreateInput, :blobentries => blobentries)
+    end
+
+    return factorCreateInput
+end
+
+function DFG.addFactor!(fgclient::NavAbilityDFG, factor::FactorDFG)
+    # return addFactors!(fgclient, [factor])[1]
+    response = executeGql(
+        fgclient,
+        GQL_OPS[:addFactors],
+        Dict(:input => [createInput(fgclient, factor)]),
+        @NamedTuple{factors::Vector{FactorDFG}}
+    )
+    return handleMutate(response, :addFactors, :factors)[1]
 end
 
 function DFG.addFactors!(
     fgclient::NavAbilityDFG,
-    pacfactors::Vector{FactorDFG};
-    chunksize::Int = 20,
+    factors::Vector{FactorDFG};
+    chunksize::Int = 10,
+    showprogress::Bool = length(factors) > 1000
 )
-    addfactors = map(pacfactors) do pacfac
-        FactorCreateInput(;
-            getCommonProperties(FactorCreateInput, pacfac)...,
-            id = getId(fgclient, pacfac),
-            variables = createConnect(
-                map(vl -> getId(fgclient, fgclient.fg, vl), pacfac._variableOrderSymbols),
-            ),
-            fg = createConnect(getId(fgclient.fg)),
-        )
+    addfactors = map(factors) do factor
+        createInput(fgclient, factor)
     end
 
-    T = @NamedTuple{factors::Vector{FactorDFG}}
-    newfacs = @showprogress asyncmap(Iterators.partition(addfactors, chunksize)) do chunk
-        response =
-            executeGql(fgclient, GQL_ADD_FACTORS, Dict("factorsToCreate" => chunk), T)
-        handleMutate(response, "addFactors", :factors)
+    newfacs = @showprogress enabled = showprogress asyncmap(Iterators.partition(addfactors, chunksize)) do chunk
+        response = executeGql(
+            fgclient,
+            GQL_OPS[:addFactors],
+            Dict(:input => chunk),
+            @NamedTuple{factors::Vector{FactorDFG}}
+        )
+        handleMutate(response, :addFactors, :factors)
     end
 
     return reduce(vcat, newfacs)
@@ -33,97 +75,148 @@ end
 function DFG.getFactors(fgclient::NavAbilityDFG)
     fgId = getId(fgclient.fg)
 
-    variables = Dict("fgId" => fgId, "fields_summary" => true, "fields_full" => true)
+    variables = Dict(:id => fgId)
 
-    T = Vector{Dict{String, Vector{FactorDFG}}}
+    T = Vector{Dict{Symbol, Vector{FactorDFG}}}
 
-    response = executeGql(fgclient, GQL_GET_FACTORS, variables, T)
+    response = executeGql(fgclient, GQL_OPS[:getFactors], variables, T)
 
-    return handleQuery(response, "factorgraphs", fgclient.fg.label)["factors"]
+    return handleQuery(response, :graphs, fgclient.fg.label)[:factors]
 end
 
 function DFG.getFactorsSkeleton(fgclient::NavAbilityDFG)
     fgId = getId(fgclient.fg)
 
-    variables = Dict("fgId" => fgId, "fields_summary" => false, "fields_full" => false)
+    variables = Dict(:fgId => fgId)
 
-    T = Vector{Dict{String, Vector{DFG.SkeletonDFGFactor}}}
+    T = Vector{Dict{Symbol, Vector{DFG.FactorSkeleton}}}
 
-    response = executeGql(fgclient, GQL_GET_FACTORS, variables, T)
+    response = executeGql(fgclient, GQL_OPS[:getFactorsSkeleton], variables, T)
 
-    return handleQuery(response, "factorgraphs", fgclient.fg.label)["factors"]
+    return handleQuery(response, :graphs, fgclient.fg.label)[:factors]
 end
 
+function DFG.getFactorsSummary(fgclient::NavAbilityDFG)
+    fgId = getId(fgclient.fg)
+
+    variables = Dict(:fgId => fgId)
+
+    T = Vector{Dict{Symbol, Vector{DFG.FactorSummary}}}
+
+    response = executeGql(fgclient, GQL_OPS[:getFactorsSummary], variables, T)
+
+    return handleQuery(response, :graphs, fgclient.fg.label)[:factors]
+end
+
+
 function DFG.getFactor(
-    fgclient::NavAbilityDFG{<:AbstractDFGVariable, FT},
+    fgclient::NavAbilityDFG{<:AbstractGraphVariable, FT},
     label::Symbol,
 ) where {FT}
-    namespace = fgclient.fg.namespace
-    facId = NvaSDK.getId(namespace, fgclient.fg.label, label)
 
-    variables = Dict("facId" => facId, "fields_summary" => true, "fields_full" => true)
+    response = executeGql(
+        fgclient,
+        GQL_OPS[:getFactor],
+        (id = NvaSDK.getId(fgclient.fg, label),),
+        Vector{FT};
+    )
+    return handleQuery(response, :factors, label)
+end
 
-    response = executeGql(fgclient, GQL_GET_FACTOR, variables, Vector{FactorDFG};)
-    return FT(handleQuery(response, "factors", label))
+function DFG.getFactorSummary(fgclient::NavAbilityDFG, label::Symbol)
+    facId = NvaSDK.getId(fgclient.fg, label)
+
+    variables = Dict(
+        :id => facId, 
+    )
+
+    response = executeGql(fgclient, GQL_OPS[:getFactorSummary], variables, Vector{DFG.FactorSummary};)
+    return handleQuery(response, :factors, label)
+end
+
+function DFG.getFactorSkeleton(fgclient::NavAbilityDFG, label::Symbol)
+    facId = NvaSDK.getId(fgclient.fg, label)
+
+    variables = Dict(
+        :id => facId, 
+    )
+
+    response = executeGql(fgclient, GQL_OPS[:getFactorSkeleton], variables, Vector{DFG.FactorSkeleton};)
+    return handleQuery(response, :factors, label)
 end
 
 function DFG.listFactors(
     fgclient::NavAbilityDFG,
     regexFilter::Union{Nothing, Regex} = nothing;
-    tags::Vector{Symbol} = Symbol[],
-    solvable::Union{Int, Nothing} = nothing,
-    solvableFilter::Union{Nothing, Base.Fix2} = isnothing(solvable) ? nothing :
-                                                >=(solvable),
+    tags::Vector{Symbol} = Symbol[], #FIXME tags should be tagsFilter
+    solvableFilter::Union{Nothing, Base.Fix2} = nothing 
 )
     fgId = NvaSDK.getId(fgclient.fg)
     variables =
-        Dict("fgId" => fgId, "where" => Dict{String, Union{Int, Vector{Int}, Symbol}}())
+        Dict(:fgId => fgId, :where => Dict{Symbol, Any}())
 
     if !isempty(tags)
-        @assert length(tags) == 1 "Only one tag is currently supported in tags filter"
-        variables["where"]["tags_INCLUDES"] = tags[1]
+        variables[:where][:tags] = Dict(:in => string.(tags))
     end
 
     if !isnothing(solvableFilter)
+        solvableWhere = Dict{Symbol, Any}()
         if solvableFilter.f == >=
-            variables["where"]["solvable_GTE"] = solvableFilter.x
+            solvableWhere[:gte] = solvableFilter.x
         elseif solvableFilter.f == >
-            variables["where"]["solvable_GT"] = solvableFilter.x
+            solvableWhere[:gt] = solvableFilter.x
         elseif solvableFilter.f == <=
-            variables["where"]["solvable_LTE"] = solvableFilter.x
+            solvableWhere[:lte] = solvableFilter.x
         elseif solvableFilter.f == <
-            variables["where"]["solvable_LT"] = solvableFilter.x
+            solvableWhere[:lt] = solvableFilter.x
         elseif solvableFilter.f == ==
-            variables["where"]["solvable"] = solvableFilter.x
+            solvableWhere[:eq] = solvableFilter.x
         elseif solvableFilter.f == in
-            variables["where"]["solvable_IN"] = solvableFilter.x
+            solvableWhere[:in] = solvableFilter.x
         else
             error("Unsupported solvableFilter function: $(solvableFilter.f)")
         end
+        variables[:where][:solvable] = solvableWhere
     end
 
-    response = executeGql(fgclient, GQL_LIST_FACTORS, variables, Vector{Symbol})
-    labels = handleQuery(response, "listFactors")
+    response = executeGql(fgclient, GQL_OPS[:listFactors], variables, Vector{Symbol})
+    labels = handleQuery(response, :listFactors)
 
     !isnothing(regexFilter) && filter!(x -> occursin(regexFilter, string(x)), labels)
 
     return labels
 end
 
-# delete factor and its satelites (by factor id)
-function DFG.deleteFactor!(fgclient::NavAbilityDFG, factor::DFG.AbstractDFGFactor)
-    facId = getId(fgclient.fg, factor.label)
-
+function DFG.deleteFactor!(fgclient::NavAbilityDFG, label::Symbol)
+    facId = getId(fgclient.fg, label)
     variables = (factorId = facId,)
-
-    response = executeGql(fgclient.client.client, GQL_DELETE_FACTOR, variables)
-
-    #TODO check if factor was deleted in response
-
-    return factor
+    response = executeGql(fgclient.client.client, GQL_OPS[:deleteFactor], variables)
+    return response[:deleteFactors][:nodesDeleted]
 end
 
-function DFG.deleteFactor!(fgclient::NavAbilityDFG, label::Symbol)
-    f = getFactor(fgclient, label)
-    return deleteFactor!(fgclient, f)
+function DFG.getFactorBloblets(fgclient::NavAbilityDFG, label::Symbol)
+    variables = (id = NvaSDK.getId(fgclient.fg, label),)
+
+    T = Vector{@NamedTuple{bloblets::Vector{DFG.Bloblet}}}
+    response = executeGql(fgclient, GQL_OPS[:getFactorBloblets], variables, T)
+
+    return handleQuery(response, :factors, label).bloblets
+end
+
+function DFG.addFactorBloblet!(
+    fgclient::NavAbilityDFG,
+    label::Symbol,
+    bloblet::DFG.Bloblet
+)
+    response = executeGql(
+        fgclient,
+        GQL_OPS[:addFactorBloblet],
+        (
+            id = NvaSDK.getId(fgclient.fg, label), 
+            label = bloblet.label,
+            val = bloblet.val
+        ),
+    )
+    #TODO handle response
+    return bloblet
 end

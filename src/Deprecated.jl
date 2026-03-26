@@ -1,19 +1,10 @@
 
 ## =========================
-## Deprecated in v0.8
+## Deprecated in v0.9
 ## =========================
-export DFGClient, NavAbilityClient
 
-DFGClient(args...; kwargs...) = error("DFGClient is deprecated, use NavAbilityDFG instead")
-
-#TODO DEPRECATE add orgId
-function NavAbilityClient(args...; kwargs...)
-    error("Deprecated: NavAbilityClient requires a auth_token")
+# consolidated with NavAbilityBlobStore, which can be used for both on-prem and cloud deployments.
+function NavAbilityOnPremBlobStore(client, label=:default)
+    Base.depwarn("NavAbilityOnPremBlobStore is consolidated with NavAbilityBlobStore, use NavAbilityBlobStore instead.", :NavAbilityOnPremBlobStore)
+    return NavAbilityBlobStore(client, label)
 end
-
-# FIXME DEPRECATED
-struct Context end
-Context(a...; ka...) = error("deprecated")
-
-listBlobsMeta(args...) = error("listBlobsMeta is deprecated, use BlobEntries")
-listBlobsId(args...) = error("listBlobsId is deprecated, use listBlobs")

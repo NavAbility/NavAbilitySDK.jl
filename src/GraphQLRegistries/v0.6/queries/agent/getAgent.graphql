@@ -1,0 +1,6 @@
+query getAgent($agentId: UUID!) {
+  agents(where: { id: { eq: $agentId } }) {
+    label
+    namespace
+  }
+}

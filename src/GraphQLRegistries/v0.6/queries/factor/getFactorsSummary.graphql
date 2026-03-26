@@ -1,0 +1,9 @@
+query getFactorsSummary(
+  $fgId: UUID!
+) {
+  graphs(where: { id: {eq: $fgId} }) {
+    factors {
+      ...FactorSummary_fields
+    }
+  }
+}

@@ -1,0 +1,12 @@
+fragment State_fields on State {
+  id
+  label
+  statekind
+  belief
+  separator
+  initialized
+  observability
+  marginalized
+  solves
+  type
+}

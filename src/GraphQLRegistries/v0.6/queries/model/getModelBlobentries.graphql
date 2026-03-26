@@ -1,0 +1,7 @@
+query getModelBlobentries($id: UUID!, $entrywhere: BlobentryWhere = {}) {
+  models(where: { id: { eq: $id } }) {
+    blobentries(where: $entrywhere) {
+      ...Blobentry_fields
+    }
+  }
+}

@@ -1,15 +1,14 @@
 ##
-struct NavAbilityDFG{VT<:AbstractDFGVariable, FT<:AbstractDFGFactor} <: AbstractDFG{AbstractParams}
+struct NavAbilityDFG{VT <: AbstractGraphVariable, FT <: AbstractGraphFactor} <:
+       AbstractDFG{VT, FT}
     client::NavAbilityClient
-    fg::NvaNode{Factorgraph}
+    fg::NvaNode{Graphroot}
     agent::NvaNode{Agent}
-    blobStores::Dict{Symbol, DFG.AbstractBlobStore}
+    blobStores::Dict{Symbol, DFG.AbstractBlobstore}
 end
 
-DFG.getLabel(dfg::NavAbilityDFG) = dfg.fg.label
-
-DFG.getTypeDFGVariables(::NavAbilityDFG{T, <:AbstractDFGFactor}) where {T} = T
-DFG.getTypeDFGFactors(::NavAbilityDFG{<:AbstractDFGVariable, T}) where {T} = T
+DFG.getAgent(dfg::NavAbilityDFG) = dfg.agent
+DFG.getGraph(dfg::NavAbilityDFG) = dfg.fg
 
 function NavAbilityDFG(
     token::String,
@@ -17,21 +16,11 @@ function NavAbilityDFG(
     agentLabel::Union{Nothing, Symbol} = nothing;
     apiUrl::String = "https://api.navability.io",
     orgLabel::Union{Symbol, Nothing} = nothing,
-    auth_token = nothing,
-    authorize = nothing,
     storeLabel = :default,
     addAgentIfAbsent = false,
     addGraphIfAbsent = false,
-    addRobotIfNotExists = nothing,
-    addSessionIfNotExists = nothing,
-    kwargs...
+    kwargs...,
 )
-    if !isnothing(auth_token)
-        @warn "kwarg auth_token is deprecated"
-    end
-    if !isnothing(authorize)
-        @warn "kwarg authorize is deprecated"
-    end
     return NavAbilityDFG(
         NavAbilityClient(token, apiUrl; orgLabel, kwargs...),
         fgLabel,
@@ -39,8 +28,6 @@ function NavAbilityDFG(
         storeLabel,
         addAgentIfAbsent,
         addGraphIfAbsent,
-        addRobotIfNotExists,
-        addSessionIfNotExists
     )
 end
 
@@ -51,30 +38,18 @@ function NavAbilityDFG(
     storeLabel = :default,
     addAgentIfAbsent = false,
     addGraphIfAbsent = false,
-    addRobotIfNotExists = nothing,
-    addSessionIfNotExists = nothing,
 )
-    @assert isValidLabel(fgLabel) "fgLabel: `$fgLabel` is not a valid label"
-    @assert isnothing(agentLabel) || isValidLabel(agentLabel) "agentLabel: `$agentLabel` is not a valid label"
-    @assert isValidLabel(storeLabel) "storeLabel: `$storeLabel` is not a valid label"
-    
-    #TODO remove Deprecated in v0.8
-    if !isnothing(addRobotIfNotExists)
-        @warn "addRobotIfNotExists is deprecated, use addAgentIfAbsent instead"
-        addAgentIfAbsent = addRobotIfNotExists
-    end
-    if !isnothing(addSessionIfNotExists)
-        @warn "addSessionIfNotExists is deprecated, use addGraphIfAbsent instead"
-        addGraphIfAbsent = addSessionIfNotExists
-    end
+    @assert DFG.isValidLabel(fgLabel) "fgLabel: `$fgLabel` is not a valid label"
+    @assert isnothing(agentLabel) || DFG.isValidLabel(agentLabel) "agentLabel: `$agentLabel` is not a valid label"
+    @assert DFG.isValidLabel(storeLabel) "storeLabel: `$storeLabel` is not a valid label"
 
     fg_tsk = @async begin
         if addGraphIfAbsent && !in(fgLabel, listGraphs(client))
             addGraph!(client, fgLabel)
-        else 
+        else
             #TODO maybe rather check if graph exist.
             # getGraph(client, fgLabel)
-            NvaNode{Factorgraph}(client.id, fgLabel)
+            NvaNode{Graphroot}(client.id, fgLabel)
         end
     end
 
@@ -82,27 +57,32 @@ function NavAbilityDFG(
         if isnothing(agentLabel)
             fg = fetch(fg_tsk)
             agents = getAgents(client, fg)
-            isempty(agents) && error("No agents linked to graph $fgLabel, please provide an agentLabel")
-            length(agents) > 1 && error("Multiple agents linked to graph $fgLabel, please provide an agentLabel")
-            agents[1]
+            isempty(agents) && error(
+                "No agents linked to graph $fgLabel, please provide an agentLabel",
+            )
+            length(agents) > 1 && error(
+                "Multiple agents linked to graph $fgLabel, please provide an agentLabel",
+            )
+            (link = false, agent = agents[1])
         elseif addAgentIfAbsent && !in(agentLabel, listAgents(client))
-            addAgent!(client, agentLabel)
+            (link = true, agent = addAgent!(client, Agent(; label = agentLabel)))
         else
             # getAgent(client, agentLabel)
-            NvaNode{Agent}(client.id, agentLabel)
+            #FIXME we don't know if we should link here so we don't
+            (link = false, agent = NvaNode{Agent}(client.id, agentLabel))
         end
     end
 
-    agent = fetch(agent_tsk)
+    (;link, agent) = fetch(agent_tsk)
     fg = fetch(fg_tsk)
-    @async connect!(client, agent, fg)
+    link && @async connect!(client, agent, fg)
 
     return NavAbilityDFG{DFG.VariableDFG, DFG.FactorDFG}(
         client,
         fg,
         agent,
-        Dict{Symbol, DFG.AbstractBlobStore}(
-            storeLabel => NavAbilityBlobStore(client, storeLabel)
+        Dict{Symbol, DFG.AbstractBlobstore}(
+            storeLabel => NavAbilityBlobStore(client, storeLabel),
         ),
     )
 end
@@ -116,4 +96,8 @@ function Base.show(io::IO, ::MIME"text/plain", c::NavAbilityDFG)
     println(io, "  Agent: ", c.agent.label)
     println(io, "  BlobStores: ", keys(c.blobStores))
     return
+end
+
+function Base.:(==)(a::NavAbilityDFG, b::NavAbilityDFG)
+    return a.client == b.client && a.fg == b.fg && a.agent == b.agent
 end

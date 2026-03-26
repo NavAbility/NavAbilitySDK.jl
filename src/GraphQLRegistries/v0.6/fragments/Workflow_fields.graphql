@@ -1,0 +1,12 @@
+fragment Workflow_fields on Workflow {
+  id
+  label
+  description
+  status
+  data
+  result
+  _type
+  _version
+  createdtime
+  modifiedtime
+}

@@ -1,0 +1,6 @@
+query getModel($id: UUID!) {
+  models(where: { id: { eq: $id } }) {
+    label
+    namespace
+  }
+}

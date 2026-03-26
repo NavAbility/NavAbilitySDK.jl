@@ -7,10 +7,10 @@ using DocStringExtensions
 using LinearAlgebra
 using UUIDs
 using Dates
-using TimeZones
-using JSON3
+# using TimeZones
+using JSON
 using Base64
-using StructTypes
+using StructUtils
 using Downloads
 using HTTP
 using DistributedFactorGraphs.ProgressMeter
@@ -21,61 +21,48 @@ using DistributedFactorGraphs
 
 using DistributedFactorGraphs: 
     Agent,
+    Graphroot,
     getAgent,
     getGraph,
-    assembleFactorName,
-    FactorData,
-    getFncTypeName
+    getId,
+    assembleFactorName
 
 import DistributedFactorGraphs:
     getFactor,
     getFactors,
     addFactor!,
     addFactors!,
-    updateFactor!,
     deleteFactor!,
     listFactors,
     getVariable,
     getVariables,
     addVariable!,
     addVariables!,
-    updateVariable!,
     deleteVariable!,
     listVariables,
-    listBlobEntries,
-    listPPEs,
-    listVariableSolverData,
-    getPPE,
-    getPPEs,
-    addPPE!,
-    addPPEs!,
-    updatePPE!,
-    deletePPE!,
-    getVariableSolverData,
-    getVariableSolverDataAll,
-    addVariableSolverData!,
-    updateVariableSolverData!,
-    deleteVariableSolverData!,
-    getBlobEntry,
-    getBlobEntries,
-    addBlobEntry!,
-    updateBlobEntry!,
-    deleteBlobEntry!,
+    listVariableBlobentries,
+    getStates,
+    getVariableBlobentry,
+    getVariableBlobentries,
+    addVariableBlobentry!,
+    mergeVariableBlobentry!,
+    deleteVariableBlobentry!,
     getBlob,
     addBlob!,
     deleteBlob!,
     hasBlob,
-    getGraphBlobEntry,
-    getGraphBlobEntries,
-    addGraphBlobEntry!,
-    addGraphBlobEntries!,
-    getModelBlobEntries,
-    listModelBlobEntries,
-    listGraphBlobEntries,
-    listAgentBlobEntries,
-    exists,
+    getGraphBlobentry,
+    getGraphBlobentries,
+    addGraphBlobentry!,
+    addGraphBlobentries!,
+    getModelBlobentries,
+    listModelBlobentries,
+    listGraphBlobentries,
+    listAgentBlobentries,
+    hasVariable,
+    hasFactor,
     listNeighbors,
-    findVariableNearTimestamp,
+    findVariablesNearTimestamp,
     Agent,
     getAgent,
     getGraph,
@@ -95,39 +82,27 @@ import DistributedFactorGraphs:
 # ls,
 # lsf,
 # isConnected,
-# buildSubgraph,
+# getSubgraph,
 # copyGraph!,
 # getBiadjacencyMatrix,
 
 # Graphql
-include("graphql/BlobEntry.jl")
-include("graphql/Factor.jl")
-include("graphql/Variable/Variable.jl")
-include("graphql/BlobStore.jl")
-include("graphql/Model.jl")
-include("graphql/Agent.jl")
-include("graphql/Graph.jl")
-include("graphql/Org.jl")
+include("GraphQLRegistries/GraphQLRegistries.jl")
+using .GraphQLRegistries: GQL_OPS
 
-include("entities/Distributions.jl")
-include("entities/InferenceTypes.jl")
-include("entities/VariableTypes.jl")
 include("entities/NvaNodes.jl")
-include("entities/Variable.jl")
-include("entities/Factor.jl")
 
 include("NavAbilityClient.jl")
 include("NavAbilityDFG.jl")
 include("NavAbilityModel.jl")
 
 include("services/Common.jl")
-include("services/PPE.jl")
-include("services/SolverData.jl")
+include("services/State.jl")
 include("services/Variable.jl")
 include("services/Factor.jl")
 include("services/BlobEntry.jl")
 include("services/BlobStore.jl")
-include("services/StandardAPI.jl")
+include("services/StandardAPI.jl") #TODO can this and IIF constructors be combined in DFG?
 include("services/FactorGraph.jl")
 include("services/Model.jl")
 include("services/Agent.jl")
@@ -153,9 +128,7 @@ export NavAbilityClient,
     NavAbilityDFG,
     NavAbilityBlobStore,
     VariableDFG,
-    MeanMaxPPE,
-    BlobEntry,
-    PackedVariableNodeData,
+    Blobentry,
     FactorDFG
 
 # Function exports
@@ -170,10 +143,8 @@ export addAgent!,
     getFactorsSkeleton,
     addFactor!,
     addFactors!,
-    updateFactor!,
     deleteFactor!,
     listFactors,
-    lsf,
     getVariable,
     getVariableSummary,
     getVariableSkeleton,
@@ -182,42 +153,34 @@ export addAgent!,
     getVariablesSkeleton,
     addVariable!,
     addVariables!,
-    updateVariable!,
     deleteVariable!,
     listVariables,
-    ls,
-    listBlobEntries,
-    listPPEs,
-    listVariableSolverData,
-    getPPE,
-    getPPEs,
-    addPPE!,
-    updatePPE!,
-    deletePPE!,
-    getVariableSolverData,
-    getVariableSolverDataAll,
-    addVariableSolverData!,
-    updateVariableSolverData!,
-    deleteVariableSolverData!,
-    getBlobEntry,
-    getBlobEntries,
-    addBlobEntry!,
-    updateBlobEntry!,
-    deleteBlobEntry!,
-    getGraphBlobEntry,
-    getGraphBlobEntries,
-    addGraphBlobEntry!,
-    addGraphBlobEntries!,
-    listGraphBlobEntries,
+    listVariableBlobentries,
+    listStates,
+    getState,
+    getStates,
+    addState!,
+    mergeState!,
+    deleteState!,
+    getVariableBlobentry,
+    getVariableBlobentries,
+    addVariableBlobentry!,
+    mergeVariableBlobentry!,
+    deleteVariableBlobentry!,
+    getGraphBlobentry,
+    getGraphBlobentries,
+    addGraphBlobentry!,
+    addGraphBlobentries!,
+    listGraphBlobentries,
     getBlob,
     addBlob!,
     deleteBlob!,
-    exists,
-    getNeighbors,
     listNeighbors,
-    findVariableNearTimestamp,
+    hasVariable,
+    hasFactor,
+    findVariablesNearTimestamp,
     startWorker,
-    getBlobStore
+    getBlobstore
 
 # Alias exports
 export NvaDFG

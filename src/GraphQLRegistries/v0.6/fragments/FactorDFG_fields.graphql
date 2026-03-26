@@ -1,0 +1,9 @@
+fragment FactorDFG_fields on Factor {
+  ...FactorSummary_fields
+  observation
+  hyper
+  state
+  blobentries {
+    ...Blobentry_fields
+  }
+}

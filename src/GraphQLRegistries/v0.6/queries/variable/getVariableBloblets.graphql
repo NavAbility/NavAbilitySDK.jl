@@ -1,0 +1,8 @@
+query getVariableBloblets($id: UUID!) {
+  variables(where: { id: { eq: $id } }) {
+    bloblets {
+      label
+      val
+    }
+  }
+}

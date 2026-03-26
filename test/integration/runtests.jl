@@ -1,103 +1,42 @@
+using NavAbilitySDK
+using DistributedFactorGraphs
 using Test
+using JSON
+using LinearAlgebra
 using Random
+using UUIDs
+using Dates
 
-include("./fixtures.jl")
-include("./testVariable.jl")
-include("./testInitVariable.jl")
-include("./testFactor.jl")
-include("./testSolve.jl")
-include("./testExportSession.jl")
+include("setup.jl")
 
-apiUrl = get(ENV, "API_URL", "https://api.navability.io")
-orgLabel = Symbol(ENV["ORG_LABEL"])
-agentLabel = :TestRobot
-fgLabel = Symbol("TestSession_", randstring(7))
-auth_token = ENV["AUTH_TOKEN"]
+@testset "NavAbilitySDK Integration Tests" begin
+    @testset "Agent & Graph" begin
+        include("test_agent_graph.jl")
+    end
+    @testset "Variables" begin
+        include("test_variable.jl")
+    end
+    @testset "Factors" begin
+        include("test_factor.jl")
+    end
+    @testset "Graph Queries" begin
+        include("test_graph_queries.jl")
+    end
+    @testset "States" begin
+        include("test_state.jl")
+    end
+    @testset "BlobEntries" begin
+        include("test_blobentry.jl")
+    end
+    @testset "BlobStore" begin
+        include("test_blobstore.jl")
+    end
+    @testset "Standard API" begin
+        include("test_standard_api.jl")
+    end
 
-fgLabel1d = Symbol("TestSession1D_" * randstring(7))
-fgLabel2d = Symbol("TestSession2D_" * randstring(7))
-fgLabel3d = Symbol("TestSession3D_" * randstring(7))
-
-@testset "nva-sdk-integration-testset" begin
-    # Creating one client and two contexts
-    client = NavAbilityClient(orgId, apiUrl)
-
-    NvaSDK.addAgent!(client, agentLabel)
-    NvaSDK.addGraph!(client, fgLabel1d)
-    NvaSDK.addGraph!(client, fgLabel2d)
-    fgclient_1D = NavAbilityDFG(client, fgLabel1d, agentLabel; addSessionIfNotExists=true)
-    fgclient2D = NavAbilityDFG(client, fgLabel2d, agentLabel; addSessionIfNotExists=true)
-
-    @info "Running nva-sdk-integration-testset..."
-
-    # Note - Tests incrementally build on each other because this is an
-    # integration test.
-    runVariableTests(fgclient2D)
-    runFactorTests(fgclient2D)
-    @test_broken runSolveTests(fgclient2D)
-    @test_broken runExportTests(fgclient2D)
-    @test_broken runInitVariableTests(; client)
-    # test fixtures
-    exampleGraph1D(fgclient1D; doSolve = false)
-end
-
-@testset "testing Pose3" begin
-    client, context3D = createClients(apiUrl, userLabel, robotLabel, sessionLabel3d)
-
-    resultIds = Task[]
-    append!(
-        resultIds,
-        [
-            addVariable!(client, context3D, "x0", :Pose3),
-            addVariable!(client, context3D, "x1", :Pose3),
-        ],
-    )
-
-    NvaSDK.waitForCompletion(
-        client,
-        resultIds;
-        maxSeconds = 180,
-        expectedStatuses = ["Complete"],
-    )
-
-    resultIds = Task[]
-    append!(
-        resultIds,
-        [
-            addFactor(
-                client,
-                context3D,
-                ["x0"],
-                NvaSDK.PriorPose3(;
-                    Z = NvaSDK.FullNormal(
-                        [0.0, 1.0, 0, 0, 0, 0],
-                        diagm([0.1, 0.1, 0.1, 0.01, 0.01, 0.01] .^ 2),
-                    ),
-                ),
-            ),
-            addFactor(
-                client,
-                context3D,
-                [:x0, :x1],
-                NvaSDK.Pose3Pose3Rotation(;
-                    Z = NvaSDK.FullNormal([0.1, 0.0, 0], diagm([0.01, 0.01, 0.01] .^ 2)),
-                ),
-            ),
-        ],
-    )
-
-    NvaSDK.waitForCompletion(
-        client,
-        resultIds;
-        maxSeconds = 180,
-        expectedStatuses = ["Complete"],
-    )
-
-    flabels = fetch(NvaSDK.listFactors(client, context3D))
-    fac = fetch(NvaSDK.getFactor(client, context3D, "x0x1f_4e37"))
-
-    # r = fetch(NvaSDK.solveSession(client, context3D))
-    # s = fetch(NvaSDK.getStatusesLatest(client, [r]))
-    # v = fetch(NvaSDK.getVariable(client, context3D, "x1"))
-
+    # Cleanup: delete the test graph and agent
+    @testset "Cleanup" begin
+        include("test_cleanup.jl")
+    end
 end

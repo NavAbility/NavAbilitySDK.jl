@@ -1,0 +1,12 @@
+query listNeighbors($id: UUID!) {
+  variables(where: { id: { eq: $id } }) {
+    factors {
+      label
+    }
+  }
+  factors(where: { id: { eq: $id } }) {
+    variables {
+      label
+    }
+  }
+}

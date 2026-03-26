@@ -1,0 +1,5 @@
+query listGraphTags($id: UUID!) {
+  graphs(where: { id: { eq: $id } }) {
+    tags
+  }
+}

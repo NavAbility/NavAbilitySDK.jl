@@ -1,0 +1,5 @@
+query getFactorSkeleton($id: UUID!) {
+  factors(where: { id: { eq: $id } }) {
+    ...FactorSkeleton_fields
+  }
+}

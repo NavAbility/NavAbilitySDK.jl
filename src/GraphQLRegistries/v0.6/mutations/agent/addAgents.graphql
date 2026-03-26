@@ -1,0 +1,8 @@
+mutation addAgents($input: [AgentCreateInput!]!) {
+  addAgents(input: $input) {
+    agents {
+      label
+      namespace
+    }
+  }
+}

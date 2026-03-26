@@ -1,0 +1,6 @@
+mutation addFactorBloblet($id: UUID!, $label: String!, $val: String!) {
+  addFactorBloblet(FactorId: $id, input: { label: $label, val: $val }) {
+    label
+    val
+  }
+}

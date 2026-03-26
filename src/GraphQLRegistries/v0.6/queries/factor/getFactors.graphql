@@ -1,0 +1,9 @@
+query getFactors(
+  $id: UUID!
+) {
+  graphs(where: { id: {eq: $id} }) {
+    factors {
+      ...FactorDFG_fields
+    }
+  }
+}

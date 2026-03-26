@@ -1,0 +1,5 @@
+query getVariableSkeleton($varId: UUID!) {
+  variables(where: { id: { eq: $varId } }) {
+    ...VariableSkeleton_fields
+  }
+}

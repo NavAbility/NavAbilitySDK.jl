@@ -1,0 +1,8 @@
+mutation deleteFactor($factorId: UUID!) {
+  deleteFactors(
+    where: { id: { eq: $factorId } }
+    delete: { blobentries: {}, bloblets: {} }
+  ) {
+    nodesDeleted
+  }
+}

@@ -1,0 +1,8 @@
+mutation addModels($input: [ModelCreateInput!]!) {
+  addModels(input: $input) {
+    models {
+      label
+      namespace
+    }
+  }
+}

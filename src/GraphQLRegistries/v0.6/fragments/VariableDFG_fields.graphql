@@ -1,0 +1,14 @@
+fragment VariableDFG_fields on Variable {
+  ...VariableSummary_fields
+  type
+  blobentries {
+    ...Blobentry_fields
+  }
+  bloblets {
+    label
+    val
+  }
+  states {
+    ...State_fields
+  }
+}
